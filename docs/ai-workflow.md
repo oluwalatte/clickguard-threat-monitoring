@@ -56,3 +56,38 @@ defaults for the rest.
 items beyond Threat monitoring shown but inert until P4 decides; CI on Node 24 to match
 Vercel; the time box (45 minutes) was exceeded because converting ten components with
 tokenised pixels is closer to two hours.
+
+## P2. Stories
+
+**Agent proposed** one story per meaningful variant or state from the prompt files, the
+readme's component table and the DS6 matrix, with interaction tests where cheap, and story
+data hand-written from the decisions' own example sentences rather than the kit fixtures
+(which carry em dashes, verdict-changing actions and an invented "prevented waste" figure).
+
+**User directed:** proceed with the next phase; D13 (the sidebar as a component) had landed on
+main, which settled the one open P1 question.
+
+**Agent produced:**
+
+- 60 stories across the ten components and Foundations. Fixtures in `src/ui/stories/`
+  cover the golden cases the components must show: block then sync, a paid click between
+  the decision and the exclusion becoming active, an organic return that converts after the
+  block (worded as conflicting evidence, not proof), a failed sync, and a single visit.
+- Interaction tests with `storybook/test`: loading blocks the click, raw-value and
+  visit-evidence disclosures toggle `aria-expanded`, table sort updates `aria-sort` and the
+  live region and reorders rows, the row action fires on Enter with the visitor in its
+  accessible name, the active nav item carries `aria-current`.
+- The a11y addon set to fail the story test run on violations. Running every story in
+  Chromium found two contrast failures inherited from the export: the accent indigo as text
+  (secondary buttons at 4.06:1, paid visit labels at 3.69:1 on the canvas) and white on the
+  accent (primary button at 4.06:1). The export's own contract promises 4.5:1, so this is a
+  fix, not a new decision. Added `--action-primary-ink` (indigo-700, 8.1:1 on white) for
+  accent text and `--action-primary-fill` (indigo-600, 5.5:1 under white) with hover and
+  active steps for filled controls. The accent itself is unchanged for surfaces, borders and
+  the focus ring. Both Tailwind exports carry the new tokens.
+- `npm test` still runs only the unit project; the Storybook browser project runs locally
+  with `npx vitest run --project storybook` because CI has no browsers installed.
+
+**Judgement calls flagged:** the primary button is now one indigo step darker than the
+sampled product colour, for contrast. The Icon registry story is the only "count" story; it
+exists so an unknown icon name is caught by TypeScript, not by eye.

@@ -41,7 +41,7 @@
 }
 
 .row[data-type='paid'] {
-  --event-ink: var(--action-primary);
+  --event-ink: var(--action-primary-ink);
   --event-surface: var(--action-primary-surface);
   --event-border: var(--action-primary-border);
 }

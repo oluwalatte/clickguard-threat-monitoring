@@ -1,22 +1,51 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, within } from 'storybook/test';
+import { JOURNEY_BLOCK_AND_SYNC, JOURNEY_ORGANIC_RETURN, JOURNEY_SINGLE, JOURNEY_SYNC_DELAY, JOURNEY_SYNC_FAILED } from '../stories/fixtures';
 import { VisitTimeline } from './VisitTimeline';
 
 const meta = {
   title: 'Decision/VisitTimeline',
   component: VisitTimeline,
-  args: {
-    caption: '5 events, 19 Feb 2026',
-    items: [
-      { id: 'visit-1', type: 'paid', timestamp: '19 Feb 2026, 14:12:08 UTC', description: 'Landed on /pricing from Non-brand Search', meta: [{ label: 'Keyword', value: 'ppc fraud' }, { label: 'Time on page', value: '3s' }] },
-      { id: 'visit-2', type: 'paid', timestamp: '19 Feb 2026, 14:26:31 UTC', relativeTime: '14 minutes later', description: 'Landed on /pricing from Non-brand Search' },
-      { type: 'block', timestamp: '19 Feb 2026, 14:53:44 UTC', relativeTime: '41 minutes after the first visit', description: 'Blocked after visit 4' },
-      { type: 'sync-pending', timestamp: '19 Feb 2026, 14:53:46 UTC', description: 'Google Ads exclusion queued. Blocking begins when the platform confirms it.' },
-      { type: 'sync-active', timestamp: '19 Feb 2026, 15:02:10 UTC', relativeTime: '8 minutes later', description: 'Google Ads confirmed the exclusion.' },
-    ],
+  decorators: [(Story) => <div style={{ maxWidth: '80ch' }}><Story /></div>],
+  args: { items: JOURNEY_BLOCK_AND_SYNC, caption: '7 events, 19 Feb 2026' },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Visits and system events in chronological order, so a decision reads as a sequence (success criteria 3, 5 and 7). Visits have round markers; the block decision and exclusion sync events have square ones and a heavier label. The decision and the sync are separate events (D11), and one golden case has a paid click land between them.',
+      },
+    },
   },
 } satisfies Meta<typeof VisitTimeline>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const BlockThenSync: Story = {};
+
+export const SyncDelayWithPaidClick: Story = {
+  args: { items: JOURNEY_SYNC_DELAY, caption: '7 events, 19 Feb 2026' },
+};
+
+export const OrganicReturnAfterBlock: Story = {
+  args: { items: JOURNEY_ORGANIC_RETURN, caption: '8 events, 19 Feb to 21 Feb 2026' },
+};
+
+export const SyncFailed: Story = {
+  args: { items: JOURNEY_SYNC_FAILED, caption: '6 events, 19 Feb 2026' },
+};
+
+export const SingleVisit: Story = {
+  args: { items: JOURNEY_SINGLE, caption: '1 event, 18 Feb 2026' },
+};
+
+export const ExpandVisitEvidence: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const toggles = c.getAllByRole('button', { name: 'Show visit evidence' });
+    await expect(toggles).toHaveLength(2);
+    await userEvent.click(toggles[0]);
+    await expect(c.getByRole('button', { name: 'Hide visit evidence' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(c.getByText('Signals from this visit')).toBeVisible();
+  },
+};

@@ -38,6 +38,10 @@ const clickguardTheme = {
       primarySurface: "var(--action-primary-surface)",
       primaryBorder: "var(--action-primary-border)",
       onPrimary: "var(--action-on-primary)",
+      primaryInk: "var(--action-primary-ink)",
+      primaryFill: "var(--action-primary-fill)",
+      primaryFillHover: "var(--action-primary-fill-hover)",
+      primaryFillActive: "var(--action-primary-fill-active)",
     },
     status: {
       blocked: "var(--status-blocked)",

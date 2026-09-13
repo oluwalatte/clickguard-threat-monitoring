@@ -80,6 +80,13 @@
   --action-primary-surface: var(--indigo-50);
   --action-primary-border: var(--indigo-200);
   --action-on-primary: #ffffff;
+  /* The accent as ink. indigo-500 reaches only 4.06:1 on white and 3.69:1 on the canvas,
+     so any accent-coloured text uses indigo-700 (7.6:1 on white). */
+  --action-primary-ink: var(--indigo-700);
+  /* Filled controls carry white text, which needs a darker step than the accent itself. */
+  --action-primary-fill: var(--indigo-600);
+  --action-primary-fill-hover: var(--indigo-700);
+  --action-primary-fill-active: var(--navy-800);
   --action-quiet-hover: var(--gray-100);
   --action-disabled-surface: var(--gray-100);
   --action-disabled-text: var(--gray-400);
