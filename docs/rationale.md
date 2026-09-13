@@ -65,3 +65,32 @@ The contract set the customer questions, status vocabulary, data model, and evid
 I also changed choices after reviewing the working interface. The original Why column used long sentences, so I replaced them with short evidence labels and moved the full explanation to the detail page. I added confidence labels to Monitoring rows so none were left blank.
 
 AI helped produce the code, but I chose the information hierarchy, terminology, scope, interaction patterns, ambiguous cases, and the evidence shown at each level. I would use the same approach again: define the product contract first, record decisions as they are made, and review the working interface after each implementation phase.
+
+## Limitations and next steps
+
+The prototype explains decisions; it does not make them. The evidence engine is a mock built to
+reproduce eight hand-written cases and generate consistent filler, so its weights and thresholds
+stand in for the production model's explainability contract. Replacing them is the first step:
+the interface needs each decision to arrive with ranked, plain-language reasons, and the model
+has to be able to supply them.
+
+The 30-second target is a design goal, not a measurement. The verdict, its time, the main reason
+and the confidence label sit first on the page, and the journey and evidence follow directly
+below, but no customer has timed it. Testing that with PPC operators would also check the
+vocabulary: whether "Not blocked", "Monitoring", "Conflicting evidence" and "Insufficient
+evidence" read as intended to people who run campaigns.
+
+Exclusion sync is modelled as pending, delayed, active and failed events with their own times,
+which lets the page show a paid click landing in the gap. How each advertising platform reports
+that state, and how quickly, is assumed rather than known. The same applies to prevented traffic:
+the page shows only recorded cost, and no saved-spend figure will be honest until the platforms
+report what an exclusion actually stopped.
+
+Manual and bulk overrides were left out on purpose. Adding them needs permissions, an audit
+history that keeps the original decision and its evidence on record, and defined behaviour when
+a platform has not yet applied or has rejected the exclusion. The data model and the status
+vocabulary leave room for that work.
+
+Finally, the table is paginated at twenty rows over local data. A production list needs
+server-side search, filtering and sorting, a real date range rather than presets ending now, and
+a decision on what "last seen" means when visits arrive continuously.
