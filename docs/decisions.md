@@ -127,6 +127,17 @@ CSS, styles are not repeated as objects across components, and one script can pr
 exist outside the token files. Its Tailwind v4 theme file is kept as an export layer and never
 imported with preflight.
 
+## D13. The shell has a sidebar, and the sidebar is a component
+Decided: `SidebarNav` from the export ships in the system with active, collapsed and badged
+states; only Threat Monitoring is a live destination.
+Why: the table is one surface in a product, and the shell places it where it lives in
+ClickGuard's real information architecture, which was sampled from the product rather than
+invented. It is also a system proof the table cannot give: navigation must use the accent for
+"you are here" without competing with status colour.
+Rejected: a bare page (reads as a demo, not a feature) and a sidebar as page chrome with no
+states (time spent with nothing for the system to show).
+Cost: about 25 minutes, and a hard rule that no other destination gets built.
+
 ## Out of scope
 Dashboard screen, manual and bulk overrides (D9), URL-persisted filters unless time allows, dark
 theme, loading and error states for data that is local and synchronous.
