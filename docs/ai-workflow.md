@@ -1,216 +1,144 @@
 # AI workflow log
 
-A running record of what the agent produced at each stage and what the user directed or
-overrode. Appended as work happens. The rationale is written from this file and
-`decisions.md`.
+What the agent produced at each stage, and what I directed or overrode. Appended as work lands.
+The rationale is written from this file and `decisions.md`.
 
-## P0. Product contract
+The rule for the third column: a call is mine only if I can say, unprompted, why I made it and
+what I rejected. Where the agent proposed options and I chose, that is what the row says.
+Implementation is the agent's and is recorded as such; the brief expects that.
 
-- User wrote `docs/decisions.md` before any code. First commit.
+## Direction and overrides
 
-## P1. Scaffold and install the system
+| Stage | AI contribution | My direction or override |
+| --- | --- | --- |
+| Before P0 | Built a first prototype end to end in a separate repo (drawer detail, a 220-row generator, 48 stories) and deployed it, making product decisions as it went | Rejected the build. It was making product decisions without me, which is the thing the brief says it is buying from me. Restarted from a written product contract and changed the process: the agent proposes, I merge, nothing is decided silently |
+| Success criteria | None; the agent audited the first build against them once written | Wrote the six questions a customer must answer within about 30 seconds. The audit exposed two gaps in the first build: no timestamp on the decision, and no way to tell a borderline block from a strong one. Both became requirements (criteria 2 and 6) |
+| Detail pattern | Rendered four drawer information orders on one canvas with the same visitor in each (`docs/explorations/drawer-options.html`) | Chose a dedicated route over all four: long journeys need room, deep links matter for a shareable explanation, and narrow screens force a drawer into a page anyway (D2). The canvas stays as evidence of what was rejected |
+| Design system | Claude Design produced the tokens, ten components, guideline cards and a UI kit from ClickGuard's own screens and the written brief | Chose to build on the product's real palette and information architecture rather than a generic one. Set the status scale, density, Lucide icons, the sidebar, light only |
+| P0 contract | Drafted `docs/decisions.md` from my answers, with the justifications I asked for | Decided the vocabulary (Blocked, Monitoring, Not blocked, Manually allowed) because "Allowed" alone conflates the system and a person; three confidence labels over a percentage; recency over spend as the default sort because spend is derived from mock cost; spend only with its calculation on the page and no protected-spend claim; no manual or bulk overrides in the core prototype, in my own words (D9); ratified the Monitoring-note rule the agent proposed (signals so far, why not blocked, never a tipping count); the sidebar as a system component with one live destination (D13) |
+| P1 scaffold | Proposed the branch plan, converted the ten components, wired Storybook and CI, wrote the deploy scripts | Chose TSX plus CSS modules over the export's inline styles so hover and focus live in CSS, style objects are not repeated across components, and one script proves there are no raw values in `src/`. Directed two new Vercel projects rather than reusing the old ones. Rejected the hand-written Vercel project id file; the script now resolves the project by name through the logged-in CLI. Accepted the four calls the agent flagged: one Default story per component in P1 with the matrix in P2, sidebar items beyond Threat monitoring shown but inert until P4, CI on Node 24 to match Vercel, and the exceeded time box (45 minutes planned, about two hours real) |
+| P2 stories | Proposed one story per meaningful state from the prompt files and the DS6 matrix, with story data written from the decisions' own example sentences instead of the kit fixtures. Produced 60 stories, interaction tests, and an a11y run that found two contrast failures inherited from the export | Directed it to proceed on the plan as written; D13 had settled the one open question. Merged with the contrast fix: the export promises 4.5:1 and did not meet it, so a darker ink and fill step for the accent honours the system's own contract rather than changing a decision. Accepted the flagged call that the primary button is now one indigo step darker than the sampled product colour |
+| P3 data | Proposed types that encode the mechanics, eight hand-authored golden cases, a seeded factory to 48 visitors, and reconciliation tests. Produced the decision engine, the golden cases, the factory, selectors and 82 tests | Directed it to merge P2 with a merge commit and move on; no further direction was needed because the data contract was already fixed in `decisions.md` (the golden-case list, D6, D7, D8, D9, D11). Accepted the flagged tuning: a fixed reference "now" so relative times are deterministic, and a monitoring threshold and a VPN rule tuned until the engine reaches the authored status on every golden case, with a test that keeps the filler consistent with the contract |
+| P4 prototype | Reported that the hard requirement (the prototype renders the Storybook library's components) held in substance but not in form, and recommended the workspace-package move. Produced `packages/ui` as `@clickguard/ui`, the table route with URL-held search, filters and header sorts, the visitor route led by the decision summary with the journey and evidence beneath, four system additions the screens needed (SearchField, FilterChip, SignalTag, SyncFlag), an override event and per-platform sync rows, the data-to-props adapters with tests, and the fix that ships Storybook as a prebuilt deployment | Directed the package move as the first P4 commit so the library dependency is visible by name. On review of the built table: "Why" became "Key evidence" as up to four concise labels with the sentence moved to the detail; "Decision confidence" replaces "Confidence" because bot probability is a visit-level measure; Monitoring rows always read Conflicting or Insufficient evidence; conversion is evidence like deliverability; each visit names form, deliverability and conversion with "Not submitted" rather than a blank; "Manually allowed" leaves the data and the filter until the override workflow is modelled; "observed" rather than "evaluated" because Not evaluated rows exist (D10a, D5 and D9 amendments). Set the column order to the investigation sequence with decision time inside Status and enforcement shown in the table only as an exception (D14). Accepted the flagged calls: eight columns with percentage widths and a 1120px table minimum; Status sorts by verdict then most recent decision so the block-time sort survives; loading and error table states unreachable because the data is local
+| P5 rationale | Not started | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Success criteria go into `docs/success-criteria.md` with where each is answered on the page |
 
-**Agent proposed** a branch plan after reading `CLAUDE.md`, `decisions.md` and `handoff.md`:
-scaffold and deployment first, then tokens, then the ten export components converted to TSX
-plus CSS modules, then a placeholder shell on the two routes from D2. It flagged one blocking
-question (reuse the previous build's two Vercel projects or create new ones) and listed its
-defaults for the rest.
+## Agent implementation notes
 
-**User directed:** create `clickguard-threat-monitoring` and
-`clickguard-threat-monitoring-storybook` as new Vercel projects. Accepted the defaults.
+Facts the agent recorded while building, kept because they explain choices a reader will meet
+in the code. Not decisions.
 
-**Agent produced:**
+### P1
 
-- Vite, React, TypeScript, React Router and lucide-react on the infra from the previous
+- Vite, React, TypeScript, React Router and lucide-react on the infrastructure from the previous
   build. Vitest pinned to the 4 line because the Storybook vitest addon does not yet accept 5.
-- Tokens adopted as-is from the export. Added component-size tokens (`--space-0`, icon
-  sizes, marker size, icon-button and icon-well sizes, skeleton height, collapsed sidebar
-  width, table min width, action column, narrow breakpoint) and `--border-width-strong` plus
-  `--radius-marker`, so no component carries a raw pixel. The narrow breakpoint has a numeric
-  twin in `tokens/breakpoints.ts` for the resize observer. A `.cg-visually-hidden` utility
-  lives in `base.css` for live regions and hidden headers.
-- `styles.css` no longer imports the Tailwind theme file (rule 7). Both Tailwind files stay
-  on disk as export layers.
-- `check:tokens` now walks all of `src/` and exempts only `src/ui/tokens/`. Stories are
-  included. The reviewed `token-ok` escape remains; P1 uses it zero times.
-- Ten components converted. Variants are data attributes; hover, active and focus live in
-  CSS; the `cg-*` class hooks from the export are dropped because the modules are the
-  stylesheet. Icon is a curated registry over lucide-react, typed as a union, so the bundle
-  carries only the glyphs in use. Four lucide names changed since the export
+- Tokens adopted as-is from the export. Component-size tokens added (`--space-0`, icon sizes,
+  marker size, icon-button and icon-well sizes, skeleton height, collapsed sidebar width, table
+  min width, action column, narrow breakpoint) plus `--border-width-strong` and `--radius-marker`,
+  so no component carries a raw pixel. The narrow breakpoint has a numeric twin in
+  `tokens/breakpoints.ts` for the resize observer. `.cg-visually-hidden` lives in `base.css` for
+  live regions and hidden headers.
+- `styles.css` no longer imports the Tailwind theme file (rule 7). Both Tailwind files stay on
+  disk as export layers.
+- `check:tokens` walks all of `src/` and exempts only `src/ui/tokens/`. Stories are included. The
+  reviewed `token-ok` escape remains; P1 uses it zero times.
+- Variants are data attributes; the `cg-*` class hooks from the export are dropped because the
+  modules are the stylesheet. Icon is a curated registry over lucide-react, typed as a union, so
+  the bundle carries only the glyphs in use. Four lucide names changed since the export
   (`circle-check`, `circle-plus`, `circle-minus`, `circle-help`, `funnel-x`,
   `circle-chevron-right`); the current names are used.
-- One Foundations story showing the token families, and one Default story per component so
-  each conversion is proven to render. The full story matrix is P2.
-- App shell: sidebar with the product's navigation groups, only Threat monitoring routable.
-  Routes `/threat-monitoring` and `/threat-monitoring/:visitorId` render placeholder panels.
-  `vercel.json` rewrites deep links to the SPA.
+- One Foundations story and one Default story per component, proving each conversion renders.
+- App shell: sidebar with the product's navigation groups, only Threat monitoring routable. The two
+  routes render placeholder panels. `vercel.json` rewrites deep links to the SPA.
 - Two Vercel projects. The root is linked to the prototype; Storybook deploys through
-  `scripts/deploy-storybook.mjs`, which resolves the second project by name through the CLI
-  and swaps in `vercel.storybook.json`. The first version needed a hand-written id file; the
-  user asked for that to go, so the script now links a throwaway temp directory instead. Vercel truncates auto-generated `.vercel.app` names at 35 characters, so the
-  full `clickguard-threat-monitoring-storybook.vercel.app` domain was added to the project by
-  hand; the truncated alias also still resolves. Vercel did not detect Vite on the first app
-  deploy, so `vercel.json` pins the framework, build command and output directory.
+  `scripts/deploy-storybook.mjs`, which resolves the second project by name and swaps in
+  `vercel.storybook.json`. Vercel truncates auto-generated `.vercel.app` names at 35 characters, so
+  the full `clickguard-threat-monitoring-storybook.vercel.app` domain was added by hand; the
+  truncated alias still resolves. Vercel did not detect Vite on the first app deploy, so
+  `vercel.json` pins the framework, build command and output directory.
 
-**Judgement calls the agent made and flagged:** stories in P1 (one per component); sidebar
-items beyond Threat monitoring shown but inert until P4 decides; CI on Node 24 to match
-Vercel; the time box (45 minutes) was exceeded because converting ten components with
-tokenised pixels is closer to two hours.
+### P2
 
-## P2. Stories
+- 60 stories across the ten components and Foundations. Fixtures in `src/ui/stories/` cover the
+  golden cases the components must show: block then sync, a paid click between the decision and
+  the exclusion becoming active, an organic return that converts after the block (worded as
+  conflicting evidence, not proof), a failed sync, and a single visit. Story data comes from the
+  decisions' example sentences, not the kit fixtures, which carried em dashes, verdict-changing
+  actions and an invented "prevented waste" figure.
+- Interaction tests with `storybook/test`: loading blocks the click, raw-value and visit-evidence
+  disclosures toggle `aria-expanded`, table sort updates `aria-sort` and the live region and
+  reorders rows, the row action fires on Enter with the visitor in its accessible name, the active
+  nav item carries `aria-current`.
+- The a11y addon fails the story run on violations. Two contrast failures inherited from the
+  export: the accent indigo as text (secondary buttons at 4.06:1, paid visit labels at 3.69:1 on
+  the canvas) and white on the accent (primary button at 4.06:1). Added `--action-primary-ink`
+  (indigo-700, 8.1:1 on white) for accent text and `--action-primary-fill` (indigo-600, 5.5:1 under
+  white) with hover and active steps for filled controls. The accent itself is unchanged for
+  surfaces, borders and the focus ring. Both Tailwind exports carry the new tokens.
+- `npm test` runs only the unit project; the Storybook browser project runs locally with
+  `npx vitest run --project storybook` because CI has no browsers installed. The Icon registry
+  story is the only "count" story; it exists so an unknown icon name is caught by TypeScript.
 
-**Agent proposed** one story per meaningful variant or state from the prompt files, the
-readme's component table and the DS6 matrix, with interaction tests where cheap, and story
-data hand-written from the decisions' own example sentences rather than the kit fixtures
-(which carry em dashes, verdict-changing actions and an invented "prevented waste" figure).
+### P3
 
-**User directed:** proceed with the next phase; D13 (the sidebar as a component) had landed on
-main, which settled the one open P1 question.
+- `types.ts`: visitor by IP; visits with per-visit location and device so a journey can show
+  inconsistency; paid-only platform, campaign and cost; a decision with the visit it followed, one
+  of three confidence labels, a plain-language summary and ranked evidence; a monitoring state with
+  the D8 note; exclusion sync as its own chronological events per platform (pending, delayed,
+  active, failed); room for a manual override (D9). Nothing derived is stored.
+- `engine.ts`: the mock decision model. Walks a journey cumulatively, decides at the first visit
+  over the line, writes evidence as sentences with raw values behind them. The internal score picks
+  the visit and is never stored or shown. Confidence is high only with an automation signal,
+  conflicting whenever contradictory evidence exists. A VPN with repeated paid clicks stays under
+  evaluation until a purchase.
+- `golden.ts`: the eight cases with authored outcomes, summaries and sync events; evidence lists
+  come from the shared writer so they cannot drift from the visits. Case 6 has a delayed sync and a
+  paid click in the gap. Case 5's summary says the later conversion is not by itself proof the
+  block was wrong (rule 10).
+- `factory.ts`: seeded filler to 48 visitors around the golden cases, judged by the same engine.
+  Syncs can be delayed or fail; a failed platform can still deliver paid clicks; no paid click
+  lands on a platform once its exclusion is active. One filler visitor carries a manual override so
+  the D3 vocabulary is complete on screen.
+- `selectors.ts`: display status, counts, exposure as a visible sum (absent when any cost is
+  missing), the table row, D7 sorts with undecided rows always last, filters by search, status,
+  traffic and platform, the merged journey for the timeline. `format.ts`: complete timestamps,
+  relative times from a fixed reference (2026-09-13T12:00Z), durations, money.
+- 82 tests: determinism, size, unique IPs, every status present, per-visitor reconciliation of
+  counts, timings, decision references, sync chains and the no-paid-after-active rule, each golden
+  case's contract, engine agreement with the golden cases, sorts, filters, journey order, and the
+  formatters. Paid-visit share in the filler is about 70 percent.
 
-**Agent produced:**
+### P4
 
-- 60 stories across the ten components and Foundations. Fixtures in `src/ui/stories/`
-  cover the golden cases the components must show: block then sync, a paid click between
-  the decision and the exclusion becoming active, an organic return that converts after the
-  block (worded as conflicting evidence, not proof), a failed sync, and a single visit.
-- Interaction tests with `storybook/test`: loading blocks the click, raw-value and
-  visit-evidence disclosures toggle `aria-expanded`, table sort updates `aria-sort` and the
-  live region and reorders rows, the row action fires on Enter with the visitor in its
-  accessible name, the active nav item carries `aria-current`.
-- The a11y addon set to fail the story test run on violations. Running every story in
-  Chromium found two contrast failures inherited from the export: the accent indigo as text
-  (secondary buttons at 4.06:1, paid visit labels at 3.69:1 on the canvas) and white on the
-  accent (primary button at 4.06:1). The export's own contract promises 4.5:1, so this is a
-  fix, not a new decision. Added `--action-primary-ink` (indigo-700, 8.1:1 on white) for
-  accent text and `--action-primary-fill` (indigo-600, 5.5:1 under white) with hover and
-  active steps for filled controls. The accent itself is unchanged for surfaces, borders and
-  the focus ring. Both Tailwind exports carry the new tokens.
-- `npm test` still runs only the unit project; the Storybook browser project runs locally
-  with `npx vitest run --project storybook` because CI has no browsers installed.
-
-**Judgement calls flagged:** the primary button is now one indigo step darker than the
-sampled product colour, for contrast. The Icon registry story is the only "count" story; it
-exists so an unknown icon name is caught by TypeScript, not by eye.
-
-## P3. Data
-
-**Agent proposed** types that encode the mechanics rather than describe them, eight
-hand-authored golden cases, a seeded factory to 48 visitors, and reconciliation tests for the
-claims the interface will make.
-
-**User directed:** merge P2 with a merge commit and move to P3. No further direction; the
-data contract is fully specified by `decisions.md` and the build plan's section 6.
-
-**Agent produced:**
-
-- `types.ts`: visitor by IP; visits with per-visit location and device so a journey can
-  show inconsistency; paid-only platform, campaign and cost; a decision with the visit it
-  followed, one of three confidence labels, a plain-language summary and ranked evidence; a
-  monitoring state with the D8 note; exclusion sync as its own chronological events per
-  platform (pending, delayed, active, failed); room for a manual override (D9). Nothing
-  derived is stored.
-- `engine.ts`: the mock decision model. It walks a journey cumulatively, decides at the
-  first visit over the line, and writes evidence as sentences. The internal score picks the
-  visit; it is never stored or shown. Confidence is high only with an automation signal,
-  conflicting whenever contradictory evidence exists. Monitoring notes follow the D8
-  template. A VPN with repeated paid clicks stays under evaluation until a purchase.
-- `golden.ts`: the eight cases with authored outcomes, summaries and sync events. Their
-  evidence lists come from the shared evidence writer, so they cannot drift from the visits.
-  Case 6 has a delayed sync and a paid click in the gap. Case 5's summary says the later
-  conversion is not by itself proof the block was wrong (rule 10).
-- `factory.ts`: seeded filler around the golden cases, judged by the same engine. Sync
-  events can be delayed or fail; a failed platform can still deliver paid clicks; no paid
-  click lands on a platform once its exclusion is active. One filler visitor carries a
-  manual override so the D3 vocabulary is complete on screen.
-- `selectors.ts`: display status, counts, exposure as a visible sum (null when any cost is
-  missing), the table row, D7 sorts with undecided rows always last, filters by search,
-  status, traffic and platform, and the merged journey for the timeline.
-- `format.ts`: complete timestamps, relative times from a fixed reference, durations.
-- 82 tests: determinism, size, unique IPs, every status present, per-visitor reconciliation
-  of counts, timings, decision references, sync chains and the no-paid-after-active rule,
-  each golden case's contract, engine agreement with the golden cases, sorts, filters,
-  the journey order, and the formatters.
-
-**Judgement calls flagged:** the reference "now" is fixed at 2026-09-13T12:00Z so relative
-times are deterministic. The monitoring threshold and the VPN rule were tuned so the engine
-reaches the authored status on every golden case; that test is what keeps the filler
-consistent with the contract. Paid-visit share in the filler is about 70 percent.
-
-## P4. Prototype
-
-**User directed:** first, confirm the hard requirement that the prototype imports and renders
-the components from the Storybook library. The agent reported that the substance held (one
-implementation, one entry point, no copies) but the form did not (a path alias, not a named
-package), and recommended the workspace-package move the build plan had anticipated. The user
-chose it as the first P4 commit.
-
-**Agent produced:**
-
-- `packages/ui` as the workspace package `@clickguard/ui`. The prototype depends on it by
-  name and imports `@clickguard/ui/styles.css`; Storybook documents the same source files.
-  TypeScript paths, Vite resolution and the token check point at the package. All gates and
-  the 60-story browser run passed unchanged after the move.
-- Two additions to the system because the app must not style controls itself (rule 9):
-  `SearchField` (native search input, always labelled, clear button) and `FilterChip` with
-  `FilterGroup` (aria-pressed toggles under a visible caption). The timeline gained an
-  `override` event type in the info tone so a manual override reads as a person's action in
-  the journey. Stories and interaction tests for each; 69 stories now pass with a11y as error.
-- A cell's second line in the table is now styled by the system as support text, so the app
-  passes two spans and makes no visual decision.
-- Table route: search by IP or location, status chips with counts, a traffic toggle, and
-  header sorting for recency (default), block time, visits, paid clicks and confidence (D7).
-  Undecided rows sink in either direction. Search, filters and sort live in the URL, so the
-  breadcrumb from a visitor restores the table as it was. The filtered-empty state names how
-  many filters are active and says an empty list is not a clean account.
-- Visitor route: the decision summary leads (criteria 1, 2, 4, 6), the journey sits directly
-  under it beside the evidence (criteria 3, 5, 7). Headline names the visit the decision
-  followed; the summary sentence is the data's own; the sync block reports the worst platform
-  state and whether paid clicks got through since; exposure is a visible sum with its
-  calculation in the evidence footnote (D6). Every visit carries its own signals; list items
-  link back to the visit they came from. Unknown addresses get an honest not-found state.
-- The shell starts collapsed below the narrow breakpoint so phones keep their width for the
-  stacked table.
-- `present.ts` holds the adapters from data to component props, with 10 unit tests.
-
-**Judgement calls flagged:** eight columns with percentage widths and a 1120px table minimum;
-narrower panels scroll the table horizontally, and below 760px it stacks. The table's "Why"
-column shows the full Monitoring note rather than a truncated preview, because the note is the
-only explanation of why the visitor is not blocked. Loading and error table states exist in
-the system but are not reachable in the prototype: the data is local and synchronous (out of
-scope in `decisions.md`).
-
-### P4 review, 13 Sep 2026
-
-**User found** the Storybook Vercel project serving the prototype. Cause: the CLI's local
-config only steers the CLI; Vercel's remote build reads the repository's own `vercel.json`,
-which belongs to the prototype. **Fix:** Storybook is built locally and shipped as a prebuilt
-deployment through Vercel's Build Output API, so no remote build runs and what renders
-locally is what ships. Verified: the live title is Storybook's and unknown paths return 404.
-
-**User directed** the table changes now recorded as D10a and the D5 and D9 amendments: "Why"
-becomes "Key evidence" with up to four concise labels per row and the sentence moves to the
-detail; "Decision confidence" replaces "Confidence"; Monitoring rows always read "Conflicting
-evidence" or "Insufficient evidence"; "Manually allowed" leaves the data and the filter until
-the override workflow is modelled; conversion joins deliverability as evidence; per-visit
-detail names form, deliverability and conversion explicitly with "Not submitted" where no form
-exists; the page description says "observed" because the table includes Not evaluated.
-
-**Agent produced:** a `label` on every evidence item from the engine, a `keySignals` selector
-that keeps the first mitigating signal visible in an ambiguous row, "No conversion" evidence
-when a form was submitted without a purchase, "No interaction" versus "Low interaction"
-from pointer movement, `SignalTag` in the system (neutral ink, info tone for mitigating,
-dashed for unavailable, never a status colour), the insufficient label in DecisionSummary, and
-the per-visit signal list. The rationale's "Signal placement" section is the user's text,
-lightly shortened, in `docs/rationale.md`.
-
-### Table column order, 13 Sep 2026
-
-**User directed** the column order now recorded as D14, with decision time inside the Status
-cell and platform state surfaced in the table only as an exception. The column rationale is
-the user's text in `docs/rationale.md`.
-
-**Agent produced:** `SyncFlag` in the system (amber for pending and delayed, red for failed,
-glyph plus text, shown only on exceptions), per-platform rows in `DecisionSummary` so a mixed
-picture such as Google Ads active and Meta Ads pending is never flattened, a short timestamp
-form for scanning ("11 Sep, 14:53"), and the Status column sorting by verdict and then most
-recent decision so the block-time sort from D7 survives the removal of the Decided column.
+- `src/ui` moved to `packages/ui` as the npm workspace package `@clickguard/ui`. The prototype
+  depends on it by name and imports `@clickguard/ui/styles.css`; Storybook reads the same source
+  files. TypeScript paths, Vite resolution and the token check point at the package. All gates
+  and the story run passed unchanged after the move.
+- System additions the screens needed, because the app may not style controls itself (rule 9):
+  `SearchField` (native search input, always labelled, clear button), `FilterChip` with
+  `FilterGroup` (aria-pressed toggles under a visible caption), `SignalTag` (neutral ink, info tone
+  for mitigating signals, dashed for unavailable, never a status colour), `SyncFlag` (amber for
+  pending and delayed, red for failed, glyph plus text, shown only on exceptions). The timeline
+  gained an `override` event type; `DecisionSummary` gained the Insufficient evidence label and
+  per-platform sync rows. A table cell's second line is system-styled support text, and table
+  headers wrap at word boundaries. 79 stories pass with a11y as error.
+- Table route: search by IP or location, status chips with counts, a traffic toggle, header sorts
+  for recency (default), status then most recent decision, visits, paid clicks and decision
+  confidence; undecided rows sink in either direction. Search, filters and sort live in the URL,
+  so the breadcrumb restores the table. Columns per D14 with percentage widths and a 1120px table
+  minimum; narrower panels scroll horizontally and below 760px the table stacks. The shell starts
+  collapsed below that breakpoint.
+- Every evidence item carries a scannable `label` from the engine; `keySignals` picks up to four
+  per row, primary first, then mitigating, then supporting, so an ambiguous row reads as
+  ambiguous. "No interaction" versus "Low interaction" comes from pointer movement; "No
+  conversion" appears when a form was submitted without a purchase. Monitoring confidence is
+  always `conflicting` or `insufficient`. No generated visitor carries a manual override.
+- Visitor route: headline names the visit the decision followed; the summary sentence is the
+  data's own; the sync block reports the worst platform state with one row per platform; exposure
+  is a visible sum with the calculation in the evidence footnote (D6). Each visit lists interaction
+  level, bot probability, VPN, network, form with deliverability, conversion, location and device,
+  and carries its own signals; list items link back to their visit. Unknown addresses get an
+  honest not-found state. `present.ts` holds the adapters with 18 unit tests.
+- Storybook on Vercel: the CLI's local config only steers the CLI, and Vercel's remote build reads
+  the repository's own `vercel.json`, which belongs to the prototype, so the Storybook project had
+  been serving the prototype. It is now built locally and shipped through the Build Output API as
+  a prebuilt deployment; no remote build runs. Verified by the live title and a 404 on unknown paths.
