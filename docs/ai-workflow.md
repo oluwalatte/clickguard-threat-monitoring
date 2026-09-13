@@ -21,6 +21,7 @@ Implementation is the agent's and is recorded as such; the brief expects that.
 | P3 data | Proposed types that encode the mechanics, eight hand-authored golden cases, a seeded factory to 48 visitors, and reconciliation tests. Produced the decision engine, the golden cases, the factory, selectors and 82 tests | Directed it to merge P2 with a merge commit and move on; no further direction was needed because the data contract was already fixed in `decisions.md` (the golden-case list, D6, D7, D8, D9, D11). Accepted the flagged tuning: a fixed reference "now" so relative times are deterministic, and a monitoring threshold and a VPN rule tuned until the engine reaches the authored status on every golden case, with a test that keeps the filler consistent with the contract |
 | P4 prototype | Reported that the hard requirement (the prototype renders the Storybook library's components) held in substance but not in form, and recommended the workspace-package move. Produced `packages/ui` as `@clickguard/ui`, the table route with URL-held search, filters and header sorts, the visitor route led by the decision summary with the journey and evidence beneath, four system additions the screens needed (SearchField, FilterChip, SignalTag, SyncFlag), an override event and per-platform sync rows, the data-to-props adapters with tests, and the fix that ships Storybook as a prebuilt deployment | Directed the package move as the first P4 commit so the library dependency is visible by name. On review of the built table: "Why" became "Key evidence" as up to four concise labels with the sentence moved to the detail; "Decision confidence" replaces "Confidence" because bot probability is a visit-level measure; Monitoring rows always read Conflicting or Insufficient evidence; conversion is evidence like deliverability; each visit names form, deliverability and conversion with "Not submitted" rather than a blank; "Manually allowed" leaves the data and the filter until the override workflow is modelled; "observed" rather than "evaluated" because Not evaluated rows exist (D10a, D5 and D9 amendments). Set the column order to the investigation sequence with decision time inside Status and enforcement shown in the table only as an exception (D14). Accepted the flagged calls: eight columns with percentage widths and a 1120px table minimum; Status sorts by verdict then most recent decision so the block-time sort survives; loading and error table states unreachable because the data is local
 | P4b shell and pagination | Explained why the sidebar footer and pagination were missing (the shell was a P1 placeholder never revisited; pagination was never decided), proposed the scope, and produced `AccountRow` and `Pagination` as system components with stories, the page slice as a selector with tests, and the URL-held page | Chose pages of 20 for laptop height (D15) and the workspace row content, "Latte's workspace" with latte@clickguard.com (D13 amendment) |
+| P4c filters | Confirmed the token rule holds (the check passes with no exceptions), compared the proposed toolbar with the built one, and named four product questions it left open: what a date range filters on, where Not evaluated goes, what deliverability and conversion mean for a visitor, and whether status stays multi-select. Produced `Select`, `Checkbox`, `FilterMenu` and `ActiveFilterChip` with `ActiveFilterBar` as system components with stories, the date range and secondary dimensions as selectors with tests, the chip derivation as an adapter with tests, and the recomposed toolbar with every filter still in the URL | Designed the toolbar: search, date range and status visible because they define the investigation set most often; the rest progressively disclosed in a Filters menu with removable chips; an All status so the whole list is one click away (D16). Chose any visit in range over last seen, kept Not evaluated as a fifth chip, set the exact labels "Submitted an invalid email at least once" and "Converted at least once" so a Converted slice never reads as proof of a false positive, and dropped multi-select status to keep the mode switch simple |
 | P5 rationale | Not started | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Success criteria go into `docs/success-criteria.md` with where each is answered on the page |
 
 ## Agent implementation notes
@@ -160,3 +161,28 @@ in the code. Not decisions.
   and active are CSS states; stories now drive each one through a play function (Button,
   FilterChip, SearchField, SidebarNav items, table rows and row actions, Pagination, the
   evidence disclosure) so the state is visible and checked rather than trusted. 98 stories.
+
+### P4c
+
+- Four system additions, because the app may not style controls itself (rule 9): `Select`
+  (native select, label visible by default or hidden with a leading glyph for the toolbar,
+  option text that reads on its own), `Checkbox` (native input, accent colour from the tokens,
+  label as the exact condition), `FilterMenu` (trigger carrying the active count, a non-modal
+  dialog that focuses its first control on open, closes on Escape, Done or a click outside, and
+  returns focus to the trigger) and `ActiveFilterChip` with `ActiveFilterBar` (an applied
+  filter with one action, remove, grouped under a caption with Clear all). `Button` gained a
+  `ref` prop so a composite can manage focus.
+- The row gained country, every visit time, "invalid email at least once" and "converted at
+  least once", all derived on read. `filterRows` takes one status, a date range with the
+  reference clock, and the six secondary dimensions; `countryOptions` lists the countries in
+  the data. Date presets are computed from `NOW`, so the slices are deterministic.
+- Every filter still lives in the URL: `q`, `range`, `status`, `traffic`, `platform`,
+  `country`, `confidence`, `email`, `converted`, beside `sort`, `dir` and `page`. Unknown
+  values are ignored rather than trusted. A chip's remove and the menu's control edit the same
+  parameter, so the two never disagree.
+- Status counts are scoped by everything except status, so each chip says what choosing it
+  would show, and All shows the size of the scoped list. The row-one Clear filters button went
+  away: each visible control resets itself, the chip bar clears the secondary filters, and the
+  empty state's action clears everything.
+- The Filters panel anchors to the trigger's left edge and is capped at three field widths, so
+  it stays on screen where the toolbar wraps.

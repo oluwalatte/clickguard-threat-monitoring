@@ -149,6 +149,15 @@ export interface VisitorRow extends Record<string, unknown> {
   signals: KeySignal[];
   platforms: AdPlatform[];
   sync: Partial<Record<AdPlatform, ExclusionEvent['state']>>;
+  /** The visitor's home country, for the country filter. */
+  country: string;
+  countryCode: string;
+  /** When every visit happened, so a date range can ask "any visit in range" (D16). */
+  visitTimes: string[];
+  /** Submitted an invalid email at least once (D16). */
+  invalidEmail: boolean;
+  /** Converted at least once (D16). Evidence of a purchase, never proof of a false positive. */
+  converted: boolean;
 }
 
 export function toRow(v: Visitor): VisitorRow {
@@ -172,6 +181,11 @@ export function toRow(v: Visitor): VisitorRow {
     signals: keySignals(v),
     platforms: platforms(v),
     sync,
+    country: v.location.country,
+    countryCode: v.location.countryCode,
+    visitTimes: v.visits.map((x) => x.occurredAt),
+    invalidEmail: v.visits.some((x) => x.formResult === 'invalid'),
+    converted: v.visits.some((x) => x.converted),
   };
 }
 
@@ -218,23 +232,55 @@ export function sortRows(rows: VisitorRow[], key: SortKey = 'recency', direction
 /** `paid`: at least one paid visit. `unpaid`: no paid visits at all. */
 export type TrafficFilter = 'any' | 'paid' | 'unpaid';
 
+/** D16: presets ending now, never a calendar. A visitor is in range when any visit is. */
+export type DateRange = 'all' | '24h' | '7d' | '30d';
+export const DATE_RANGES: DateRange[] = ['all', '24h', '7d', '30d'];
+const RANGE_MS: Record<Exclude<DateRange, 'all'>, number> = { '24h': 86400000, '7d': 7 * 86400000, '30d': 30 * 86400000 };
+
+/** The ISO instant a range starts at, or undefined for all time. */
+export function dateRangeStart(range: DateRange, now: string): string | undefined {
+  if (range === 'all') return undefined;
+  return new Date(new Date(now).getTime() - RANGE_MS[range]).toISOString();
+}
+
 export interface RowFilter {
   query?: string;
-  statuses?: DisplayStatus[];
+  /** One status at a time: the status row is a mode switch, not a multi-select (D16). */
+  status?: DisplayStatus;
+  range?: DateRange;
+  /** Required when `range` is set; the fixed reference clock in the prototype. */
+  now?: string;
   traffic?: TrafficFilter;
-  platforms?: AdPlatform[];
+  platform?: AdPlatform;
+  countryCode?: string;
+  confidence?: Confidence;
+  invalidEmail?: boolean;
+  converted?: boolean;
 }
 
 export function filterRows(rows: VisitorRow[], f: RowFilter): VisitorRow[] {
   const q = f.query?.trim().toLowerCase();
+  const start = f.range && f.now ? dateRangeStart(f.range, f.now) : undefined;
   return rows.filter((r) => {
     if (q && !r.ip.includes(q) && !r.location.toLowerCase().includes(q)) return false;
-    if (f.statuses && f.statuses.length && !f.statuses.includes(r.status)) return false;
+    if (f.status && r.status !== f.status) return false;
+    if (start && !r.visitTimes.some((t) => t >= start)) return false;
     if (f.traffic === 'paid' && r.paidVisits === 0) return false;
     if (f.traffic === 'unpaid' && r.paidVisits > 0) return false;
-    if (f.platforms && f.platforms.length && !r.platforms.some((p) => f.platforms!.includes(p))) return false;
+    if (f.platform && !r.platforms.includes(f.platform)) return false;
+    if (f.countryCode && r.countryCode !== f.countryCode) return false;
+    if (f.confidence && r.confidence !== f.confidence) return false;
+    if (f.invalidEmail && !r.invalidEmail) return false;
+    if (f.converted && !r.converted) return false;
     return true;
   });
+}
+
+/** The countries present in a set of rows, named and sorted, for a filter's options. */
+export function countryOptions(rows: VisitorRow[]): Array<{ code: string; name: string }> {
+  const seen = new Map<string, string>();
+  for (const r of rows) seen.set(r.countryCode, r.country);
+  return [...seen].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** Visits, the decision and the sync events merged into one chronological journey (D11). */

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import { Icon, type IconName } from '../Icon/Icon';
 import styles from './Button.module.css';
 
@@ -15,6 +15,8 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
+  /** React 19 ref as a prop, for composites that manage focus (FilterMenu). */
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export function Button({

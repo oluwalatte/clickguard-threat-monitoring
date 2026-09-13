@@ -1,0 +1,39 @@
+.root {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-2);
+  row-gap: var(--space-0);
+  align-items: start;
+}
+
+.input {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  margin: 0;
+  margin-top: var(--space-0);
+  accent-color: var(--action-primary);
+  cursor: pointer;
+}
+
+.label {
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.description {
+  grid-column: 2;
+  margin: 0;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-secondary);
+}
+
+.root[data-disabled] .input,
+.root[data-disabled] .label {
+  cursor: not-allowed;
+}
+.root[data-disabled] .label {
+  color: var(--action-disabled-text);
+}

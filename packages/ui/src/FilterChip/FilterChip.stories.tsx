@@ -51,6 +51,43 @@ export const Group: Story = {
   },
 };
 
+/* D16: status is a mode switch. One chip is pressed at a time and All returns to the whole list. */
+function StatusModeSwitch() {
+  const [mode, setMode] = useState('all');
+  const options: Array<[string, string, number]> = [
+    ['all', 'All', 48],
+    ['blocked', 'Blocked', 14],
+    ['monitoring', 'Monitoring', 9],
+    ['not-blocked', 'Not blocked', 20],
+    ['not-evaluated', 'Not evaluated', 5],
+  ];
+  return (
+    <FilterGroup label="Status">
+      {options.map(([k, label, count]) => (
+        <FilterChip key={k} pressed={mode === k} onToggle={() => setMode(k)} count={count}>
+          {label}
+        </FilterChip>
+      ))}
+    </FilterGroup>
+  );
+}
+
+export const SingleSelectWithAll: Story = {
+  render: () => <StatusModeSwitch />,
+  play: async ({ canvasElement }) => {
+    const group = within(within(canvasElement).getByRole('group', { name: 'Status' }));
+    const all = group.getByRole('button', { name: /^all/i });
+    const blocked = group.getByRole('button', { name: /blocked 14/i });
+    await expect(all).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(blocked);
+    await expect(blocked).toHaveAttribute('aria-pressed', 'true');
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(all);
+    await expect(all).toHaveAttribute('aria-pressed', 'true');
+    await expect(blocked).toHaveAttribute('aria-pressed', 'false');
+  },
+};
+
 export const Hover: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.hover(within(canvasElement).getByRole('button'));

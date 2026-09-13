@@ -21,9 +21,11 @@ import {
   syncByPlatform,
   type AdPlatform,
   type Confidence,
+  type DateRange,
   type DisplayStatus,
   type Evidence,
   type ExclusionEvent,
+  type TrafficFilter,
   type Visit,
   type Visitor,
 } from '@/data';
@@ -63,6 +65,56 @@ export const STATUS_FILTERS: Array<{ value: DisplayStatus; label: string }> = [
   { value: 'not-blocked', label: 'Not blocked' },
   { value: 'not-evaluated', label: 'Not evaluated' },
 ];
+
+/* D16: the toolbar. Search, date range and status stay visible; the rest sits in a Filters
+   menu and shows as removable chips while applied. Option text must read on its own because
+   the toolbar select hides its label. */
+export const DATE_RANGE_OPTIONS: Array<{ value: DateRange; label: string }> = [
+  { value: 'all', label: 'All time' },
+  { value: '24h', label: 'Last 24 hours' },
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+];
+export const TRAFFIC_OPTIONS: Array<{ value: TrafficFilter; label: string }> = [
+  { value: 'any', label: 'Any traffic' },
+  { value: 'paid', label: 'Has paid clicks' },
+  { value: 'unpaid', label: 'No paid clicks' },
+];
+export const PLATFORM_OPTIONS: Array<{ value: AdPlatform | ''; label: string }> = [
+  { value: '', label: 'Any platform' },
+  { value: 'google-ads', label: PLATFORM_LABEL['google-ads'] },
+  { value: 'meta-ads', label: PLATFORM_LABEL['meta-ads'] },
+];
+export const CONFIDENCE_OPTIONS: Array<{ value: Confidence | ''; label: string }> = [
+  { value: '', label: 'Any confidence' },
+  ...(['high', 'moderate', 'conflicting', 'insufficient'] as Confidence[]).map((c) => ({ value: c, label: CONFIDENCE_LABEL_MAP[c] })),
+];
+/* Exact labels (D16): a Converted slice is evidence of a purchase, never proof a block was wrong (rule 10). */
+export const INVALID_EMAIL_LABEL = 'Submitted an invalid email at least once';
+export const CONVERTED_LABEL = 'Converted at least once';
+
+export type SecondaryKey = 'traffic' | 'platform' | 'country' | 'confidence' | 'email' | 'converted';
+
+export interface SecondaryFilters {
+  traffic: TrafficFilter;
+  platform?: AdPlatform;
+  countryCode?: string;
+  confidence?: Confidence;
+  invalidEmail: boolean;
+  converted: boolean;
+}
+
+/** The applied secondary filters as chips, in the menu's own order, each removable by key. */
+export function activeFilterChips(f: SecondaryFilters, countryName: (code: string) => string): Array<{ key: SecondaryKey; label: string }> {
+  const chips: Array<{ key: SecondaryKey; label: string }> = [];
+  if (f.traffic !== 'any') chips.push({ key: 'traffic', label: TRAFFIC_OPTIONS.find((o) => o.value === f.traffic)!.label });
+  if (f.platform) chips.push({ key: 'platform', label: PLATFORM_LABEL[f.platform] });
+  if (f.countryCode) chips.push({ key: 'country', label: `Country: ${countryName(f.countryCode)}` });
+  if (f.confidence) chips.push({ key: 'confidence', label: CONFIDENCE_LABEL_MAP[f.confidence] });
+  if (f.invalidEmail) chips.push({ key: 'email', label: INVALID_EMAIL_LABEL });
+  if (f.converted) chips.push({ key: 'converted', label: CONVERTED_LABEL });
+  return chips;
+}
 
 /** The visit a decision followed, 1-based, and the journey length. */
 export function decisionPosition(v: Visitor): { after: number; of: number } | undefined {

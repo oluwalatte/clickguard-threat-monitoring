@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GOLDEN_CASES, generateVisitors, toRow } from '@/data';
-import { evidenceFootnote, explanation, exposureLine, headline, syncException, syncSummary, toEvidenceItems, toStatusKind, toTimelineItems, visitorDescription } from './present';
+import { CONVERTED_LABEL, INVALID_EMAIL_LABEL, activeFilterChips, evidenceFootnote, explanation, exposureLine, headline, syncException, syncSummary, toEvidenceItems, toStatusKind, toTimelineItems, visitorDescription } from './present';
 
 const golden = (n: number) => GOLDEN_CASES.find((g) => g.goldenCase === n)!;
 const visitors = generateVisitors();
@@ -96,5 +96,22 @@ describe('each visit shows the exact signal, never a blank', () => {
 describe('the header line', () => {
   it('reads as a sentence with complete facts', () => {
     expect(visitorDescription(golden(1))).toBe('Frankfurt, Hesse, Germany. Datacenter network. 5 visits, 4 paid. first seen 11 Sep 2026, last seen 27 hours ago.');
+  });
+});
+
+describe('the secondary filters show as chips (D16)', () => {
+  const name = (code: string) => ({ DE: 'Germany', US: 'United States' })[code] ?? code;
+  it('shows nothing when nothing is applied', () => {
+    expect(activeFilterChips({ traffic: 'any', invalidEmail: false, converted: false }, name)).toEqual([]);
+  });
+  it('names each applied filter in the menu order with the exact labels', () => {
+    const chips = activeFilterChips({ traffic: 'paid', platform: 'google-ads', countryCode: 'DE', confidence: 'conflicting', invalidEmail: true, converted: true }, name);
+    expect(chips.map((c) => c.key)).toEqual(['traffic', 'platform', 'country', 'confidence', 'email', 'converted']);
+    expect(chips.map((c) => c.label)).toEqual(['Has paid clicks', 'Google Ads', 'Country: Germany', 'Conflicting evidence', INVALID_EMAIL_LABEL, CONVERTED_LABEL]);
+  });
+  it('never describes conversion as proof of anything', () => {
+    expect(CONVERTED_LABEL).toBe('Converted at least once');
+    expect(INVALID_EMAIL_LABEL).toBe('Submitted an invalid email at least once');
+    expect(`${CONVERTED_LABEL} ${INVALID_EMAIL_LABEL}`).not.toMatch(/legitimate|false positive|wrong|safe/i);
   });
 });
