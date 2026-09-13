@@ -42,6 +42,27 @@
   width: var(--table-action-col);
 }
 
+/* The action column pins to the right edge of the scroll area, so the only way to open a row
+   stays in view while the middle columns scroll under it. It paints its own background and a
+   left edge because sticky cells float over the scrolled content. */
+.th[data-action],
+.cell[data-action] {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  border-left: var(--border-width) solid var(--border-default);
+}
+.th[data-action] {
+  background: var(--surface-subtle);
+}
+.cell[data-action] {
+  background: var(--surface-panel);
+  transition: var(--transition-control);
+}
+.row[data-activatable]:hover .cell[data-action] {
+  background: var(--surface-hover);
+}
+
 .thLabel,
 .sortButton {
   display: inline-flex;

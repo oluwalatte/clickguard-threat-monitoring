@@ -125,7 +125,7 @@ function TableRow<Row extends Record<string, unknown>>({
         </td>
       ))}
       {onActivate ? (
-        <td className={styles.cell} data-align="right">
+        <td className={styles.cell} data-align="right" data-action>
           <button type="button" onClick={onActivate} aria-label={actionLabel + (rowName ? `: ${rowName}` : '')} className={styles.action}>
             <Icon name="arrow-right" size="sm" />
           </button>
@@ -279,7 +279,7 @@ export function ThreatTable<Row extends Record<string, unknown>>({
                           <Skeleton wide={j === 0} />
                         </td>
                       ))}
-                      {onRowActivate ? <td className={styles.cell} /> : null}
+                      {onRowActivate ? <td className={styles.cell} data-action /> : null}
                     </tr>
                   ))
                 : sorted.map((row, i) => (

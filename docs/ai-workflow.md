@@ -206,3 +206,7 @@ in the code. Not decisions.
   `min-width: 0`, so a fixed-layout column never lets a long value overlap the next one.
 - `--border-hover` joins the tokens (the same grey the fields already used) so no component
   borrows `--text-muted` for a border. Exported to both Tailwind layers.
+- The action column is sticky to the right edge of the table's scroll area, with its own
+  background and a left edge, so the only way to open a row stays in view on the widths where
+  the table scrolls sideways (between the stacked breakpoint and the table minimum). Pinning
+  the Visitor column on the left is deferred to the QA pass.
