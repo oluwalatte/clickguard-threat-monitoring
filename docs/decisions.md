@@ -228,7 +228,9 @@ primary style, mitigating ones the info tone.
 Rejected: every field on every visit (forty facts before the reader knows which visit
 mattered), a one-line ledger (loses the narrative line), and colouring change tags amber or
 red (those colours are Monitoring and Blocked).
-The page-level hierarchy around the journey is a separate decision, still open.
+The page-level hierarchy explored in `docs/explorations/detail-options.html` was not taken up
+(13 Sep 2026): the two-column detail stays as built, with this row inside it. The canvas remains
+as the record of what was considered.
 
 ## Out of scope
 Dashboard screen, manual and bulk overrides (D9), a calendar date picker (D16), dark theme,
