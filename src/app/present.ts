@@ -208,8 +208,11 @@ export function syncPlatforms(v: Visitor): SyncPlatformRow[] {
         return { name, state: e.state, detail: `since ${formatTimestamp(e.at)}, ${formatLater(v.decision!.madeAt, e.at).replace(' later', ' after the decision')}` };
       case 'pending':
         return { name, state: e.state, detail: `queued ${formatRelative(e.at, NOW)}` };
-      case 'delayed':
-        return { name, state: e.state, detail: `not confirmed ${formatDuration(new Date(NOW).getTime() - new Date(e.at).getTime())} after it was queued` };
+      case 'delayed': {
+        /* Measured from the queue, not from the moment it was marked delayed. */
+        const queued = v.exclusionEvents.find((x) => x.platform === platform && x.state === 'pending')?.at ?? e.at;
+        return { name, state: e.state, detail: `not confirmed ${formatDuration(new Date(NOW).getTime() - new Date(queued).getTime())} after it was queued` };
+      }
       case 'failed':
         return { name, state: e.state, detail: `rejected the exclusion ${formatRelative(e.at, NOW)}` };
     }

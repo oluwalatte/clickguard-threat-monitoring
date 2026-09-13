@@ -23,6 +23,7 @@ Implementation is the agent's and is recorded as such; the brief expects that.
 | P4b shell and pagination | Explained why the sidebar footer and pagination were missing (the shell was a P1 placeholder never revisited; pagination was never decided), proposed the scope, and produced `AccountRow` and `Pagination` as system components with stories, the page slice as a selector with tests, and the URL-held page | Chose pages of 20 for laptop height (D15) and the workspace row content, "Latte's workspace" with latte@clickguard.com (D13 amendment) |
 | P4c filters | Confirmed the token rule holds (the check passes with no exceptions), compared the proposed toolbar with the built one, and named four product questions it left open: what a date range filters on, where Not evaluated goes, what deliverability and conversion mean for a visitor, and whether status stays multi-select. Produced `Select`, `Checkbox`, `FilterMenu` and `ActiveFilterChip` with `ActiveFilterBar` as system components with stories, the date range and secondary dimensions as selectors with tests, the chip derivation as an adapter with tests, and the recomposed toolbar with every filter still in the URL | Designed the toolbar: search, date range and status visible because they define the investigation set most often; the rest progressively disclosed in a Filters menu with removable chips; an All status so the whole list is one click away (D16). Chose any visit in range over last seen, kept Not evaluated as a fifth chip, set the exact labels "Submitted an invalid email at least once" and "Converted at least once" so a Converted slice never reads as proof of a false positive, and dropped multi-select status to keep the mode switch simple |
 | P4d system audit | Audited every component and story in Storybook on review. Found and fixed: the disabled search field looked enabled and still offered its clear button; four stories whose interaction test left them in a state that contradicted their name (search field with value, checked checkbox, chips in a bar), so pairs of stories looked identical; the select's option list opened as the platform's own picker rather than under the field; long unbreakable table values (an IPv6 address) ran under the next column; and two fields borrowed a text token for their hover border | Directed the audit and named the first three. Chose wrapping over an ellipsis for long identifiers, on the agent's flag that hiding the end of an IPv6 hides the part that tells visitors apart |
+| P4e sync tuning | On the data audit, reported that pending and delayed sync existed in the golden cases and stories but never at the reference clock in the generated data, because every chain had resolved to active or failed. Tuned the factory so the first two click farms are caught mid-sync: their journeys slide to end minutes before the clock, one inside the confirmation window and one past the 15-minute mark, with anything after the clock dropped. Added a test that pins both states and that nothing is dated after the clock | Directed the tuning so the enforcement gap (D11) is visible in the table without opening a golden case |
 | P5 rationale | Not started | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Success criteria go into `docs/success-criteria.md` with where each is answered on the page |
 
 ## Agent implementation notes
@@ -210,3 +211,16 @@ in the code. Not decisions.
   background and a left edge, so the only way to open a row stays in view on the widths where
   the table scrolls sideways (between the stacked breakpoint and the table minimum). Pinning
   the Visitor column on the left is deferred to the QA pass.
+
+### P4e
+
+- `generateOne` takes an optional mid-sync mode. The chain is generated with confirmation
+  ahead of the clock (pending: active 14 to 20 minutes after queueing; delayed: a delayed event
+  at 15 minutes and active 30 to 60 minutes after that), then the whole journey slides so the
+  decision sits 4 to 11 minutes before the clock for pending and 22 to 40 for delayed. Visits
+  after the decision and events after the clock are dropped, so nothing is dated in the future
+  and the decision still follows the last visit. The evaluation runs on the shifted visits, so
+  the decision time is consistent with the events.
+- The two are the first two click farms in the archetype mix, so the seed decides which IPs.
+  Consuming different random numbers moved the rest of the filler slightly: the same 48 rows
+  and status counts, one fewer Moderate confidence row (one remains, golden case 7).

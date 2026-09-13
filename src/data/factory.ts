@@ -96,12 +96,28 @@ function shapeFor(r: Rng, a: Archetype, i: number, keyword: string, device: Devi
   }
 }
 
-function syncEventsFor(r: Rng, platforms: AdPlatform[], decidedAtMs: number, id: string): ExclusionEvent[] {
+/** A blocked visitor caught mid-sync: the journey ends minutes before the reference clock, so
+ *  the exclusion is still pending (queued, unconfirmed) or delayed (unconfirmed after 15 minutes)
+ *  when the table is read. Both are real states of the mechanics (D10, D11). */
+type MidSync = 'pending' | 'delayed';
+
+function syncEventsFor(r: Rng, platforms: AdPlatform[], decidedAtMs: number, id: string, midSync?: MidSync): ExclusionEvent[] {
   const out: ExclusionEvent[] = [];
   platforms.forEach((platform, k) => {
     const name = platform === 'google-ads' ? 'Google Ads' : 'Meta Ads';
     const queued = decidedAtMs + 2000 + k * 1000;
     out.push({ id: `${id}-s${k}-p`, platform, state: 'pending', at: new Date(queued).toISOString(), note: `${name} exclusion queued. Blocking begins when the platform confirms it.` });
+    if (midSync === 'pending') {
+      /* Confirmation is still ahead of the clock; the event is trimmed as future by the caller. */
+      out.push({ id: `${id}-s${k}-a`, platform, state: 'active', at: new Date(queued + between(r, 14, 20) * 60000).toISOString(), note: `${name} confirmed the exclusion.` });
+      return;
+    }
+    if (midSync === 'delayed') {
+      const delayedAt = queued + 15 * 60000;
+      out.push({ id: `${id}-s${k}-d`, platform, state: 'delayed', at: new Date(delayedAt).toISOString(), note: `${name} had not confirmed the exclusion after 15 minutes. Paid clicks can still reach the site.` });
+      out.push({ id: `${id}-s${k}-a`, platform, state: 'active', at: new Date(delayedAt + between(r, 30, 60) * 60000).toISOString(), note: `${name} confirmed the exclusion.` });
+      return;
+    }
     const roll = r();
     if (platform === 'meta-ads' && roll < 0.3) {
       out.push({ id: `${id}-s${k}-f`, platform, state: 'failed', at: new Date(queued + between(r, 2, 6) * 60000).toISOString(), note: `${name} rejected the exclusion request twice. This visitor can still reach the site through ${name}.` });
@@ -118,7 +134,7 @@ function syncEventsFor(r: Rng, platforms: AdPlatform[], decidedAtMs: number, id:
   return out;
 }
 
-function generateOne(r: Rng, a: Archetype, taken: Set<string>): Visitor {
+function generateOne(r: Rng, a: Archetype, taken: Set<string>, midSync?: MidSync): Visitor {
   const isDc = a === 'clickfarm' && r() < 0.85;
   const location = isDc ? pick(r, DATACENTER_LOCATIONS) : pick(r, ALL_LOCATIONS);
   const networkType: NetworkType = isDc ? 'datacenter' : a === 'corporate' ? 'corporate' : r() < 0.3 ? 'mobile' : 'residential';
@@ -175,7 +191,7 @@ function generateOne(r: Rng, a: Archetype, taken: Set<string>): Visitor {
       const ev = evaluate(visits, ctx);
       if (ev.status === 'blocked') {
         decisionIndex = i;
-        exclusionEvents = syncEventsFor(r, [...new Set(visits.flatMap((x) => (x.platform ? [x.platform] : [])))], t, id);
+        exclusionEvents = syncEventsFor(r, [...new Set(visits.flatMap((x) => (x.platform ? [x.platform] : [])))], t, id, midSync);
         /* Skip ahead so only a few post-decision returns are emitted. */
         const after = Math.floor(between(r, 0, 3.5));
         i = Math.max(i, n - 1 - after);
@@ -184,6 +200,20 @@ function generateOne(r: Rng, a: Archetype, taken: Set<string>): Visitor {
         t = Math.max(t, lastEvent ? new Date(lastEvent.at).getTime() : t) + between(r, 60, 2000) * 60000;
       }
     }
+  }
+
+  if (midSync && decisionIndex >= 0) {
+    /* Slide the whole journey so the decision sits minutes before the clock: inside the
+       confirmation window for pending, past the 15-minute mark but before confirmation for
+       delayed. Anything after the clock has not happened yet and is dropped. */
+    const nowMs = new Date(NOW).getTime();
+    const ageMin = midSync === 'pending' ? between(r, 4, 11) : between(r, 22, 40);
+    const delta = nowMs - ageMin * 60000 - new Date(visits[decisionIndex].occurredAt).getTime();
+    const shift = (iso: string) => new Date(new Date(iso).getTime() + delta).toISOString();
+    for (const v of visits) v.occurredAt = shift(v.occurredAt);
+    for (const e of exclusionEvents) e.at = shift(e.at);
+    visits.splice(decisionIndex + 1);
+    exclusionEvents = exclusionEvents.filter((e) => e.at <= NOW);
   }
 
   const evaluation = evaluate(visits, ctx);
@@ -213,7 +243,10 @@ export function generateVisitors(seed = DEFAULT_SEED, count = DEFAULT_COUNT): Vi
   while (mix.length < fillerCount) mix.push('shopper');
   mix.length = fillerCount;
 
-  const filler = mix.map((a) => generateOne(r, a, taken));
+  /* The first two click farms are caught mid-sync, one pending and one delayed, so the table
+     shows the gap between the decision and the exclusion becoming active (D11). */
+  let farms = 0;
+  const filler = mix.map((a) => generateOne(r, a, taken, a === 'clickfarm' && farms < 2 ? (farms++ === 0 ? 'pending' : 'delayed') : undefined));
 
   /* No manual override is generated: the override workflow is not modelled (D9), so the
      vocabulary stays in the types and the badge but not in the data (amended 13 Sep 2026). */

@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { evaluate } from './engine';
 import { GOLDEN_CASES } from './golden';
 import { DEFAULT_COUNT, generateVisitors } from './factory';
-import { counts, evidenceFor, exclusionActiveAt, exposure, firstSeen, keySignals, lastSeen, paidClicksSinceActive, summarizeStatuses } from './selectors';
+import { counts, evidenceFor, exclusionActiveAt, exposure, firstSeen, keySignals, lastSeen, paidClicksSinceActive, summarizeStatuses, syncByPlatform } from './selectors';
+import { NOW } from './builders';
 import type { Visitor } from './types';
 
 const ms = (iso: string) => new Date(iso).getTime();
@@ -232,6 +233,24 @@ describe('the generated filler shows the mechanics', () => {
     expect(states).toContain('failed');
     expect(states).toContain('delayed');
     expect(visitors.filter((v) => v.manualOverride).length).toBe(0);
+  });
+  it('catches one visitor with the exclusion still pending and one still delayed at the clock', () => {
+    const latest = (v: Visitor) => Object.values(syncByPlatform(v)).map((e) => e.state);
+    const pending = visitors.filter((v) => latest(v).includes('pending'));
+    const delayed = visitors.filter((v) => latest(v).includes('delayed'));
+    expect(pending.length).toBeGreaterThanOrEqual(1);
+    expect(delayed.length).toBeGreaterThanOrEqual(1);
+    for (const v of [...pending, ...delayed]) {
+      expect(v.status).toBe('blocked');
+      /* Caught mid-sync means the decision is minutes old, nothing is dated after the clock, and
+         the decision still follows the last visit. */
+      const age = new Date(NOW).getTime() - new Date(v.decision!.madeAt).getTime();
+      expect(age).toBeGreaterThan(0);
+      expect(age).toBeLessThan(60 * 60000);
+      for (const e of v.exclusionEvents) expect(e.at <= NOW).toBe(true);
+      for (const x of v.visits) expect(x.occurredAt <= NOW).toBe(true);
+      expect(v.decision!.afterVisitId).toBe(v.visits[v.visits.length - 1].id);
+    }
   });
   it('gives every evidence item a plain sentence and most of them a scannable label', () => {
     for (const v of visitors) {

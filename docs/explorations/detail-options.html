@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threat Monitoring · Visitor detail · two hierarchies</title>
+<style>
+  /* Exploration canvas. Tokens copied from packages/ui/src/tokens so this file stands alone; it is an input to a decision, never the system. */
+  :root{
+    --navy-900:#111553;--navy-800:#21245e;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-550:#656b78;--gray-600:#4b5563;
+    --indigo-50:#eeedfe;--indigo-200:#cecbff;--indigo-500:#7169ff;--indigo-600:#554cfd;--indigo-700:#2d37d1;
+    --red-50:#fdeeec;--red-100:#f7d3cf;--red-500:#d6453d;--red-800:#9e2a22;--amber-50:#fdf8e7;--amber-100:#f7e8b8;--amber-500:#d99b13;--amber-800:#7a5406;
+    --green-50:#edfcf3;--green-100:#cef0da;--green-500:#22c55e;--green-800:#097348;--blue-50:#eff4ff;--blue-100:#d6e2ff;--blue-700:#1d4ed8;
+    --sans:"Host Grotesk",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --s0:2px;--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--r-xs:4px;--r-sm:6px;--r-md:8px;--r-lg:12px;--r-xl:16px;--hair:1px;
+  }
+  @import url("https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700&display=swap");
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--gray-100);color:var(--navy-900);font:14px/21px var(--sans);padding:var(--s7) var(--s6);font-variant-numeric:tabular-nums}
+  a{color:var(--indigo-700);text-decoration:none}
+  .kicker{margin:0 0 var(--s2);font:600 12px/16px var(--sans);color:var(--gray-550);text-transform:uppercase;letter-spacing:.04em}
+  h1{margin:0 0 var(--s3);font:600 28px/34px var(--sans);letter-spacing:-.02em}
+  .brief{margin:0 0 var(--s6);max-width:80ch;color:var(--gray-600)}
+  .grid{display:grid;grid-template-columns:repeat(2,1120px);gap:var(--s7);align-items:start}
+  .opt{display:flex;flex-direction:column;gap:var(--s3)}
+  .opt-kicker{margin:0;font:500 12px/16px var(--mono);color:var(--gray-550)}
+  .opt-name{margin:0;font:600 20px/28px var(--sans)}
+  .opt-thesis{margin:0;color:var(--gray-600);max-width:90ch}
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4);font-size:13px;line-height:19px;max-width:100ch}
+  .pc div{margin:0}.pc b{display:block;font-weight:600;color:var(--gray-550);font-size:12px;margin-bottom:var(--s1);text-transform:uppercase;letter-spacing:.04em}
+  .pc ul{margin:0;padding-left:18px}
+  .mock{background:var(--gray-100);border:var(--hair) dashed var(--gray-300);border-radius:var(--r-xl);padding:var(--s5);display:flex;flex-wrap:wrap;gap:var(--s6);align-items:flex-start}
+  .page{flex:none;width:1040px;background:var(--gray-100);display:flex;flex-direction:column;gap:var(--s4);font-size:13px;line-height:19px}
+  .page.narrow{width:375px;padding:var(--s3);gap:var(--s3)}
+  .panel{background:#fff;border:var(--hair) solid var(--gray-200);border-radius:var(--r-xl);padding:var(--s5)}
+  .narrow .panel{padding:var(--s4)}
+  .back{font-weight:600;font-size:13px}
+  .title{margin:var(--s2) 0 0;font:600 24px/32px var(--sans);letter-spacing:-.01em}
+  .ipid{font:500 15px/22px var(--mono);color:var(--gray-600);margin-top:var(--s0)}
+  .meta{color:var(--gray-550);font-size:13px;margin-top:var(--s1)}
+  .meta span+span::before{content:" · ";color:var(--gray-400)}
+  .badge{display:inline-flex;align-items:center;gap:var(--s2);padding:var(--s1) var(--s3);border-radius:var(--r-sm);border:var(--hair) solid;font-weight:600;font-size:13px;line-height:19px}
+  .badge::before{content:"";width:8px;height:8px;background:currentColor;border-radius:1px}
+  .badge.blocked{color:var(--red-800);background:var(--red-50);border-color:var(--red-100)}
+  .badge.monitoring{color:var(--amber-800);background:var(--amber-50);border-color:var(--amber-100)}.badge.monitoring::before{transform:rotate(45deg)}
+  .verdict{margin:var(--s3) 0 var(--s2);font:600 22px/30px var(--sans);letter-spacing:-.01em}
+  .narrow .verdict{font-size:19px;line-height:26px}
+  .explain{margin:0;font-size:15px;line-height:24px;max-width:72ch}
+  .explain b{font-weight:600}
+  .conf{margin-top:var(--s4);padding:var(--s3) var(--s4);border-left:3px solid var(--amber-500);background:var(--amber-50);border-radius:0 var(--r-md) var(--r-md) 0}
+  .conf b{display:block;color:var(--amber-800);font-weight:600}
+  .conf p{margin:var(--s0) 0 0;color:var(--gray-600)}
+  .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s4);margin-top:var(--s4);padding-top:var(--s4);border-top:var(--hair) solid var(--gray-200)}
+  .narrow .facts{grid-template-columns:1fr 1fr}
+  .fact .l{font:600 11px/16px var(--sans);color:var(--gray-550);text-transform:uppercase;letter-spacing:.04em}
+  .fact .v{font-weight:500;color:var(--navy-900);margin-top:var(--s0)}
+  .fact .v .mono{font-family:var(--mono);font-size:12px}
+  .info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;border:var(--hair) solid var(--gray-400);color:var(--gray-550);font-size:10px;font-weight:700;vertical-align:middle;margin-left:var(--s1)}
+  .ttip{display:inline-block;margin-top:var(--s1);padding:var(--s1) var(--s2);border-radius:var(--r-sm);background:var(--navy-900);color:#fff;font-size:11px;line-height:16px}
+  .ttip::before{content:"tooltip · ";color:var(--gray-400)}
+  .notice{display:grid;grid-template-columns:auto 1fr auto;gap:var(--s3);align-items:start;padding:var(--s3) var(--s4);border:var(--hair) solid var(--red-100);background:var(--red-50);border-radius:var(--r-md);color:var(--red-800)}
+  .notice .g{font-weight:700}
+  .notice b{display:block;font-weight:600}
+  .notice p{margin:0;color:var(--gray-600)}
+  .notice a{white-space:nowrap;font-weight:600}
+  .details{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;gap:var(--s0) var(--s4);padding-top:var(--s2);border-top:var(--hair) solid var(--red-100);font-size:12px;color:var(--gray-600)}
+  .details dt{font-weight:600;color:var(--gray-550)}.details dd{margin:0;color:var(--navy-900)}
+  .cols{display:grid;grid-template-columns:65fr 35fr;gap:var(--s4);align-items:start}
+  .h3{margin:0 0 var(--s2);font:600 15px/22px var(--sans)}
+  .cap{color:var(--gray-550);font-size:12px}
+  .hrow{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s2);margin-bottom:var(--s3)}
+  .group{margin-top:var(--s3)}
+  .group .gh{font:600 11px/16px var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--gray-550);margin-bottom:var(--s1)}
+  .group.tip .gh{color:var(--red-800)}
+  .group.weak .gh{color:var(--blue-700)}
+  .group ul{list-style:none;margin:0;padding:0}
+  .group li{padding:var(--s1) 0;border-top:var(--hair) solid var(--gray-200);display:flex;gap:var(--s2);align-items:baseline}
+  .group li::before{content:"";flex:none;width:8px;height:8px;border-radius:999px;background:var(--gray-400);position:relative;top:-1px}
+  .group.primary li{font-weight:600}.group.primary li::before{background:var(--red-500)}
+  .group.tip li::before{background:var(--red-500);border-radius:1px}
+  .group.weak li::before{background:var(--blue-700);border-radius:1px}
+  .disc{display:inline-flex;align-items:center;gap:var(--s1);margin-top:var(--s3);color:var(--indigo-700);font-weight:600;font-size:13px}
+  .disc::before{content:"▸";font-size:11px}
+  .disc.open::before{content:"▾"}
+  .tl{list-style:none;margin:0;padding:0}
+  .tl li{display:grid;grid-template-columns:28px 1fr;column-gap:var(--s3);position:relative}
+  .tl li+li{margin-top:var(--s3)}
+  .tl .mk{width:28px;height:28px;border-radius:999px;border:var(--hair) solid var(--gray-200);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gray-600)}
+  .tl li.paid .mk{background:var(--indigo-50);border-color:var(--indigo-200);color:var(--indigo-700)}
+  .tl li.sys .mk{border-radius:var(--r-sm)}
+  .tl .row{display:flex;justify-content:space-between;gap:var(--s3);align-items:baseline}
+  .tl .lab{font:600 11px/16px var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--indigo-700)}
+  .tl li.direct .lab{color:var(--gray-600)}
+  .tl .when{color:var(--gray-550);font-size:12px;white-space:nowrap}
+  .tl .d{margin:var(--s0) 0 0}
+  .tl .m{color:var(--gray-550);font-size:12px;margin-top:var(--s0)}
+  .tl .m span+span::before{content:" · ";color:var(--gray-400)}
+  .tl .chg{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s1)}
+  .tag{display:inline-flex;padding:var(--s0) var(--s2);border-radius:var(--r-sm);border:var(--hair) solid var(--gray-200);background:var(--gray-50);font-size:11px;line-height:16px;font-weight:500}
+  .tag.warn{border-color:var(--amber-100);background:var(--amber-50);color:var(--amber-800)}
+  .tag.bad{border-color:var(--red-100);background:var(--red-50);color:var(--red-800);font-weight:600}
+  .tag.mit{border-color:var(--blue-100);background:var(--blue-50);color:var(--blue-700)}
+  .tl li.open .body{margin-top:var(--s2);padding:var(--s3);background:var(--gray-50);border:var(--hair) solid var(--gray-200);border-radius:var(--r-md)}
+  .tl li.open .body dl{display:grid;grid-template-columns:auto 1fr;gap:var(--s0) var(--s3);margin:0;font-size:12px}
+  .tl li.open .body dt{color:var(--gray-550)}.tl li.open .body dd{margin:0}
+  .marker{margin:var(--s4) 0;padding:var(--s3) var(--s4);background:var(--red-50);border:var(--hair) solid var(--red-100);border-left:4px solid var(--red-500);border-radius:var(--r-md)}
+  .marker b{display:block;font:700 12px/16px var(--sans);letter-spacing:.06em;color:var(--red-800)}
+  .marker p{margin:var(--s0) 0 0;color:var(--navy-900)}
+  .marker .when{color:var(--gray-550);font-size:12px;margin-top:var(--s0)}
+  .strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s4);margin-top:var(--s4);padding-top:var(--s4);border-top:var(--hair) solid var(--gray-200)}
+  .narrow .strip{grid-template-columns:1fr}
+  .strip .group{margin:0}
+  .after{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s4)}
+  .narrow .after{grid-template-columns:1fr}
+  .after .a{padding:var(--s3);border:var(--hair) solid var(--gray-200);border-radius:var(--r-md);background:var(--gray-50)}
+  .after .a.bad{border-color:var(--red-100);background:var(--red-50)}
+  .after .a b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-550);margin-bottom:var(--s0)}
+  .after .a.bad b{color:var(--red-800)}
+  .after .a p{margin:0}
+  .phase{font:600 11px/16px var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--gray-550);margin:var(--s4) 0 var(--s2)}
+  .sticky{position:sticky;top:var(--s4)}
+  .frame-note{margin-top:var(--s3);padding:var(--s3);border:var(--hair) dashed var(--gray-300);border-radius:var(--r-md);color:var(--gray-600);font-size:12px}
+  .frame-note b{color:var(--navy-900)}
+  .mini{margin-top:var(--s3)}
+  .mini .badge{font-size:12px}
+  .mini .verdict{font-size:17px;line-height:24px;margin:var(--s2) 0 var(--s1)}
+  .mini .explain{font-size:13px;line-height:20px}
+  .choose{margin-top:var(--s7);max-width:90ch}
+  .choose h2{margin:0 0 var(--s3);font:600 20px/28px var(--sans)}
+  .choose p,.choose li{color:var(--gray-600)}
+  .choose ul{padding-left:20px}
+  .lbl{position:absolute;top:-10px;left:12px;padding:0 6px;background:var(--gray-100);color:var(--gray-550);font:500 11px/16px var(--mono)}
+  .art{position:relative}
+</style>
+</head>
+<body>
+<p class="kicker">Exploration · P4d · input to D17</p>
+<h1>Two hierarchies for the visitor detail</h1>
+<p class="brief">The built page makes the reader assemble the explanation from two dense columns. Both options below answer the same five questions in order: what was decided, what pattern caused it, what changed on the visit that triggered it, what supports or weakens the conclusion, and what happened after. Both use golden case 7 (190.2.145.19, blocked after visit 5, moderate confidence, Meta Ads sync failed) and copy that the data could produce. Option A is the recommended design. Option B is the agent's alternative, built to cover what A leaves open.</p>
+
+<div class="grid">
+
+<!-- ============================ OPTION A ============================ -->
+<section class="opt">
+  <p class="opt-kicker">A · recommended</p>
+  <h2 class="opt-name">Two columns, rebalanced: journey beside a short evidence summary</h2>
+  <p class="opt-thesis">The verdict, its explanation and why confidence is moderate lead. A compact facts row and a compact enforcement notice follow. The journey (65%) sits beside a sticky evidence summary (35%) grouped into primary reasons, what tipped the decision and what weakened it. Audit detail is behind one "View all evidence" disclosure and per-visit disclosures. On narrow screens the columns stack: summary, evidence, journey, enforcement, raw evidence.</p>
+  <div class="pc">
+    <div><b>Solves</b><ul><li>Reads top to bottom as a decision, not a ledger</li><li>Explanation and journey stay side by side, so a reason can be checked against the visits without leaving the page</li><li>Confidence is explained, not just labelled</li><li>The block marker becomes the strongest element in the journey</li></ul></div>
+    <div><b>Leaves open</b><ul><li>Two disclosure systems for the same evidence: "View all evidence" and "View visit evidence" on each visit</li><li>Question 5, what happened after, is answered only by reading the tail of the timeline</li><li>The frame is written for Blocked; Monitoring and Not blocked need their own copy for "tipped" and "weakened"</li><li>The narrow order reflows, so the explanation and the journey relate differently on a phone</li></ul></div>
+  </div>
+
+  <div class="mock">
+    <div class="page art"><span class="lbl">desktop · 1040px content</span>
+      <div>
+        <a class="back">&larr; Threat monitoring</a>
+        <h2 class="title">Blocked visitor</h2>
+        <div class="ipid">190.2.145.19</div>
+        <div class="meta"><span>Buenos Aires, Argentina</span><span>Mobile network</span></div>
+        <div class="meta"><span>First seen 9 Sep</span><span>Last seen 10 Sep</span></div>
+      </div>
+
+      <div class="panel">
+        <span class="badge blocked">Blocked</span>
+        <p class="verdict">Blocked after visit 5 of 5</p>
+        <p class="explain">Across five visits in two days, this visitor generated <b>four paid clicks</b> and left within six seconds each time. On <b>visit 5</b>, they submitted an undeliverable email after changing location and device repeatedly. Together, this evidence crossed the blocking threshold.</p>
+        <div class="conf"><b>Moderate confidence</b><p>The behavioural pattern was strongly suspicious, but bot probability averaged 47%, below the level that marks automation, and no VPN or proxy was detected.</p></div>
+        <div class="facts">
+          <div class="fact"><div class="l">Decision made</div><div class="v"><span class="mono">10 Sep, 22:47 UTC</span></div></div>
+          <div class="fact"><div class="l">Journey</div><div class="v">5 visits · 4 paid</div></div>
+          <div class="fact"><div class="l">Paid exposure</div><div class="v">$7.60 before block <span class="info">i</span></div><span class="ttip">Based on four recorded paid clicks at $1.90 each.</span></div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <span class="g">&#9888;</span>
+        <div><b>Enforcement issue</b><p>Meta Ads has not applied the exclusion. This visitor may still see your ads.</p></div>
+        <a>Hide details</a>
+        <dl class="details"><dt>Platform</dt><dd>Meta Ads</dd><dt>Attempt time</dt><dd>10 Sep, 22:47:05 UTC, then 22:52:30 UTC</dd><dt>Failure reason</dt><dd>Exclusion request rejected twice by the platform</dd><dt>Current state</dt><dd>Failed. No retry is available in this prototype.</dd></dl>
+      </div>
+
+      <div class="cols">
+        <div class="panel">
+          <div class="hrow"><h3 class="h3">Visitor journey</h3><span class="cap">8 events · 9 to 10 Sep</span></div>
+          <ol class="tl">
+            <li class="paid"><div class="mk">1</div><div><div class="row"><span class="lab">Paid visit 1</span><span class="when">9 Sep, 02:14</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>5 seconds</span><span>5% scroll</span><span>No conversion</span></div><a class="disc">View visit evidence</a></div></li>
+            <li class="paid"><div class="mk">2</div><div><div class="row"><span class="lab">Paid visit 2</span><span class="when">9 Sep, 13:50</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>4 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Montevideo</span><span class="tag warn">New device identity</span></div><a class="disc">View visit evidence</a></div></li>
+            <li class="direct"><div class="mk">3</div><div><div class="row"><span class="lab">Direct visit 3</span><span class="when">10 Sep, 00:31</span></div><p class="d">/pricing</p><div class="m"><span>3 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Buenos Aires</span><span class="tag warn">New device identity</span></div><a class="disc">View visit evidence</a></div></li>
+            <li class="paid"><div class="mk">4</div><div><div class="row"><span class="lab">Paid visit 4</span><span class="when">10 Sep, 11:08</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>4 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Santiago</span></div><a class="disc">View visit evidence</a></div></li>
+            <li class="paid open"><div class="mk">5</div><div><div class="row"><span class="lab">Paid visit 5</span><span class="when">10 Sep, 22:47</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>2 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag bad">Email undeliverable</span><span class="tag warn">Location changed to Montevideo</span></div><a class="disc open">Hide visit evidence</a>
+              <div class="body"><dl><dt>Interaction</dt><dd>Low (2s, scroll 5%, pointer moved)</dd><dt>Bot probability</dt><dd>52%</dd><dt>VPN or proxy</dt><dd>No</dd><dt>Network</dt><dd>Mobile</dd><dt>Form</dt><dd>Submitted, email deliverability Invalid</dd><dt>Conversion</dt><dd>No</dd><dt>Location</dt><dd>Montevideo, Uruguay (changed)</dd><dt>Device</dt><dd>Safari 17, iOS 17 (d-s17-ios)</dd><dt>CPC</dt><dd>$1.90</dd></dl></div>
+            </div></li>
+          </ol>
+          <div class="marker"><b>BLOCK DECISION MADE HERE</b><p>The undeliverable email, repeated short sessions and identity changes caused the cumulative pattern to cross the blocking threshold.</p><div class="when">10 Sep, 22:47:03 UTC · Moderate confidence</div></div>
+          <ol class="tl">
+            <li class="sys"><div class="mk">&#8635;</div><div><div class="row"><span class="lab" style="color:var(--amber-800)">Meta Ads exclusion sync pending</span><span class="when">10 Sep, 22:47</span></div><p class="d">Exclusion queued. Blocking begins when the platform confirms it.</p></div></li>
+            <li class="sys"><div class="mk" style="color:var(--red-800);background:var(--red-50);border-color:var(--red-100)">!</div><div><div class="row"><span class="lab" style="color:var(--red-800)">Meta Ads exclusion sync failed</span><span class="when">10 Sep, 22:52</span></div><p class="d">Meta Ads rejected the exclusion request twice. This visitor can still reach the site through Meta ads.</p></div></li>
+          </ol>
+        </div>
+
+        <div class="panel sticky">
+          <h3 class="h3">Evidence behind the decision</h3>
+          <div class="group primary"><div class="gh">Primary reasons</div><ul><li>No meaningful interaction across all five visits</li><li>Four paid clicks within two days</li></ul></div>
+          <div class="group tip"><div class="gh">What tipped the decision</div><ul><li>Visit 5 submitted an undeliverable email</li><li>Three device identities and three reported locations across the journey</li></ul></div>
+          <div class="group weak"><div class="gh">Evidence that weakened the conclusion</div><ul><li>Bot probability stayed between 41% and 52%, averaging 47%</li><li>No VPN or proxy was detected</li></ul></div>
+          <a class="disc">View all evidence</a>
+          <p class="cap" style="margin:var(--s1) 0 0">Raw values, visit references, device strings, location history, signal classifications and contribution labels.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page narrow art"><span class="lbl">narrow · 375px</span>
+      <div>
+        <a class="back">&larr; Threat monitoring</a>
+        <h2 class="title">Blocked visitor</h2>
+        <div class="ipid">190.2.145.19</div>
+        <div class="meta"><span>Buenos Aires, Argentina</span><span>Mobile network</span></div>
+        <div class="meta"><span>First seen 9 Sep</span><span>Last seen 10 Sep</span></div>
+      </div>
+      <div class="panel">
+        <span class="badge blocked">Blocked</span>
+        <p class="verdict">Blocked after visit 5 of 5</p>
+        <p class="explain">Across five visits in two days, this visitor generated <b>four paid clicks</b> and left within six seconds each time. On <b>visit 5</b>, they submitted an undeliverable email after changing location and device repeatedly.</p>
+        <div class="conf"><b>Moderate confidence</b><p>Bot probability averaged 47% and no VPN or proxy was detected.</p></div>
+        <div class="facts"><div class="fact"><div class="l">Decision made</div><div class="v"><span class="mono">10 Sep, 22:47</span></div></div><div class="fact"><div class="l">Journey</div><div class="v">5 visits · 4 paid</div></div><div class="fact"><div class="l">Paid exposure</div><div class="v">$7.60 <span class="info">i</span></div></div></div>
+      </div>
+      <div class="panel">
+        <h3 class="h3">Evidence summary</h3>
+        <div class="group primary"><div class="gh">Primary reasons</div><ul><li>No meaningful interaction across all five visits</li><li>Four paid clicks within two days</li></ul></div>
+        <div class="group tip"><div class="gh">What tipped the decision</div><ul><li>Visit 5 submitted an undeliverable email</li><li>Three devices and three locations</li></ul></div>
+        <div class="group weak"><div class="gh">Weakened the conclusion</div><ul><li>Bot probability averaged 47%</li><li>No VPN or proxy</li></ul></div>
+      </div>
+      <div class="panel">
+        <div class="hrow"><h3 class="h3">Visitor journey</h3><span class="cap">8 events</span></div>
+        <ol class="tl">
+          <li class="paid"><div class="mk">1</div><div><div class="row"><span class="lab">Paid visit 1</span><span class="when">9 Sep, 02:14</span></div><div class="m"><span>5 s</span><span>5% scroll</span></div></div></li>
+          <li class="paid"><div class="mk">2</div><div><div class="row"><span class="lab">Paid visit 2</span><span class="when">9 Sep, 13:50</span></div><div class="chg"><span class="tag warn">Montevideo</span><span class="tag warn">New device</span></div></div></li>
+          <li class="direct"><div class="mk">3</div><div><div class="row"><span class="lab">Direct visit 3</span><span class="when">10 Sep, 00:31</span></div><div class="chg"><span class="tag warn">Buenos Aires</span><span class="tag warn">New device</span></div></div></li>
+          <li class="paid"><div class="mk">4</div><div><div class="row"><span class="lab">Paid visit 4</span><span class="when">10 Sep, 11:08</span></div><div class="chg"><span class="tag warn">Santiago</span></div></div></li>
+          <li class="paid open"><div class="mk">5</div><div><div class="row"><span class="lab">Paid visit 5</span><span class="when">10 Sep, 22:47</span></div><div class="chg"><span class="tag bad">Email undeliverable</span><span class="tag warn">Montevideo</span></div></div></li>
+        </ol>
+        <div class="marker"><b>BLOCK DECISION MADE HERE</b><p>Undeliverable email, repeated short sessions and identity changes crossed the threshold.</p></div>
+      </div>
+      <div class="notice"><span class="g">&#9888;</span><div><b>Enforcement issue</b><p>Meta Ads has not applied the exclusion.</p></div><a>Details</a></div>
+      <div class="panel"><a class="disc">View all evidence</a><p class="cap" style="margin:var(--s1) 0 0">Raw technical evidence</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ OPTION B ============================ -->
+<section class="opt">
+  <p class="opt-kicker">B · agent's alternative</p>
+  <h2 class="opt-name">Explanation first, one reading order: the evidence lives inside the decision</h2>
+  <p class="opt-thesis">Same four levels, but Level 2 (primary reasons, what tipped it, what weakened it) sits inside the decision block as a three-part strip that reuses the table's signal labels, so the row and the page share one vocabulary. An "After the decision" strip answers question 5 directly: enforcement per platform, returns, paid clicks since. The journey runs full width beneath, split by the block marker into before and after. One "Audit trail" disclosure at the end holds every raw value. The order is identical at every width, so nothing reflows on a phone.</p>
+  <div class="pc">
+    <div><b>Solves</b><ul><li>One reading order top to bottom, the same on a phone, so the relation between explanation and journey never changes</li><li>Question 5 has its own answer instead of a timeline tail; criteria 5 and 7 (what cost money, did the block work) are visible without scrolling the journey</li><li>One disclosure for audit detail instead of "View all evidence" plus a link on every visit</li><li>The frame holds for every status: the strip's headings become "What we are watching" and "Why it has not blocked" for Monitoring, and "Nothing crossed the line" for Not blocked</li><li>Continuity with the table: the same signal labels the row showed appear first in the strip</li></ul></div>
+    <div><b>Costs</b><ul><li>A longer page; the journey starts below the fold on a laptop</li><li>Evidence and visits are not side by side, so a reason is checked against the journey by anchor, not by glance</li><li>The three-part strip gets tight between about 900 and 1000px and stacks below that</li></ul></div>
+  </div>
+
+  <div class="mock">
+    <div class="page art"><span class="lbl">desktop · 1040px content</span>
+      <div>
+        <a class="back">&larr; Threat monitoring</a>
+        <h2 class="title">Blocked visitor</h2>
+        <div class="ipid">190.2.145.19</div>
+        <div class="meta"><span>Buenos Aires, Argentina</span><span>Mobile network</span></div>
+        <div class="meta"><span>First seen 9 Sep</span><span>Last seen 10 Sep</span></div>
+      </div>
+
+      <div class="panel">
+        <span class="badge blocked">Blocked</span>
+        <p class="verdict">Blocked after visit 5 of 5</p>
+        <p class="explain">Across five visits in two days, this visitor generated <b>four paid clicks</b> and left within six seconds each time. On <b>visit 5</b>, they submitted an undeliverable email after changing location and device repeatedly. Together, this evidence crossed the blocking threshold.</p>
+        <div class="conf"><b>Moderate confidence</b><p>The behavioural pattern was strongly suspicious, but bot probability averaged 47%, below the level that marks automation, and no VPN or proxy was detected.</p></div>
+
+        <div class="strip">
+          <div class="group primary"><div class="gh">Primary reasons</div><div class="chg" style="margin-bottom:var(--s1)"><span class="tag">Low interaction</span><span class="tag">4 paid clicks / 2 days</span></div><ul><li>No meaningful interaction across all five visits</li><li>Four paid clicks within two days</li></ul></div>
+          <div class="group tip"><div class="gh">What tipped the decision</div><div class="chg" style="margin-bottom:var(--s1)"><span class="tag bad">Email: Invalid</span><span class="tag">3 devices</span><span class="tag">Location changed</span></div><ul><li><a>Visit 5</a> submitted an undeliverable email</li><li>Three device identities and three reported locations</li></ul></div>
+          <div class="group weak"><div class="gh">What weakened the conclusion</div><div class="chg" style="margin-bottom:var(--s1)"><span class="tag mit">Bot: 47%</span><span class="tag mit">No VPN</span></div><ul><li>Bot probability stayed between 41% and 52%</li><li>No VPN or proxy was detected</li></ul></div>
+        </div>
+
+        <div class="facts">
+          <div class="fact"><div class="l">Decision made</div><div class="v"><span class="mono">10 Sep, 22:47 UTC</span></div></div>
+          <div class="fact"><div class="l">Journey</div><div class="v">5 visits · 4 paid</div></div>
+          <div class="fact"><div class="l">Paid exposure</div><div class="v">$7.60 before block <span class="info">i</span></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="hrow"><h3 class="h3">After the decision</h3><span class="cap">Did the block work?</span></div>
+        <div class="after">
+          <div class="a bad"><b>Enforcement</b><p><strong>Meta Ads: failed.</strong> The exclusion was rejected twice, 5 minutes after the decision. This visitor may still see your Meta ads.</p><a class="disc" style="margin-top:var(--s1)">Details</a></div>
+          <div class="a"><b>Paid clicks since</b><p><strong>0</strong> paid clicks reached the site after the decision. None expected: the platform never applied the exclusion, so this is luck, not enforcement.</p></div>
+          <div class="a"><b>Returns since</b><p><strong>None.</strong> No organic or direct visit after 10 Sep, 22:47.</p></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="hrow"><h3 class="h3">Visitor journey</h3><span class="cap">8 events · 9 to 10 Sep · visits collapsed, the decision visit open</span></div>
+        <div class="phase">Before the decision</div>
+        <ol class="tl">
+          <li class="paid"><div class="mk">1</div><div><div class="row"><span class="lab">Paid visit 1</span><span class="when">9 Sep, 02:14</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>5 seconds</span><span>5% scroll</span><span>No conversion</span></div></div></li>
+          <li class="paid"><div class="mk">2</div><div><div class="row"><span class="lab">Paid visit 2</span><span class="when">9 Sep, 13:50</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>4 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Montevideo</span><span class="tag warn">New device identity</span></div></div></li>
+          <li class="direct"><div class="mk">3</div><div><div class="row"><span class="lab">Direct visit 3</span><span class="when">10 Sep, 00:31</span></div><p class="d">/pricing</p><div class="m"><span>3 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Buenos Aires</span><span class="tag warn">New device identity</span></div></div></li>
+          <li class="paid"><div class="mk">4</div><div><div class="row"><span class="lab">Paid visit 4</span><span class="when">10 Sep, 11:08</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>4 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Santiago</span></div></div></li>
+          <li class="paid open"><div class="mk">5</div><div><div class="row"><span class="lab">Paid visit 5 · the decision visit</span><span class="when">10 Sep, 22:47</span></div><p class="d">Meta Ads · Prospecting LATAM</p><div class="m"><span>2 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag bad">Email undeliverable</span><span class="tag warn">Location changed to Montevideo</span></div>
+            <div class="body"><dl><dt>Interaction</dt><dd>Low (2s, scroll 5%, pointer moved)</dd><dt>Bot probability</dt><dd>52%</dd><dt>Form</dt><dd>Submitted, email deliverability Invalid</dd><dt>Device</dt><dd>Safari 17, iOS 17, seen before on visit 2</dd><dt>Location</dt><dd>Montevideo, Uruguay, seen before on visit 2</dd></dl></div>
+          </div></li>
+        </ol>
+        <div class="marker"><b>BLOCK DECISION MADE HERE</b><p>The undeliverable email, repeated short sessions and identity changes caused the cumulative pattern to cross the blocking threshold.</p><div class="when">10 Sep, 22:47:03 UTC · Moderate confidence</div></div>
+        <div class="phase">After the decision</div>
+        <ol class="tl">
+          <li class="sys"><div class="mk">&#8635;</div><div><div class="row"><span class="lab" style="color:var(--amber-800)">Meta Ads exclusion sync pending</span><span class="when">10 Sep, 22:47</span></div><p class="d">Exclusion queued. Blocking begins when the platform confirms it.</p></div></li>
+          <li class="sys"><div class="mk" style="color:var(--red-800);background:var(--red-50);border-color:var(--red-100)">!</div><div><div class="row"><span class="lab" style="color:var(--red-800)">Meta Ads exclusion sync failed</span><span class="when">10 Sep, 22:52</span></div><p class="d">Meta Ads rejected the exclusion request twice. This visitor can still reach the site through Meta ads.</p></div></li>
+        </ol>
+        <p class="cap" style="margin-top:var(--s3)">No visits after the decision.</p>
+      </div>
+
+      <div class="panel">
+        <a class="disc">Audit trail</a>
+        <p class="cap" style="margin:var(--s1) 0 0">Every raw value in one place: per-visit CPC, exact bot probability, VPN, network, full browser and OS strings, location history, exact timestamps, the exposure calculation ($1.90 + $1.90 + $1.90 + $1.90 = $7.60) and each signal's classification.</p>
+      </div>
+
+      <div class="frame-note"><b>The same frame for a Monitoring visitor</b> (golden case 3): the strip headings change, nothing else does.
+        <div class="mini">
+          <span class="badge monitoring">Monitoring</span>
+          <p class="verdict">Monitoring, not blocked</p>
+          <p class="explain">Three paid visits in two days from a connection that hides its location. Not blocked because engagement is real on every visit and a valid form was submitted.</p>
+          <div class="conf" style="border-color:var(--blue-700);background:var(--blue-50)"><b style="color:var(--blue-700)">Conflicting evidence</b><p>The signals disagree with each other, so evaluation continues with every visit.</p></div>
+          <div class="strip">
+            <div class="group primary"><div class="gh">What we are watching</div><ul><li>3 paid clicks in 2 days</li><li>Connection hides its location</li></ul></div>
+            <div class="group weak"><div class="gh">Why it has not blocked</div><ul><li>Real engagement on every visit</li><li>Valid form on visit 2</li></ul></div>
+            <div class="group"><div class="gh">Not yet known</div><ul><li>No automation signal so far</li></ul></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page narrow art"><span class="lbl">narrow · 375px · same order</span>
+      <div>
+        <a class="back">&larr; Threat monitoring</a>
+        <h2 class="title">Blocked visitor</h2>
+        <div class="ipid">190.2.145.19</div>
+        <div class="meta"><span>Buenos Aires, Argentina</span><span>Mobile network</span></div>
+        <div class="meta"><span>First seen 9 Sep</span><span>Last seen 10 Sep</span></div>
+      </div>
+      <div class="panel">
+        <span class="badge blocked">Blocked</span>
+        <p class="verdict">Blocked after visit 5 of 5</p>
+        <p class="explain">Across five visits in two days, this visitor generated <b>four paid clicks</b> and left within six seconds each time. On <b>visit 5</b>, they submitted an undeliverable email after changing location and device repeatedly.</p>
+        <div class="conf"><b>Moderate confidence</b><p>Bot probability averaged 47% and no VPN or proxy was detected.</p></div>
+        <div class="strip">
+          <div class="group primary"><div class="gh">Primary reasons</div><ul><li>No meaningful interaction across all five visits</li><li>Four paid clicks within two days</li></ul></div>
+          <div class="group tip"><div class="gh">What tipped the decision</div><ul><li>Visit 5 submitted an undeliverable email</li><li>Three devices and three locations</li></ul></div>
+          <div class="group weak"><div class="gh">What weakened the conclusion</div><ul><li>Bot probability averaged 47%</li><li>No VPN or proxy</li></ul></div>
+        </div>
+        <div class="facts"><div class="fact"><div class="l">Decision made</div><div class="v"><span class="mono">10 Sep, 22:47</span></div></div><div class="fact"><div class="l">Journey</div><div class="v">5 visits · 4 paid</div></div><div class="fact"><div class="l">Paid exposure</div><div class="v">$7.60 <span class="info">i</span></div></div></div>
+      </div>
+      <div class="panel">
+        <h3 class="h3">After the decision</h3>
+        <div class="after">
+          <div class="a bad"><b>Enforcement</b><p><strong>Meta Ads: failed.</strong> This visitor may still see your Meta ads.</p></div>
+          <div class="a"><b>Paid clicks since</b><p><strong>0</strong></p></div>
+          <div class="a"><b>Returns since</b><p><strong>None</strong></p></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="hrow"><h3 class="h3">Visitor journey</h3><span class="cap">8 events</span></div>
+        <div class="phase">Before the decision</div>
+        <ol class="tl">
+          <li class="paid"><div class="mk">1</div><div><div class="row"><span class="lab">Paid visit 1</span><span class="when">9 Sep, 02:14</span></div><div class="m"><span>5 s</span><span>5% scroll</span></div></div></li>
+          <li class="paid"><div class="mk">2</div><div><div class="row"><span class="lab">Paid visit 2</span><span class="when">9 Sep, 13:50</span></div><div class="chg"><span class="tag warn">Montevideo</span><span class="tag warn">New device</span></div></div></li>
+          <li class="direct"><div class="mk">3</div><div><div class="row"><span class="lab">Direct visit 3</span><span class="when">10 Sep, 00:31</span></div><div class="chg"><span class="tag warn">Buenos Aires</span><span class="tag warn">New device</span></div></div></li>
+          <li class="paid"><div class="mk">4</div><div><div class="row"><span class="lab">Paid visit 4</span><span class="when">10 Sep, 11:08</span></div><div class="chg"><span class="tag warn">Santiago</span></div></div></li>
+          <li class="paid open"><div class="mk">5</div><div><div class="row"><span class="lab">Paid visit 5</span><span class="when">10 Sep, 22:47</span></div><div class="chg"><span class="tag bad">Email undeliverable</span><span class="tag warn">Montevideo</span></div></div></li>
+        </ol>
+        <div class="marker"><b>BLOCK DECISION MADE HERE</b><p>Undeliverable email, repeated short sessions and identity changes crossed the threshold.</p></div>
+        <div class="phase">After the decision</div>
+        <ol class="tl"><li class="sys"><div class="mk" style="color:var(--red-800);background:var(--red-50);border-color:var(--red-100)">!</div><div><div class="row"><span class="lab" style="color:var(--red-800)">Meta Ads sync failed</span><span class="when">10 Sep, 22:52</span></div></div></li></ol>
+      </div>
+      <div class="panel"><a class="disc">Audit trail</a></div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<section class="choose">
+  <h2>How to choose</h2>
+  <p>Both options keep the same four levels and the same strengthened elements: the verdict line, the two primary reasons, what tipped the decision, the block marker and the reason confidence is moderate. They differ in where Level 2 lives and how the page behaves when it narrows.</p>
+  <ul>
+    <li>Choose <b>A</b> if checking a reason against the visits at a glance matters more than a single reading order. Its cost is two disclosure systems and a reflow on phones.</li>
+    <li>Choose <b>B</b> if the page must read the same way on every screen and answer "what happened after" without scanning the timeline. Its cost is a longer page with evidence and visits apart.</li>
+    <li>A hybrid is cheap: A's two columns with B's strip inside the decision block and B's "After the decision" panel, leaving the right column for the journey's own summary. Say so if that is the shape.</li>
+  </ul>
+  <p><b>What the data cannot say yet</b>, and will need in the build: a reason for the confidence label (which signals were present or absent), a fourth evidence kind for the tipping event, a failure reason on sync events, and per-visit "changed since the previous visit" facts. The canvas writes these by hand.</p>
+</section>
+</body>
+</html>
