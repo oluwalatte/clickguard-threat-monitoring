@@ -25,7 +25,7 @@ export interface VisitTimelineItem {
   relativeTime?: string;
   /** Overrides the default type label. */
   label?: string;
-  /** The visit the decision followed: labelled, opened by default, ruled on the left. */
+  /** The visit the decision followed: labelled and opened by default. */
   decisionVisit?: boolean;
   /** One line: where the visit came from, e.g. "Meta Ads · Prospecting LATAM". */
   description: string;

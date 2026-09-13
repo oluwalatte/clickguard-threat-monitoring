@@ -27,3 +27,11 @@ evidence, judge confidence and check recency. Visits and paid visits stay separa
 they are independently useful sorting dimensions. Decision time is attached to the verdict,
 while detailed platform enforcement is deferred to the visitor view unless a sync problem
 needs attention.
+
+## Progressive disclosure in the visitor detail
+
+I structured the visitor detail around progressive disclosure. The verdict, the primary
+reasons, the tipping event and the confidence explanation stay immediately visible because
+they answer why the visitor was blocked. Supporting signals, repeated visit metadata and raw
+model values stay available for auditability but are collapsed by default. This lets a customer
+understand the decision quickly without losing the evidence needed for a deeper investigation.

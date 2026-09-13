@@ -126,7 +126,8 @@
   white-space: nowrap;
 }
 
-/* The visit the decision followed is named, ruled on the left, and opened by default. */
+/* The visit the decision followed is named and opened by default. The name is enough;
+   the block marker directly after it carries the weight. */
 .decisionTag {
   color: var(--status-blocked);
 }
@@ -134,11 +135,6 @@
   content: '·';
   margin-right: var(--space-2);
   color: var(--text-muted);
-}
-.row[data-decision-visit] .body {
-  border-left: var(--border-width-strong) solid var(--status-blocked-marker);
-  padding-left: var(--space-3);
-  margin-left: calc(-1 * var(--space-3) - var(--border-width-strong));
 }
 
 .time {

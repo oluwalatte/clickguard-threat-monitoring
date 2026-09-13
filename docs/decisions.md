@@ -216,7 +216,8 @@ undeliverable or valid email, a conversion, a VPN, a datacenter, an automation s
 missing fingerprint. Defaults such as "VPN: No" and "Form: Not submitted" never appear
 collapsed. Expanded, the visit lists what it added to the evidence, in the evidence list's own
 sentences, then the complete record with every field present so absence is never blank. The
-visit the decision followed is named "Decision visit", ruled on the left and opened by default.
+visit the decision followed is named "Decision visit" and opened by default; the block marker
+after it carries the weight, so the row itself carries no extra rule.
 Tags use the SignalTag tones, never a status colour (rule 2): the decisive one is the strong
 primary style, mitigating ones the info tone.
 Rejected: every field on every visit (forty facts before the reader knows which visit
