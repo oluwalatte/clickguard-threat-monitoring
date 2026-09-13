@@ -1,0 +1,11 @@
+/* Host Grotesk, served from Google Fonts (variable 300-800 + italic).
+   Swap these @font-face rules for self-hosted binaries in production;
+   token names and weights do not change. */
+@import url("https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap");
+
+:root {
+  --font-sans: "Host Grotesk", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  /* Raw values only: IPs, user agents, hashes. Host Grotesk has tabular figures,
+     so numbers in prose and tables stay sans. */
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}

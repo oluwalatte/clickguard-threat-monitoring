@@ -1,0 +1,55 @@
+/* Minimal element defaults. This is not a CSS reset and it is not
+   Tailwind preflight, it only sets what every ClickGuard surface assumes. */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  font-variant-numeric: var(--numeric-tabular);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--text-link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--action-primary-active);
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-xs);
+}
+
+@keyframes cg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hides content visually while keeping it for assistive technology.
+   Used for live regions and table action headers. */
+.cg-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+[data-reduced-motion] * {
+  transition: none !important;
+}
