@@ -1,29 +1,24 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Button, FilterChip, FilterGroup, SearchField, SignalTags, StatusBadge, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
-import { CONFIDENCE_LABEL_MAP, NOW, filterRows, formatRelative, formatTimestamp, toRow, type Confidence, type DisplayStatus, type TrafficFilter, type VisitorRow } from '@/data';
+import { Button, FilterChip, FilterGroup, SearchField, SignalTags, StatusBadge, SyncFlag, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
+import { CONFIDENCE_LABEL_MAP, NOW, filterRows, formatRelative, formatShortTimestamp, toRow, type Confidence, type DisplayStatus, type TrafficFilter, type VisitorRow } from '@/data';
 import { VISITORS } from '../data';
-import { PLATFORM_LABEL, STATUS_FILTERS, toStatusKind } from '../present';
+import { STATUS_FILTERS, syncException, toStatusKind } from '../present';
 import { Page, PageHeader, ToolbarRow } from './Page';
 
 const CONFIDENCE_RANK: Record<Confidence, number> = { high: 4, moderate: 3, conflicting: 2, insufficient: 1 };
 const DEFAULT_SORT: TableSort = { key: 'lastSeenAt', direction: 'desc' };
-const SORT_LABEL: Record<string, string> = { lastSeenAt: 'last seen', decidedAt: 'block time', totalVisits: 'visits', paidVisits: 'paid clicks', confidence: 'decision confidence' };
+const SORT_LABEL: Record<string, string> = { lastSeenAt: 'last seen', status: 'status, then most recent decision', totalVisits: 'visits', paidVisits: 'paid clicks', confidence: 'decision confidence' };
+const STATUS_ORDER: DisplayStatus[] = ['blocked', 'monitoring', 'allowed', 'not-blocked', 'not-evaluated'];
 
-function syncLine(row: VisitorRow): string | undefined {
-  const entries = Object.entries(row.sync);
-  if (!entries.length) return row.platforms.length ? row.platforms.map((p) => PLATFORM_LABEL[p]).join(', ') : undefined;
-  return entries
-    .map(([p, s]) => `${PLATFORM_LABEL[p as keyof typeof PLATFORM_LABEL]} exclusion ${s === 'active' ? 'active' : s === 'failed' ? 'sync failed' : s === 'delayed' ? 'sync delayed' : 'sync pending'}`)
-    .join('; ');
-}
-
-/* One row per visitor (D1). Sort by header (D7); undecided rows sink in either direction. */
+/* One row per visitor (D1), in the customer's investigation sequence (D14): who, what was
+   decided, how much behaviour accumulated, why, how certain, how recent. Sort by header (D7);
+   undecided rows sink in either direction. */
 const COLUMNS: ThreatTableColumn<VisitorRow>[] = [
   {
     key: 'ip',
     header: 'Visitor',
-    width: '16%',
+    width: '17%',
     mono: true,
     render: (r) => (
       <>
@@ -35,53 +30,46 @@ const COLUMNS: ThreatTableColumn<VisitorRow>[] = [
   {
     key: 'status',
     header: 'Status',
-    width: '14%',
-    sortValue: (r) => ['blocked', 'monitoring', 'allowed', 'not-blocked', 'not-evaluated'].indexOf(r.status),
-    /* The exclusion state is enforcement information beside the status, never evidence. */
-    render: (r) => (
-      <>
-        <span>
-          <StatusBadge status={toStatusKind(r.status)} size="sm" />
-        </span>
-        {syncLine(r) ? <span>{syncLine(r)}</span> : null}
-      </>
-    ),
+    width: '15%',
+    /* Verdict first; within a verdict, the most recent decision first. */
+    sortValue: (r) => STATUS_ORDER.indexOf(r.status) * 1e13 - (r.decidedAt ? new Date(r.decidedAt).getTime() : 0),
+    render: (r) => {
+      const exception = syncException(r);
+      return (
+        <>
+          <span>
+            <StatusBadge status={toStatusKind(r.status)} size="sm" />
+          </span>
+          {r.decidedAt ? <span>{formatShortTimestamp(r.decidedAt)}</span> : null}
+          {exception ? (
+            <span>
+              <SyncFlag state={exception.state} platform={exception.platform} />
+            </span>
+          ) : null}
+        </>
+      );
+    },
   },
-  { key: 'totalVisits', header: 'Visits', width: '6%', align: 'right', render: (r) => `${r.totalVisits}` },
-  { key: 'paidVisits', header: 'Paid', width: '6%', align: 'right', render: (r) => `${r.paidVisits}` },
+  { key: 'totalVisits', header: 'Visits', width: '7%', align: 'right', render: (r) => `${r.totalVisits}` },
+  { key: 'paidVisits', header: 'Paid', width: '7%', align: 'right', render: (r) => `${r.paidVisits}` },
   /* Concise signals, comparable across rows. The full sentence lives in the visitor detail. */
   { key: 'signals', header: 'Key evidence', sortable: false, render: (r) => <SignalTags signals={r.signals} /> },
   {
     key: 'confidence',
     header: 'Decision confidence',
-    width: '12%',
+    width: '13%',
     sortValue: (r) => (r.confidence ? CONFIDENCE_RANK[r.confidence] : null),
     render: (r) => (r.confidence ? CONFIDENCE_LABEL_MAP[r.confidence] : ''),
   },
   {
-    key: 'decidedAt',
-    header: 'Decided',
-    width: '12%',
-    sortValue: (r) => (r.decidedAt ? new Date(r.decidedAt).getTime() : null),
-    render: (r) =>
-      r.decidedAt ? (
-        <>
-          <span>{formatRelative(r.decidedAt, NOW)}</span>
-          <span>{formatTimestamp(r.decidedAt)}</span>
-        </>
-      ) : (
-        ''
-      ),
-  },
-  {
     key: 'lastSeenAt',
     header: 'Last seen',
-    width: '12%',
+    width: '13%',
     sortValue: (r) => new Date(r.lastSeenAt).getTime(),
     render: (r) => (
       <>
         <span>{formatRelative(r.lastSeenAt, NOW)}</span>
-        <span>{formatTimestamp(r.lastSeenAt)}</span>
+        <span>{formatShortTimestamp(r.lastSeenAt)}</span>
       </>
     ),
   },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GOLDEN_CASES, generateVisitors } from '@/data';
-import { evidenceFootnote, explanation, exposureLine, headline, syncSummary, toEvidenceItems, toStatusKind, toTimelineItems, visitorDescription } from './present';
+import { GOLDEN_CASES, generateVisitors, toRow } from '@/data';
+import { evidenceFootnote, explanation, exposureLine, headline, syncException, syncSummary, toEvidenceItems, toStatusKind, toTimelineItems, visitorDescription } from './present';
 
 const golden = (n: number) => GOLDEN_CASES.find((g) => g.goldenCase === n)!;
 const visitors = generateVisitors();
@@ -46,10 +46,19 @@ describe('exposure is a visible sum (D6)', () => {
 });
 
 describe('the decision and the sync are separate facts (D11)', () => {
-  it('summarises the worst platform state and says whether paid clicks got through', () => {
-    expect(syncSummary(golden(1))).toEqual({ state: 'active', note: expect.stringMatching(/exclusion active since 11 Sep 2026, 15:02:10 UTC, 9 minutes after the decision\. No paid clicks since\./) });
+  it('summarises the worst platform state and lists each platform on its own row', () => {
+    const active = syncSummary(golden(1))!;
+    expect(active.state).toBe('active');
+    expect(active.note).toBe('The exclusion is active on every platform this visitor used. No paid clicks since.');
+    expect(active.platforms).toEqual([{ name: 'Google Ads', state: 'active', detail: 'since 11 Sep 2026, 15:02:10 UTC, 9 minutes after the decision' }]);
     expect(syncSummary(golden(7))!.state).toBe('failed');
+    expect(syncSummary(golden(7))!.platforms[0]).toMatchObject({ name: 'Meta Ads', state: 'failed' });
     expect(syncSummary(golden(2))).toBeUndefined();
+  });
+  it('flags enforcement in the table only when it needs attention', () => {
+    expect(syncException(toRow(golden(1)))).toBeUndefined();
+    expect(syncException(toRow(golden(7)))).toEqual({ state: 'failed', platform: undefined });
+    expect(syncException({ sync: { 'google-ads': 'active', 'meta-ads': 'pending' } })).toEqual({ state: 'pending', platform: 'Meta Ads' });
   });
   it('puts the decision after its visit and the sync events after the decision', () => {
     const items = toTimelineItems(golden(6));

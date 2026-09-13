@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDuration, formatLater, formatMoney, formatRelative, formatTime, formatTimestamp } from './format';
+import { formatDate, formatDuration, formatLater, formatMoney, formatRelative, formatShortTimestamp, formatTime, formatTimestamp } from './format';
 
 describe('timestamps are complete where auditability matters', () => {
   it('writes the full, zoned form', () => {
     expect(formatTimestamp('2026-09-11T14:53:20Z')).toBe('11 Sep 2026, 14:53:20 UTC');
     expect(formatDate('2026-09-11T14:53:20Z')).toBe('11 Sep 2026');
     expect(formatTime('2026-09-11T04:03:02Z')).toBe('04:03:02');
+    expect(formatShortTimestamp('2026-09-11T14:53:20Z')).toBe('11 Sep, 14:53');
   });
 });
 

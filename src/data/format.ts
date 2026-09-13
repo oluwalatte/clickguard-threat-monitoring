@@ -11,6 +11,12 @@ export function formatTimestamp(iso: string): string {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
 }
 
+/** "19 Feb, 14:53": the scanning form, for a table cell. The complete form lives in the detail. */
+export function formatShortTimestamp(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
+
 /** "19 Feb 2026" */
 export function formatDate(iso: string): string {
   const d = new Date(iso);

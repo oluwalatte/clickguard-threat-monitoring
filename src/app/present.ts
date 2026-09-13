@@ -140,28 +140,56 @@ export function evidenceFootnote(v: Visitor): string {
   return parts.join(' ');
 }
 
-/** The worst state across platforms, so the summary never overstates the exclusion. */
-export function syncSummary(v: Visitor): { state: UiSyncState; note: string } | undefined {
-  const latest = syncByPlatform(v);
-  const entries = Object.entries(latest) as Array<[AdPlatform, ExclusionEvent]>;
-  if (!entries.length) return undefined;
-  const state: UiSyncState = entries.some(([, e]) => e.state === 'failed') ? 'failed' : entries.some(([, e]) => e.state !== 'active') ? 'pending' : 'active';
-  const notes = entries.map(([platform, e]) => {
+export interface SyncPlatformRow {
+  name: string;
+  state: ExclusionEvent['state'];
+  detail?: string;
+}
+
+/** One row per platform for the visitor detail: the state and when it got there. */
+export function syncPlatforms(v: Visitor): SyncPlatformRow[] {
+  const entries = Object.entries(syncByPlatform(v)) as Array<[AdPlatform, ExclusionEvent]>;
+  return entries.map(([platform, e]) => {
     const name = PLATFORM_LABEL[platform];
     switch (e.state) {
-      case 'active': {
-        const since = paidClicksSinceActive(v);
-        return `${name} exclusion active since ${formatTimestamp(e.at)}, ${formatLater(v.decision!.madeAt, e.at).replace(' later', ' after the decision')}. ${since === 0 ? 'No paid clicks since.' : `${since} paid clicks since.`}`;
-      }
+      case 'active':
+        return { name, state: e.state, detail: `since ${formatTimestamp(e.at)}, ${formatLater(v.decision!.madeAt, e.at).replace(' later', ' after the decision')}` };
       case 'pending':
-        return `${name} exclusion queued ${formatRelative(e.at, NOW)}. Blocking begins when the platform confirms it.`;
+        return { name, state: e.state, detail: `queued ${formatRelative(e.at, NOW)}` };
       case 'delayed':
-        return `${name} has not confirmed the exclusion ${formatDuration(new Date(NOW).getTime() - new Date(e.at).getTime())} after it was queued. Paid clicks can still reach the site.`;
+        return { name, state: e.state, detail: `not confirmed ${formatDuration(new Date(NOW).getTime() - new Date(e.at).getTime())} after it was queued` };
       case 'failed':
-        return `${name} rejected the exclusion. This visitor can still reach the site through ${name}.`;
+        return { name, state: e.state, detail: `rejected the exclusion ${formatRelative(e.at, NOW)}` };
     }
   });
-  return { state, note: notes.join(' ') };
+}
+
+/** The worst state across platforms with one sentence on what it means; rows carry the rest. */
+export function syncSummary(v: Visitor): { state: UiSyncState; note: string; platforms: SyncPlatformRow[] } | undefined {
+  const platforms = syncPlatforms(v);
+  if (!platforms.length) return undefined;
+  const failed = platforms.filter((p) => p.state === 'failed');
+  const open = platforms.filter((p) => p.state === 'pending' || p.state === 'delayed');
+  const state: UiSyncState = failed.length ? 'failed' : open.length ? 'pending' : 'active';
+  const since = paidClicksSinceActive(v);
+  const note =
+    state === 'failed'
+      ? `${failed.map((p) => p.name).join(' and ')} rejected the exclusion. This visitor can still reach the site through ${failed.length === 1 ? 'that platform' : 'those platforms'}.`
+      : state === 'pending'
+        ? `${open.map((p) => p.name).join(' and ')} ${open.length === 1 ? 'has' : 'have'} not confirmed the exclusion yet. Blocking there begins when the platform confirms it, and paid clicks can still reach the site until then.`
+        : `The exclusion is active on every platform this visitor used. ${since === 0 ? 'No paid clicks since.' : `${since} paid clicks since.`}`;
+  return { state, note, platforms };
+}
+
+/** The table shows enforcement only when it needs attention (D14). Active shows nothing. */
+export function syncException(v: { sync: Partial<Record<AdPlatform, ExclusionEvent['state']>> }): { state: 'pending' | 'delayed' | 'failed'; platform?: string } | undefined {
+  const entries = Object.entries(v.sync) as Array<[AdPlatform, ExclusionEvent['state']]>;
+  const failed = entries.find(([, s]) => s === 'failed');
+  const delayed = entries.find(([, s]) => s === 'delayed');
+  const pending = entries.find(([, s]) => s === 'pending');
+  const hit = failed ?? delayed ?? pending;
+  if (!hit) return undefined;
+  return { state: hit[1] as 'pending' | 'delayed' | 'failed', platform: entries.length > 1 ? PLATFORM_LABEL[hit[0]] : undefined };
 }
 
 function visitNumber(v: Visitor, id: string) {

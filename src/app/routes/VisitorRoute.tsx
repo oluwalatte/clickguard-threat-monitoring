@@ -51,6 +51,7 @@ export function VisitorRoute() {
           monitoringNote={visitor.monitoring ? formatTimestamp(visitor.monitoring.since) : undefined}
           syncState={sync?.state}
           syncNote={sync?.note}
+          syncPlatforms={sync?.platforms}
           exposure={exposureLine(visitor)}
           evidenceHref="#evidence"
           evidenceCount={evidence.length || undefined}
