@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Visits and system events in chronological order, so a decision reads as a sequence (success criteria 3, 5 and 7). Visits have round markers; the block decision and exclusion sync events have square ones and a heavier label. The decision and the sync are separate events (D11), and one golden case has a paid click land between them.',
+          'Visits and system events in chronological order, so a decision reads as a sequence (success criteria 3, 5 and 7). A collapsed visit shows where it came from, one line of engagement, and only what changed or is unusual; its details disclose what the visit added to the evidence and the full record. The visit the decision followed is named and opened by default. The decision and the sync are separate events (D11).',
       },
     },
   },
@@ -49,13 +49,20 @@ export const SingleVisit: Story = {
   args: { items: JOURNEY_SINGLE, caption: '1 event, 18 Feb 2026' },
 };
 
-export const ExpandVisitEvidence: Story = {
+export const OpenTheDetails: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const toggles = c.getAllByRole('button', { name: 'Show visit evidence' });
-    await expect(toggles).toHaveLength(2);
-    await userEvent.click(toggles[0]);
-    await expect(c.getByRole('button', { name: 'Hide visit evidence' })).toHaveAttribute('aria-expanded', 'true');
-    await expect(c.getByText('Signals from this visit')).toBeVisible();
+    /* The decision visit opens by default; the first visit opens on request. */
+    await expect(c.getByRole('button', { name: 'Hide details' })).toHaveAttribute('aria-expanded', 'true');
+    const first = c.getAllByRole('button', { name: 'Details' })[0];
+    await userEvent.click(first);
+    await expect(c.getAllByRole('button', { name: 'Hide details' })).toHaveLength(2);
+    await expect(c.getAllByText('What this visit added to the evidence')).toHaveLength(2);
+    await expect(c.getByText('Decision visit')).toBeVisible();
   },
+};
+
+export const CollapsedRowsOnly: Story = {
+  name: 'Collapsed rows only (no decision visit)',
+  args: { items: JOURNEY_BLOCK_AND_SYNC.slice(0, 3).map((i) => ({ ...i, defaultExpanded: false })), caption: '3 events, 19 Feb 2026' },
 };

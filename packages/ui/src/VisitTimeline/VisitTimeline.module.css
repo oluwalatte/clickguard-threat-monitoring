@@ -107,12 +107,16 @@
 .head {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--space-2);
-  row-gap: var(--space-1);
+  justify-content: space-between;
+  align-items: baseline;
+  column-gap: var(--space-3);
+  row-gap: var(--space-0);
 }
 
 .typeLabel {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
   font-size: var(--text-label-size);
   line-height: var(--text-label-line);
   letter-spacing: var(--text-label-tracking);
@@ -122,11 +126,34 @@
   white-space: nowrap;
 }
 
+/* The visit the decision followed is named, ruled on the left, and opened by default. */
+.decisionTag {
+  color: var(--status-blocked);
+}
+.decisionTag::before {
+  content: '·';
+  margin-right: var(--space-2);
+  color: var(--text-muted);
+}
+.row[data-decision-visit] .body {
+  border-left: var(--border-width-strong) solid var(--status-blocked-marker);
+  padding-left: var(--space-3);
+  margin-left: calc(-1 * var(--space-3) - var(--border-width-strong));
+}
+
 .time {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   font-size: var(--text-data-size);
   line-height: var(--text-data-line);
   color: var(--text-muted);
   font-variant-numeric: var(--numeric-tabular);
+}
+.time > span + span::before {
+  content: '·';
+  margin-right: var(--space-2);
+  color: var(--border-strong);
 }
 
 .description {
@@ -139,23 +166,27 @@
   font-weight: 500;
 }
 
-.meta {
+/* One line of engagement: the number the customer compares visit to visit. */
+.summary {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-1);
-}
-
-.metaItem {
+  gap: var(--space-2);
+  margin: var(--space-0) 0 0;
   font-size: var(--text-support-size);
-  color: var(--text-secondary);
-}
-
-.metaLabel {
+  line-height: var(--text-support-line);
   color: var(--text-muted);
 }
+.summary > span + span::before {
+  content: '·';
+  margin-right: var(--space-2);
+  color: var(--border-strong);
+}
 
-.evidence {
+.changes {
+  margin-top: var(--space-2);
+}
+
+.details {
   margin-top: var(--space-2);
 }
 
@@ -177,10 +208,65 @@
   text-decoration: underline;
 }
 
-.evidencePanel {
+.panel {
   margin-top: var(--space-2);
-  padding: var(--space-1) var(--space-4) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   background: var(--surface-subtle);
   border: var(--border-width) solid var(--border-default);
   border-radius: var(--radius-md);
+}
+
+.panelTitle {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-card-title-size);
+  line-height: var(--text-card-title-line);
+  font-weight: var(--text-card-title-weight);
+  color: var(--text-primary);
+}
+
+.contributed {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-4);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  color: var(--text-primary);
+}
+.contributed li + li {
+  margin-top: var(--space-0);
+}
+
+.recordTitle {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-line);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  font-weight: var(--text-label-weight);
+  color: var(--text-muted);
+}
+
+.record {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-4);
+  row-gap: var(--space-0);
+  margin: 0;
+}
+
+.recordRow {
+  display: contents;
+}
+
+.recordLabel {
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-muted);
+}
+
+.recordValue {
+  margin: 0;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
 }

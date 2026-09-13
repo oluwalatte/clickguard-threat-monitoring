@@ -24,6 +24,7 @@ Implementation is the agent's and is recorded as such; the brief expects that.
 | P4c filters | Confirmed the token rule holds (the check passes with no exceptions), compared the proposed toolbar with the built one, and named four product questions it left open: what a date range filters on, where Not evaluated goes, what deliverability and conversion mean for a visitor, and whether status stays multi-select. Produced `Select`, `Checkbox`, `FilterMenu` and `ActiveFilterChip` with `ActiveFilterBar` as system components with stories, the date range and secondary dimensions as selectors with tests, the chip derivation as an adapter with tests, and the recomposed toolbar with every filter still in the URL | Designed the toolbar: search, date range and status visible because they define the investigation set most often; the rest progressively disclosed in a Filters menu with removable chips; an All status so the whole list is one click away (D16). Chose any visit in range over last seen, kept Not evaluated as a fifth chip, set the exact labels "Submitted an invalid email at least once" and "Converted at least once" so a Converted slice never reads as proof of a false positive, and dropped multi-select status to keep the mode switch simple |
 | P4d system audit | Audited every component and story in Storybook on review. Found and fixed: the disabled search field looked enabled and still offered its clear button; four stories whose interaction test left them in a state that contradicted their name (search field with value, checked checkbox, chips in a bar), so pairs of stories looked identical; the select's option list opened as the platform's own picker rather than under the field; long unbreakable table values (an IPv6 address) ran under the next column; and two fields borrowed a text token for their hover border | Directed the audit and named the first three. Chose wrapping over an ellipsis for long identifiers, on the agent's flag that hiding the end of an IPv6 hides the part that tells visitors apart |
 | P4e sync tuning | On the data audit, reported that pending and delayed sync existed in the golden cases and stories but never at the reference clock in the generated data, because every chain had resolved to active or failed. Tuned the factory so the first two click farms are caught mid-sync: their journeys slide to end minutes before the clock, one inside the confirmation window and one past the 15-minute mark, with anything after the clock dropped. Added a test that pins both states and that nothing is dated after the clock | Directed the tuning so the enforcement gap (D11) is visible in the table without opening a golden case |
+| P4d detail explorations | Built two canvases: the detail page (the recommended design as option A, an alternative as option B covering what A leaves open) and the visit row (three hierarchies with rationale). Added a back button through a new Button link variant. Built the chosen visit row into VisitTimeline and the data mapping | Asked for the recommended design plus one alternative, then three visit-row options with rationale. Chose option 1's collapsed row with option 2's expanded body (D17). Directed the back button styled as a text button in the accent colour with no left padding. The page-level choice is still open |
 | P5 rationale | Not started | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Success criteria go into `docs/success-criteria.md` with where each is answered on the page |
 
 ## Agent implementation notes
@@ -224,3 +225,15 @@ in the code. Not decisions.
 - The two are the first two click farms in the archetype mix, so the seed decides which IPs.
   Consuming different random numbers moved the rest of the filler slightly: the same 48 rows
   and status counts, one fewer Moderate confidence row (one remains, golden case 7).
+
+### P4d, visit row
+
+- `VisitTimelineItem` now carries `description` (source line), `summary` (engagement line),
+  `changes` (signal tags), `contributed` (evidence sentences) and `record` (every field), plus
+  `decisionVisit` and `defaultExpanded`. The old `meta` and `evidence` props are gone.
+- `present.ts` computes changes against the previous visit (location, device identity, form,
+  conversion, VPN, datacenter, automation, fingerprint) and attributes evidence sentences to
+  visits through the evidence items' visit ids. The record names the device's first sighting and
+  a location's previous value.
+- Change tags were amber and red on the canvas; the build uses SignalTag tones because amber
+  and red are Monitoring and Blocked (rule 2).

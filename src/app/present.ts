@@ -2,7 +2,7 @@
  * Presentation adapters: pure functions that turn data into the props the system
  * components take. Composition decisions live here; visual decisions do not.
  */
-import type { EvidenceItemProps, StatusKind, SyncState as UiSyncState, VisitTimelineItem } from '@clickguard/ui';
+import type { EvidenceItemProps, SignalTagProps, StatusKind, SyncState as UiSyncState, VisitTimelineItem } from '@clickguard/ui';
 import {
   CONFIDENCE_LABEL_MAP,
   NOW,
@@ -14,6 +14,7 @@ import {
   formatLater,
   formatMoney,
   formatRelative,
+  formatShortTimestamp,
   formatTime,
   formatTimestamp,
   journey,
@@ -266,14 +267,6 @@ export function toEvidenceItems(v: Visitor, evidence: Evidence[]): Array<Evidenc
   });
 }
 
-function visitDescription(v: Visit): string {
-  const where = v.landingPage === '/' ? 'the home page' : v.landingPage;
-  if (v.source === 'paid') return `Landed on ${where} from ${v.campaign ?? 'a paid ad'} on ${PLATFORM_LABEL[v.platform!]}`;
-  if (v.source === 'organic') return `Organic search visit to ${where}`;
-  if (v.source === 'direct') return `Direct visit to ${where}`;
-  return `Referral visit to ${where}`;
-}
-
 function interactionLevel(v: Visit): string {
   const shallow = v.engagement.scrollDepth < 0.1 && v.engagement.durationSec < 6;
   if (shallow && !v.engagement.pointerMoved) return 'None';
@@ -282,21 +275,67 @@ function interactionLevel(v: Visit): string {
   return 'Moderate';
 }
 
+function seconds(n: number): string {
+  if (n < 60) return `${n} second${n === 1 ? '' : 's'}`;
+  const m = Math.floor(n / 60);
+  const rest = n % 60;
+  return `${m} minute${m === 1 ? '' : 's'}${rest ? ` ${rest} seconds` : ''}`;
+}
+
+/** One line: where the visit came from. */
+function visitSource(v: Visit): string {
+  const page = v.landingPage === '/' ? 'the home page' : v.landingPage;
+  if (v.source === 'paid') return `${PLATFORM_LABEL[v.platform!]} · ${v.campaign ?? 'paid ad'}`;
+  if (v.source === 'organic') return `Organic search · ${page}`;
+  if (v.source === 'direct') return `Direct · ${page}`;
+  return `Referral · ${page}`;
+}
+
+/** One line of engagement: the number the customer compares visit to visit. */
+function visitSummary(v: Visit): string[] {
+  return [seconds(v.engagement.durationSec), `${Math.round(v.engagement.scrollDepth * 100)}% scroll`, v.converted ? 'Converted' : 'No conversion'];
+}
+
+/** Only what changed since the previous visit, or is unusual on the first. Defaults never appear. */
+function visitChanges(v: Visit, index: number, all: Visit[]): Array<SignalTagProps & { id: string }> {
+  const before = all.slice(0, index);
+  const previous = before[before.length - 1];
+  const out: Array<SignalTagProps & { id: string }> = [];
+  const push = (id: string, label: string, kind?: SignalTagProps['kind']) => out.push({ id, label, kind });
+  if (v.formResult === 'invalid') push('email', 'Email undeliverable', 'primary');
+  if (v.formResult === 'valid') push('email', 'Email: Valid', 'contradictory');
+  if (v.converted) push('converted', 'Converted', 'contradictory');
+  if (previous && v.location.city !== previous.location.city) push('location', `Location changed to ${v.location.city}`);
+  if (before.length && !before.some((p) => p.device.id === v.device.id)) push('device', 'New device identity');
+  if (v.vpnOrProxy && (!previous || !previous.vpnOrProxy)) push('vpn', 'VPN detected');
+  if (!previous && v.networkType === 'datacenter') push('network', 'Datacenter');
+  if (v.botProbability >= 0.6 && (!previous || previous.botProbability < 0.6)) push('bot', `Bot: ${Math.round(v.botProbability * 100)}%`);
+  if (!v.engagement.jsEnabled && (!previous || previous.engagement.jsEnabled)) push('js', 'No fingerprint', 'missing');
+  return out;
+}
+
 /** The brief's signals, per visit, every one of them present so absence is never blank. */
-function visitMeta(v: Visit, home: Visitor): Array<{ label: string; value: string }> {
-  const meta: Array<{ label: string; value: string }> = [];
-  if (v.keyword) meta.push({ label: 'Keyword', value: v.keyword });
-  if (v.source === 'paid') meta.push({ label: 'CPC', value: v.cpc === undefined ? 'Not reported' : formatMoney(v.cpc) });
-  meta.push({ label: 'Interaction', value: `${interactionLevel(v)} (${v.engagement.durationSec < 60 ? `${v.engagement.durationSec}s` : `${Math.floor(v.engagement.durationSec / 60)}m ${v.engagement.durationSec % 60}s`}, scroll ${Math.round(v.engagement.scrollDepth * 100)}%, pointer ${v.engagement.pointerMoved ? 'moved' : 'still'})` });
-  meta.push({ label: 'Bot probability', value: `${Math.round(v.botProbability * 100)}%` });
-  meta.push({ label: 'VPN or proxy', value: v.vpnOrProxy ? 'Yes' : 'No' });
-  meta.push({ label: 'Network', value: NETWORK_LABEL[v.networkType].replace(' connection', '').replace(' network', '').replace(' carrier', '') });
-  if (v.formResult === 'not-submitted') meta.push({ label: 'Form', value: 'Not submitted' });
-  else meta.push({ label: 'Form', value: `Submitted, email deliverability ${v.formResult === 'valid' ? 'Valid' : 'Invalid'}` });
-  meta.push({ label: 'Conversion', value: v.converted ? 'Yes' : 'No' });
-  meta.push({ label: 'Location', value: `${v.location.city}, ${v.location.country}${v.location.city !== home.location.city ? ' (changed)' : ''}` });
-  meta.push({ label: 'Device', value: `${v.device.browser}, ${v.device.os}` });
-  return meta;
+function visitRecord(v: Visit, index: number, all: Visit[]): Array<{ label: string; value: string }> {
+  const previous = all[index - 1];
+  const rec: Array<{ label: string; value: string }> = [{ label: 'Time', value: formatTimestamp(v.occurredAt) }];
+  if (v.source === 'paid') {
+    const parts = [PLATFORM_LABEL[v.platform!], v.campaign, v.keyword ? `keyword "${v.keyword}"` : undefined, v.cpc === undefined ? 'cost not reported' : formatMoney(v.cpc)].filter(Boolean);
+    rec.push({ label: 'Platform', value: parts.join(', ') });
+  } else {
+    rec.push({ label: 'Source', value: v.source === 'organic' ? 'Organic search' : v.source === 'direct' ? 'Direct' : 'Referral' });
+  }
+  rec.push({ label: 'Landing page', value: v.landingPage === '/' ? 'Home page' : v.landingPage });
+  rec.push({ label: 'Time on page', value: `${seconds(v.engagement.durationSec)}, scroll ${Math.round(v.engagement.scrollDepth * 100)}%, pointer ${v.engagement.pointerMoved ? 'moved' : 'still'}` });
+  rec.push({ label: 'Interaction level', value: interactionLevel(v) });
+  rec.push({ label: 'Bot probability', value: `${Math.round(v.botProbability * 100)}%` });
+  rec.push({ label: 'Location', value: `${v.location.city}, ${v.location.country}${previous && previous.location.city !== v.location.city ? ` (changed from ${previous.location.city})` : ''}` });
+  const firstSeenOn = all.findIndex((p) => p.device.id === v.device.id);
+  rec.push({ label: 'Device', value: `${v.device.browser}, ${v.device.os}${firstSeenOn < index ? `, first seen on visit ${firstSeenOn + 1}` : index > 0 ? ', new on this visit' : ''}` });
+  rec.push({ label: 'Network', value: `${NETWORK_LABEL[v.networkType]}, ${v.vpnOrProxy ? 'VPN or proxy detected' : 'no VPN or proxy'}` });
+  rec.push({ label: 'Form', value: v.formResult === 'not-submitted' ? 'Not submitted' : `Submitted, email deliverability ${v.formResult === 'valid' ? 'Valid' : 'Invalid'}` });
+  rec.push({ label: 'Conversion', value: v.converted ? 'Yes' : 'No' });
+  if (!v.engagement.jsEnabled) rec.push({ label: 'Fingerprint', value: 'Unavailable, JavaScript was blocked' });
+  return rec;
 }
 
 /** Visits, the decision, the sync events and any override, as timeline items (D11). */
@@ -308,20 +347,25 @@ export function toTimelineItems(v: Visitor): VisitTimelineItem[] {
   return events.map((e) => {
     const relativeTime = previous ? formatLater(previous, e.at) : 'start of journey';
     previous = e.at;
-    const timestamp = formatTimestamp(e.at);
+    const timestamp = formatShortTimestamp(e.at);
     switch (e.kind) {
       case 'visit': {
         const n = e.index + 1;
-        const signals = evidence.filter((x) => x.visitIds.includes(e.visit.id));
+        const isDecisionVisit = v.decision?.afterVisitId === e.visit.id;
+        const contributed = evidence.filter((x) => x.visitIds.includes(e.visit.id)).map((x) => x.statement);
         return {
           id: `visit-${n}`,
           type: e.visit.source,
           label: `${SOURCE_LABEL[e.visit.source]} ${n}`,
+          decisionVisit: isDecisionVisit || undefined,
+          defaultExpanded: isDecisionVisit || undefined,
           timestamp,
           relativeTime,
-          description: visitDescription(e.visit),
-          meta: visitMeta(e.visit, v),
-          evidence: signals.length ? toEvidenceItems(v, signals).map((s) => ({ ...s, sourceVisit: undefined, sourceHref: undefined })) : undefined,
+          description: visitSource(e.visit),
+          summary: visitSummary(e.visit),
+          changes: visitChanges(e.visit, e.index, v.visits),
+          contributed: contributed.length ? contributed : undefined,
+          record: visitRecord(e.visit, e.index, v.visits),
         };
       }
       case 'decision':
