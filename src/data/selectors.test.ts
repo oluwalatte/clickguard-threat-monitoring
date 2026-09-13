@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GOLDEN_CASES } from './golden';
 import { generateVisitors } from './factory';
-import { displayStatus, filterRows, journey, reasonLine, sortRows, toRow, syncByPlatform } from './selectors';
+import { displayStatus, filterRows, journey, paginate, reasonLine, sortRows, toRow, syncByPlatform } from './selectors';
 
 const visitors = generateVisitors();
 const rows = visitors.map(toRow);
@@ -104,5 +104,26 @@ describe('the journey (D11)', () => {
     const j = journey(o);
     expect(j.some((e) => e.kind === 'override')).toBe(true);
     for (let i = 1; i < j.length; i++) expect(new Date(j[i].at).getTime()).toBeGreaterThanOrEqual(new Date(j[i - 1].at).getTime());
+  });
+});
+
+describe('pagination (D15)', () => {
+  it('slices pages of 20 and reports the positions shown', () => {
+    const p1 = paginate(rows, 1);
+    expect(p1).toMatchObject({ page: 1, pageCount: 3, from: 1, to: 20, total: 48 });
+    expect(p1.rows).toEqual(rows.slice(0, 20));
+    const p3 = paginate(rows, 3);
+    expect(p3).toMatchObject({ page: 3, from: 41, to: 48 });
+    expect(p3.rows.length).toBe(8);
+  });
+  it('clamps pages that do not exist and never loses rows', () => {
+    expect(paginate(rows, 0).page).toBe(1);
+    expect(paginate(rows, 99).page).toBe(3);
+    expect(paginate(rows, Number.NaN).page).toBe(1);
+    const all = [1, 2, 3].flatMap((p) => paginate(rows, p).rows);
+    expect(all).toEqual(rows);
+  });
+  it('reads honestly when there is nothing to show', () => {
+    expect(paginate([], 1)).toEqual({ rows: [], page: 1, pageCount: 1, from: 0, to: 0, total: 0 });
   });
 });

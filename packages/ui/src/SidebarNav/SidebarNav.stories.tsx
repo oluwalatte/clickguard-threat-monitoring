@@ -62,3 +62,17 @@ export const NavigateCallsBack: Story = {
     await expect(args.onNavigate).toHaveBeenCalledWith('exclusions');
   },
 };
+
+export const ItemHover: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.hover(within(canvasElement).getByRole('link', { name: 'Click forensics' }));
+  },
+};
+
+export const ItemFocus: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(within(canvasElement).getByRole('link', { name: 'Dashboard' })).toHaveFocus();
+  },
+};

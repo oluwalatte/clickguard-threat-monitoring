@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import { NARROW_BREAKPOINT_PX, SidebarNav, type SidebarNavGroup } from '@clickguard/ui';
+import { AccountRow, NARROW_BREAKPOINT_PX, SidebarNav, type SidebarNavGroup } from '@clickguard/ui';
 import styles from './AppShell.module.css';
 
 /* The product's navigation, in product order. Only Threat monitoring is routable
@@ -54,16 +54,19 @@ export function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <SidebarNav
-        groups={GROUPS}
-        activeId={activeId}
-        collapsed={collapsed}
-        onToggleCollapse={() => setCollapsed((v) => !v)}
-        onNavigate={(id) => {
-          const item = GROUPS.flatMap((g) => g.items).find((i) => i.id === id);
-          if (item?.href) navigate(item.href);
-        }}
-      />
+      <div className={styles.rail}>
+          <SidebarNav
+          groups={GROUPS}
+          activeId={activeId}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((v) => !v)}
+          onNavigate={(id) => {
+            const item = GROUPS.flatMap((g) => g.items).find((i) => i.id === id);
+            if (item?.href) navigate(item.href);
+          }}
+          footer={<AccountRow name="Latte's workspace" detail="latte@clickguard.com" initials="LW" collapsed={collapsed} />}
+        />
+      </div>
       <div className={styles.content}>
         <Outlet />
       </div>

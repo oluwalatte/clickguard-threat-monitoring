@@ -1,0 +1,68 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary,
+.summaryOnly {
+  margin: 0;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-secondary);
+  font-variant-numeric: var(--numeric-tabular);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.control,
+.page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--control-height-sm);
+  min-width: var(--control-height-sm);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-support-size);
+  font-weight: 500;
+  font-variant-numeric: var(--numeric-tabular);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.control:hover:enabled,
+.page:hover:enabled {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+.control:disabled {
+  color: var(--action-disabled-text);
+  cursor: not-allowed;
+}
+
+/* The current page changes weight and surface, not colour alone. */
+.page[aria-current='page'] {
+  background: var(--surface-selected);
+  border-color: var(--action-primary-border);
+  color: var(--action-primary-ink);
+  font-weight: 600;
+}
+
+.gap {
+  padding: 0 var(--space-1);
+  color: var(--text-muted);
+}

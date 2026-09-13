@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Button, FilterChip, FilterGroup, SearchField, SignalTags, StatusBadge, SyncFlag, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
-import { CONFIDENCE_LABEL_MAP, NOW, filterRows, formatRelative, formatShortTimestamp, toRow, type Confidence, type DisplayStatus, type TrafficFilter, type VisitorRow } from '@/data';
+import { Button, FilterChip, FilterGroup, Pagination, SearchField, SignalTags, StatusBadge, SyncFlag, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
+import { CONFIDENCE_LABEL_MAP, NOW, filterRows, formatRelative, formatShortTimestamp, paginate, sortRows, toRow, type Confidence, type DisplayStatus, type SortKey, type TrafficFilter, type VisitorRow } from '@/data';
 import { VISITORS } from '../data';
 import { STATUS_FILTERS, syncException, toStatusKind } from '../present';
 import { Page, PageHeader, ToolbarRow } from './Page';
@@ -10,6 +10,8 @@ const CONFIDENCE_RANK: Record<Confidence, number> = { high: 4, moderate: 3, conf
 const DEFAULT_SORT: TableSort = { key: 'lastSeenAt', direction: 'desc' };
 const SORT_LABEL: Record<string, string> = { lastSeenAt: 'last seen', status: 'status, then most recent decision', totalVisits: 'visits', paidVisits: 'paid clicks', confidence: 'decision confidence' };
 const STATUS_ORDER: DisplayStatus[] = ['blocked', 'monitoring', 'allowed', 'not-blocked', 'not-evaluated'];
+/* Column keys mapped onto the data layer's sorts, so the page slice sees the same order the headers show. */
+const COLUMN_SORT: Record<string, SortKey> = { lastSeenAt: 'recency', status: 'status', totalVisits: 'visits', paidVisits: 'paid-clicks', confidence: 'confidence' };
 
 /* One row per visitor (D1), in the customer's investigation sequence (D14): who, what was
    decided, how much behaviour accumulated, why, how certain, how recent. Sort by header (D7);
@@ -32,7 +34,7 @@ const COLUMNS: ThreatTableColumn<VisitorRow>[] = [
     header: 'Status',
     width: '15%',
     /* Verdict first; within a verdict, the most recent decision first. */
-    sortValue: (r) => STATUS_ORDER.indexOf(r.status) * 1e13 - (r.decidedAt ? new Date(r.decidedAt).getTime() : 0),
+    sortValue: (r) => -(STATUS_ORDER.indexOf(r.status) * 1e13 - (r.decidedAt ? new Date(r.decidedAt).getTime() : 0)),
     render: (r) => {
       const exception = syncException(r);
       return (
@@ -86,16 +88,23 @@ export function ThreatMonitoringRoute() {
   const traffic = (params.get('traffic') as TrafficFilter | null) ?? 'any';
   const sort: TableSort = params.get('sort') ? { key: params.get('sort')!, direction: params.get('dir') === 'asc' ? 'asc' : 'desc' } : DEFAULT_SORT;
 
-  const update = (patch: Record<string, string | undefined>) => {
+  const page = Math.max(1, Number(params.get('page')) || 1);
+
+  /* Any change to what is listed or how it is ordered returns to page one. */
+  const update = (patch: Record<string, string | undefined>, keepPage = false) => {
     const next = new URLSearchParams(params);
     for (const [k, v] of Object.entries(patch)) {
       if (v === undefined || v === '') next.delete(k);
       else next.set(k, v);
     }
+    if (!keepPage) next.delete('page');
     setParams(next, { replace: true });
   };
 
   const rows = useMemo(() => filterRows(ALL_ROWS, { query, statuses, traffic }), [query, statuses.join(','), traffic]);
+  /* Sorting happens here, before the page slice, so a page is a window onto the whole ordered list. */
+  const ordered = useMemo(() => sortRows(rows, COLUMN_SORT[sort.key] ?? 'recency', sort.direction), [rows, sort.key, sort.direction]);
+  const paged = paginate(ordered, page);
   const countsByStatus = useMemo(() => {
     const scoped = filterRows(ALL_ROWS, { query, traffic });
     return Object.fromEntries(STATUS_FILTERS.map((s) => [s.value, scoped.filter((r) => r.status === s.value).length])) as Record<DisplayStatus, number>;
@@ -146,11 +155,11 @@ export function ThreatMonitoringRoute() {
       <Page>
         <ThreatTable
           columns={COLUMNS}
-          rows={rows}
+          rows={paged.rows}
           state={rows.length ? 'ready' : 'empty'}
           sort={sort}
           onSortChange={(s) => update({ sort: s.key === DEFAULT_SORT.key && s.direction === DEFAULT_SORT.direction ? undefined : s.key, dir: s.key === DEFAULT_SORT.key && s.direction === DEFAULT_SORT.direction ? undefined : s.direction })}
-          caption={`${rows.length} of ${ALL_ROWS.length} visitors, sorted by ${SORT_LABEL[sort.key] ?? sort.key}, ${sort.direction === 'desc' ? 'newest or highest first' : 'oldest or lowest first'}`}
+          caption={`${rows.length === ALL_ROWS.length ? `${rows.length} visitors` : `${rows.length} of ${ALL_ROWS.length} visitors`}, sorted by ${SORT_LABEL[sort.key] ?? sort.key}, ${sort.direction === 'desc' ? 'newest or highest first' : 'oldest or lowest first'}`}
           getRowId={(r) => r.id}
           rowActionLabel="View visitor"
           onRowActivate={(r) => navigate(`/threat-monitoring/${r.id}`, { state: { from: `?${params.toString()}` } })}
@@ -162,6 +171,14 @@ export function ThreatMonitoringRoute() {
             onAction: clearFilters,
           }}
         />
+        {rows.length ? (
+          <Pagination
+            page={paged.page}
+            pageCount={paged.pageCount}
+            onPageChange={(p) => update({ page: p === 1 ? undefined : String(p) }, true)}
+            summary={`${paged.from} to ${paged.to} of ${paged.total} visitors`}
+          />
+        ) : null}
       </Page>
     </>
   );

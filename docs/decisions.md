@@ -157,6 +157,9 @@ invented. It is also a system proof the table cannot give: navigation must use t
 Rejected: a bare page (reads as a demo, not a feature) and a sidebar as page chrome with no
 states (time spent with nothing for the system to show).
 Cost: about 25 minutes, and a hard rule that no other destination gets built.
+Amended 13 Sep 2026: the sidebar's footer carries the workspace row from the product's own
+shell (an initials avatar, "Latte's workspace", latte@clickguard.com). Identification only; it
+opens nothing, because no account workflow is modelled.
 
 ## D14. Table columns follow the investigation sequence
 Decided 13 Sep 2026, on review of the built table: Visitor, Status, Visits, Paid, Key
@@ -168,6 +171,15 @@ unless there is an exception (sync pending, delayed or failed), which appears as
 under the decision time; the per-platform picture lives in the visitor detail.
 Rejected: a Decided column (timing belongs with the verdict) and listing every platform in the
 Status cell (it would mix the verdict, its time and enforcement in one cell).
+
+## D15. The table is paginated, twenty rows a page
+Decided 13 Sep 2026: pages of 20, because that fits a laptop screen at the table's row height
+and gives three pages on the prototype's data, so the control is exercised. The page lives in
+the URL beside the filters and sort; any change to what is listed or how it is ordered returns
+to page one. Sorting happens before the page slice, so a page is a window onto the whole
+ordered list. The summary reads "1 to 20 of 48 visitors".
+Rejected: rendering every row (scannable at 48, not how the product behaves) and virtualised
+scrolling (hides the size of the list and breaks find-in-page).
 
 ## Out of scope
 Dashboard screen, manual and bulk overrides (D9), URL-persisted filters unless time allows, dark
