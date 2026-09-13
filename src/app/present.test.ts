@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GOLDEN_CASES, generateVisitors, toRow } from '@/data';
+import { GOLDEN_CASES, NOW, generateVisitors, syncByPlatform, toRow } from '@/data';
 import { CONVERTED_LABEL, INVALID_EMAIL_LABEL, activeFilterChips, evidenceFootnote, explanation, exposureLine, headline, syncException, syncSummary, toEvidenceItems, toStatusKind, toTimelineItems, visitorDescription } from './present';
 
 const golden = (n: number) => GOLDEN_CASES.find((g) => g.goldenCase === n)!;
@@ -113,5 +113,21 @@ describe('the secondary filters show as chips (D16)', () => {
     expect(CONVERTED_LABEL).toBe('Converted at least once');
     expect(INVALID_EMAIL_LABEL).toBe('Submitted an invalid email at least once');
     expect(`${CONVERTED_LABEL} ${INVALID_EMAIL_LABEL}`).not.toMatch(/legitimate|false positive|wrong|safe/i);
+  });
+});
+
+describe('a visitor caught mid-sync reads its age from the queue', () => {
+  const latest = (v: (typeof visitors)[number]) => Object.values(syncByPlatform(v)).map((e) => e.state);
+  it('names the delay from when the exclusion was queued', () => {
+    const v = visitors.find((x) => latest(x).includes('delayed'))!;
+    const row = syncSummary(v)!.platforms.find((p) => p.state === 'delayed')!;
+    const queued = v.exclusionEvents.find((e) => e.state === 'pending')!.at;
+    const minutes = Math.round((new Date(NOW).getTime() - new Date(queued).getTime()) / 60000);
+    expect(minutes).toBeGreaterThanOrEqual(22);
+    expect(row.detail).toBe(`not confirmed ${minutes} minutes after it was queued`);
+  });
+  it('says how long ago a pending exclusion was queued', () => {
+    const v = visitors.find((x) => latest(x).includes('pending'))!;
+    expect(syncSummary(v)!.platforms[0].detail).toMatch(/^queued \d+ minutes ago$/);
   });
 });
