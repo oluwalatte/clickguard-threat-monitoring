@@ -3,6 +3,7 @@
    Monitoring template (D8), and the decision and the sync as separate events (D11).
    Real data comes from src/data in P3; stories never import it. */
 import type { EvidenceItemProps } from '../EvidenceItem/EvidenceItem';
+import type { SignalTagProps } from '../SignalTag/SignalTag';
 import type { SidebarNavGroup } from '../SidebarNav/SidebarNav';
 import type { StatusKind } from '../StatusBadge/StatusBadge';
 import type { VisitTimelineItem } from '../VisitTimeline/VisitTimeline';
@@ -18,6 +19,7 @@ export interface VisitorRow extends Record<string, unknown> {
   lastSeen: string;
   lastSeenRelative: string;
   reason: string;
+  signals: SignalTagProps[];
 }
 
 export const VISITOR_ROWS: VisitorRow[] = [
@@ -32,6 +34,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     lastSeen: '19 Feb 2026, 14:53:44 UTC',
     lastSeenRelative: '2 hours ago',
     reason: 'Returned through four paid ads in 41 minutes and showed no scroll or mouse movement on any visit',
+    signals: [{ label: '4 paid clicks / 41 min', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }, { label: 'Bot: 95%' }, { label: 'Datacenter' }],
   },
   {
     id: 'v-1039',
@@ -44,6 +47,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     lastSeen: '19 Feb 2026, 12:08:57 UTC',
     lastSeenRelative: '5 hours ago',
     reason: 'Monitoring: 3 paid visits in 12 minutes with shallow engagement. Not blocked because there is no automation signal and the history is three visits long.',
+    signals: [{ label: '3 paid clicks / 12 min', kind: 'primary' }, { label: 'Low interaction', kind: 'primary' }, { label: 'Same keyword' }],
   },
   {
     id: 'v-1036',
@@ -56,6 +60,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     lastSeen: '19 Feb 2026, 09:41:02 UTC',
     lastSeenRelative: '8 hours ago',
     reason: 'Seven paid clicks over 3 days from a datacenter network with under 6 seconds on the page each time',
+    signals: [{ label: '7 paid clicks / 3 days', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }, { label: 'Bot: 91%' }, { label: 'Datacenter' }],
   },
   {
     id: 'v-1031',
@@ -68,6 +73,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     lastSeen: '19 Feb 2026, 08:22:19 UTC',
     lastSeenRelative: '9 hours ago',
     reason: 'Real engagement on both visits and a valid form on the second',
+    signals: [{ label: 'Email: Valid', kind: 'contradictory' }, { label: 'Converted', kind: 'contradictory' }, { label: 'High interaction', kind: 'contradictory' }],
   },
   {
     id: 'v-1028',
@@ -80,6 +86,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     lastSeen: '18 Feb 2026, 23:14:55 UTC',
     lastSeenRelative: '18 hours ago',
     reason: 'One visit is not enough history to evaluate',
+    signals: [{ label: 'High interaction', kind: 'contradictory' }],
   },
   {
     id: 'v-1024',
@@ -92,6 +99,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     lastSeen: '18 Feb 2026, 17:02:31 UTC',
     lastSeenRelative: 'yesterday',
     reason: 'Blocked after visit 4, then manually allowed on 18 Feb 2026 as internal QA traffic',
+    signals: [{ label: '4 paid clicks / 2 days', kind: 'primary' }, { label: 'Low interaction', kind: 'primary' }, { label: 'Datacenter' }],
   },
 ];
 
@@ -108,6 +116,7 @@ export const LONG_ROW: VisitorRow = {
   lastSeenRelative: '2 days ago',
   reason:
     'Eleven paid clicks over 5 days on the same keyword from three different reported locations and four device identities, with no scroll on any visit and two forms submitted with undeliverable email addresses',
+  signals: [{ label: '11 paid clicks / 5 days', kind: 'primary' }, { label: 'Low interaction', kind: 'primary' }, { label: '4 devices' }, { label: 'Location changed' }, { label: 'Email: Invalid' }, { label: 'No conversion' }, { label: 'Same keyword' }],
 };
 
 export const EVIDENCE_FULL: Array<EvidenceItemProps & { id: string }> = [

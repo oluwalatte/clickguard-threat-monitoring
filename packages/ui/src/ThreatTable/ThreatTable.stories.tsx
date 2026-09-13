@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
+import { SignalTags } from '../SignalTag/SignalTag';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
 import { LONG_ROW, VISITOR_ROWS, type VisitorRow } from '../stories/fixtures';
 import { ThreatTable, type TableSort, type ThreatTableColumn } from './ThreatTable';
@@ -23,7 +24,7 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
   { key: 'status', header: 'Status', width: 160, render: (r) => <StatusBadge status={r.status} size="sm" />, sortValue: (r) => STATUS_ORDER[r.status] },
   { key: 'visits', header: 'Visits', width: 90, align: 'right', render: (r) => `${r.visits}` },
   { key: 'paidVisits', header: 'Paid visits', width: 110, align: 'right' },
-  { key: 'reason', header: 'Why', sortable: false },
+  { key: 'signals', header: 'Key evidence', sortable: false, render: (r) => <SignalTags signals={r.signals} /> },
   {
     key: 'lastSeen',
     header: 'Last seen',

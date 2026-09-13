@@ -7,6 +7,7 @@ export { EvidenceItem, type EvidenceItemProps, type EvidenceKind } from './Evide
 export { EvidenceList, type EvidenceListProps } from './EvidenceList/EvidenceList';
 export { Icon, ICON_NAMES, type IconProps, type IconName, type IconSize } from './Icon/Icon';
 export { SearchField, type SearchFieldProps } from './SearchField/SearchField';
+export { SignalTag, SignalTags, type SignalTagProps, type SignalTagsProps, type SignalKind } from './SignalTag/SignalTag';
 export { SidebarNav, type SidebarNavProps, type SidebarNavItem, type SidebarNavGroup } from './SidebarNav/SidebarNav';
 export { StatusBadge, STATUS_LABEL, type StatusBadgeProps, type StatusKind } from './StatusBadge/StatusBadge';
 export { ThreatTable, type ThreatTableProps, type ThreatTableColumn, type TableSort, type SortDirection } from './ThreatTable/ThreatTable';

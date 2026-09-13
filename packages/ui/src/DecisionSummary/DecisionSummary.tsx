@@ -3,13 +3,14 @@ import { Icon, type IconName } from '../Icon/Icon';
 import { StatusBadge, type StatusKind } from '../StatusBadge/StatusBadge';
 import styles from './DecisionSummary.module.css';
 
-export type Confidence = 'high' | 'moderate' | 'conflicting' | 'none';
+export type Confidence = 'high' | 'moderate' | 'conflicting' | 'insufficient' | 'none';
 export type SyncState = 'active' | 'pending' | 'failed';
 
 export interface DecisionSummaryProps {
   status: StatusKind;
   statusLabel?: string;
-  /** Calibrated label shown next to the badge. Use `conflicting` when evidence disagrees. */
+  /** Calibrated label shown next to the badge. Blocked: high, moderate or conflicting.
+      Monitoring: conflicting or insufficient. Not blocked: none. */
   confidence?: Confidence;
   /** One sentence naming what happened, e.g. "Blocked after visit 4". */
   headline: string;
@@ -34,6 +35,7 @@ export const CONFIDENCE_LABEL: Record<Confidence, string | null> = {
   high: 'High confidence',
   moderate: 'Moderate confidence',
   conflicting: 'Conflicting evidence',
+  insufficient: 'Insufficient evidence',
   none: null,
 };
 

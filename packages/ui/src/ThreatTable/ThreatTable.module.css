@@ -32,8 +32,8 @@
 .th {
   padding: 0;
   text-align: left;
+  vertical-align: bottom;
   border-bottom: var(--border-width) solid var(--border-default);
-  white-space: nowrap;
 }
 .th[data-align='right'] {
   text-align: right;
@@ -45,9 +45,11 @@
 .thLabel,
 .sortButton {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-1);
   width: 100%;
+  text-align: inherit;
+  white-space: normal;
   padding: var(--space-3) var(--table-cell-x);
   font-size: var(--text-label-size);
   letter-spacing: var(--text-label-tracking);

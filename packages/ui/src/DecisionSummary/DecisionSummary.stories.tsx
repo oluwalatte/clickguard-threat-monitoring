@@ -63,10 +63,10 @@ export const MonitoringConflictingEvidence: Story = {
   },
 };
 
-export const MonitoringTooLittleHistory: Story = {
+export const MonitoringInsufficientEvidence: Story = {
   args: {
     status: 'monitoring',
-    confidence: 'none',
+    confidence: 'insufficient',
     headline: 'Monitoring, not blocked',
     explanation:
       'Monitoring: 3 paid visits in 12 minutes with shallow engagement. Not blocked because there is no automation signal and the history is three visits long.',
