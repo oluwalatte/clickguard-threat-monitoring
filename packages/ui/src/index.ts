@@ -10,6 +10,7 @@ export { SearchField, type SearchFieldProps } from './SearchField/SearchField';
 export { SignalTag, SignalTags, type SignalTagProps, type SignalTagsProps, type SignalKind } from './SignalTag/SignalTag';
 export { SidebarNav, type SidebarNavProps, type SidebarNavItem, type SidebarNavGroup } from './SidebarNav/SidebarNav';
 export { StatusBadge, STATUS_LABEL, type StatusBadgeProps, type StatusKind } from './StatusBadge/StatusBadge';
+export { SyncFlag, type SyncFlagProps, type SyncException } from './SyncFlag/SyncFlag';
 export { ThreatTable, type ThreatTableProps, type ThreatTableColumn, type TableSort, type SortDirection } from './ThreatTable/ThreatTable';
 export { VisitTimeline, type VisitTimelineProps, type VisitTimelineItem, type TimelineItemType } from './VisitTimeline/VisitTimeline';
 export { TABLE_NARROW_BREAKPOINT_PX as NARROW_BREAKPOINT_PX } from './tokens/breakpoints';

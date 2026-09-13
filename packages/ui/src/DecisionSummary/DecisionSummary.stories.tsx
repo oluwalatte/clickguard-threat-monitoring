@@ -94,6 +94,17 @@ export const NotBlocked: Story = {
   },
 };
 
+export const TwoPlatforms: Story = {
+  args: {
+    syncState: 'pending',
+    syncNote: 'One platform has not confirmed the exclusion yet. Paid clicks from it can still reach the site.',
+    syncPlatforms: [
+      { name: 'Google Ads', state: 'active', detail: 'since 19 Feb 2026, 15:02:10 UTC' },
+      { name: 'Meta Ads', state: 'pending', detail: 'queued 6 minutes ago' },
+    ],
+  },
+};
+
 export const SyncFailed: Story = {
   args: {
     syncState: 'failed',

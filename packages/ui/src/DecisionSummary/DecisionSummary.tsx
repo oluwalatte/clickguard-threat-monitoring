@@ -23,6 +23,8 @@ export interface DecisionSummaryProps {
   /** Distinguishes "decision made" from "exclusion became active" at the platform. */
   syncState?: SyncState;
   syncNote?: string;
+  /** One row per advertising platform, so a mixed picture is never flattened into one word. */
+  syncPlatforms?: Array<{ name: string; state: 'active' | 'pending' | 'delayed' | 'failed'; detail?: string }>;
   /** Paid spend attributable to this visitor, with the assumption stated. */
   exposure?: string;
   evidenceHref?: string;
@@ -45,6 +47,8 @@ const SYNC: Record<SyncState, { text: string; icon: IconName }> = {
   failed: { text: 'Exclusion sync failed', icon: 'triangle-alert' },
 };
 
+const PLATFORM_STATE: Record<'active' | 'pending' | 'delayed' | 'failed', string> = { active: 'Active', pending: 'Pending', delayed: 'Delayed', failed: 'Failed' };
+
 function Field({ label, value, mono }: { label: string; value?: string; mono?: boolean }) {
   return (
     <div className={styles.field}>
@@ -66,6 +70,7 @@ export function DecisionSummary({
   monitoringNote,
   syncState,
   syncNote,
+  syncPlatforms,
   exposure,
   evidenceHref = '#evidence',
   evidenceCount,
@@ -96,6 +101,19 @@ export function DecisionSummary({
           <div className={styles.syncBody}>
             <span className={styles.syncText}>{sync.text}</span>
             {syncNote ? <span className={styles.syncNote}>{syncNote}</span> : null}
+            {syncPlatforms && syncPlatforms.length ? (
+              <dl className={styles.platforms}>
+                {syncPlatforms.map((p) => (
+                  <div key={p.name} className={styles.platformRow} data-state={p.state}>
+                    <dt className={styles.platformName}>{p.name}</dt>
+                    <dd className={styles.platformState}>
+                      <span className={styles.platformLabel}>{PLATFORM_STATE[p.state]}</span>
+                      {p.detail ? <span className={styles.platformDetail}>{p.detail}</span> : null}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
           </div>
         </div>
       ) : null}

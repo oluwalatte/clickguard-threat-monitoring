@@ -1,0 +1,14 @@
+.flag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-line);
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--status-monitoring);
+}
+
+.flag[data-state='failed'] {
+  color: var(--status-blocked);
+}
