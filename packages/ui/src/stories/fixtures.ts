@@ -33,7 +33,7 @@ export const VISITOR_ROWS: VisitorRow[] = [
     paidVisits: 4,
     lastSeen: '12 Sep 2026, 14:53:44 UTC',
     lastSeenRelative: '21 hours ago',
-    reason: 'Returned through four paid ads in 41 minutes and showed no scroll or mouse movement on any visit',
+    reason: 'The visitor returned through four paid ads in 41 minutes, showed no scroll or mouse movement, and connected through a datacenter network',
     signals: [{ label: '4 paid clicks / 41 min', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }, { label: 'Bot: 95%' }, { label: 'Datacenter' }],
   },
   {
@@ -310,7 +310,7 @@ export const JOURNEY_SYNC_FAILED: VisitTimelineItem[] = [
     type: 'sync-failed',
     timestamp: t('14:53'),
     relativeTime: '7 seconds later',
-    description: 'Meta Ads rejected the exclusion request twice. This visitor can still reach the site through Meta ads.',
+    description: 'Meta Ads rejected the exclusion request twice. This visitor may still see the advertiser\'s ads on Meta Ads.',
   },
 ];
 

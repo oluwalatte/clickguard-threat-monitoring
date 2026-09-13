@@ -9,7 +9,7 @@ const meta = {
     status: 'blocked',
     confidence: 'high',
     headline: 'Blocked after visit 4 of 6',
-    explanation: 'Returned through four paid ads in 41 minutes and showed no scroll or mouse movement on any visit.',
+    explanation: 'The visitor returned through four paid ads in 41 minutes, showed no scroll or mouse movement, and connected through a datacenter network.',
     decisionTime: '12 Sep 2026, 14:53:44 UTC',
     syncState: 'active',
     syncNote: 'Google Ads confirmed the exclusion at 15:02:10 UTC, 8 minutes after the decision. No paid clicks since.',
@@ -108,7 +108,7 @@ export const TwoPlatforms: Story = {
 export const SyncFailed: Story = {
   args: {
     syncState: 'failed',
-    syncNote: 'Meta Ads rejected the exclusion request twice. This visitor can still reach the site through Meta ads.',
+    syncNote: 'Meta Ads rejected the exclusion request twice. This visitor may still see the advertiser\'s ads on Meta Ads.',
   },
 };
 

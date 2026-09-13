@@ -168,11 +168,15 @@ export function summarize(all: Visit[], upTo: number, ctx: JourneyContext): stri
   const noPointer = window.every((v) => !v.engagement.pointerMoved);
   const lead =
     paid.length >= 3
-      ? `Returned through ${paid.length} paid ads in ${spanLabel(paid[0], paid[paid.length - 1])}`
-      : `Made ${window.length} visits in ${spanLabel(window[0], window[window.length - 1])}`;
-  const second = shallow && noPointer ? ' and showed no scroll or mouse movement on any visit' : shallow ? ' and left within seconds each time' : '';
-  const tail = ctx.networkType === 'datacenter' ? ', from a datacenter network' : ctx.vpnOrProxy ? ', behind a VPN' : '';
-  return `${lead}${second}${tail}.`;
+      ? `The visitor returned through ${paid.length} paid ads in ${spanLabel(paid[0], paid[paid.length - 1])}`
+      : `The visitor made ${window.length} visits in ${spanLabel(window[0], window[window.length - 1])}`;
+  const clauses = [
+    shallow && noPointer ? 'showed no scroll or mouse movement' : shallow ? 'left within seconds each time' : undefined,
+    ctx.networkType === 'datacenter' ? 'connected through a datacenter network' : ctx.vpnOrProxy ? 'connected behind a VPN' : undefined,
+  ].filter((c): c is string => Boolean(c));
+  if (clauses.length === 2) return `${lead}, ${clauses[0]}, and ${clauses[1]}.`;
+  if (clauses.length === 1) return `${lead} and ${clauses[0]}.`;
+  return `${lead}.`;
 }
 
 /** D5. Conflicting when the evidence disagrees with itself; high only with an automation

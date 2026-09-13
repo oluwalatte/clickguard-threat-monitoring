@@ -26,7 +26,7 @@ describe('rows are derived, never stored', () => {
     expect(displayStatus(golden(1))).toBe('blocked');
   });
   it('writes a plain-language reason for every status', () => {
-    expect(reasonLine(golden(1))).toMatch(/^Returned through four paid ads/);
+    expect(reasonLine(golden(1))).toMatch(/^The visitor returned through four paid ads/);
     expect(reasonLine(golden(2))).toMatch(/^Not blocked: 2 visits, 1 paid, real engagement on every visit, a completed purchase\.$/);
     expect(reasonLine(golden(4))).toMatch(/^Monitoring: /);
     expect(reasonLine(golden(8))).toBe('One visit is not enough history to evaluate.');

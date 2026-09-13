@@ -35,7 +35,7 @@ export const CASE_1_CLEARLY_MALICIOUS: Visitor = {
   decision: {
     ...decided(c1Visits, 3, c1ctx),
     confidence: 'high',
-    summary: 'Returned through four paid ads in 41 minutes and showed no scroll or mouse movement on any visit, from a datacenter network.',
+    summary: 'The visitor returned through four paid ads in 41 minutes, showed no scroll or mouse movement, and connected through a datacenter network.',
   },
   exclusionEvents: [
     { id: 'c1-s1', platform: 'google-ads', state: 'pending', at: '2026-09-11T14:53:22Z', note: 'Google Ads exclusion queued. Blocking begins when the platform confirms it.' },
@@ -131,7 +131,7 @@ export const CASE_5_ORGANIC_RETURN_CONVERTS: Visitor = {
   decision: {
     ...decided(c5Visits, 5, c5ctx, 6),
     confidence: 'conflicting',
-    summary: 'Returned through 6 paid ads in 2 days on one keyword and left within seconds each time. Two days after the block, an organic visit converted; that conflicts with the earlier evidence and is not by itself proof the block was wrong.',
+    summary: 'The visitor returned through 6 paid ads in 2 days on one keyword and left within seconds each time. Two days after the block, an organic visit converted; that conflicts with the earlier evidence and is not by itself proof the block was wrong.',
   },
   exclusionEvents: [
     { id: 'c5-s1', platform: 'google-ads', state: 'pending', at: '2026-09-06T19:55:04Z', note: 'Google Ads exclusion queued. Blocking begins when the platform confirms it.' },
@@ -159,7 +159,7 @@ export const CASE_6_SYNC_DELAY: Visitor = {
   decision: {
     ...decided(c6Visits, 2, c6ctx),
     confidence: 'high',
-    summary: 'Returned through 3 paid ads in 15 minutes and showed no scroll or mouse movement on any visit, from a datacenter network.',
+    summary: 'The visitor returned through 3 paid ads in 15 minutes, showed no scroll or mouse movement, and connected through a datacenter network.',
   },
   exclusionEvents: [
     { id: 'c6-s1', platform: 'google-ads', state: 'pending', at: '2026-09-12T08:15:12Z', note: 'Google Ads exclusion queued. Blocking begins when the platform confirms it.' },
@@ -192,7 +192,7 @@ export const CASE_7_LOCATION_DEVICE_INCONSISTENCY: Visitor = {
   },
   exclusionEvents: [
     { id: 'c7-s1', platform: 'meta-ads', state: 'pending', at: '2026-09-10T22:47:05Z', note: 'Meta Ads exclusion queued. Blocking begins when the platform confirms it.' },
-    { id: 'c7-s2', platform: 'meta-ads', state: 'failed', at: '2026-09-10T22:52:30Z', note: 'Meta Ads rejected the exclusion request twice. This visitor can still reach the site through Meta ads.' },
+    { id: 'c7-s2', platform: 'meta-ads', state: 'failed', at: '2026-09-10T22:52:30Z', note: 'Meta Ads rejected the exclusion request twice. This visitor may still see the advertiser\'s ads on Meta Ads.' },
   ],
   goldenCase: 7,
 };

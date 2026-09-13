@@ -230,7 +230,7 @@ export function syncSummary(v: Visitor): { state: UiSyncState; note: string; pla
   const since = paidClicksSinceActive(v);
   const note =
     state === 'failed'
-      ? `${failed.map((p) => p.name).join(' and ')} rejected the exclusion. This visitor can still reach the site through ${failed.length === 1 ? 'that platform' : 'those platforms'}.`
+      ? `${failed.map((p) => p.name).join(' and ')} rejected the exclusion. This visitor may still see the advertiser's ads on ${failed.length === 1 ? 'that platform' : 'those platforms'}.`
       : state === 'pending'
         ? `${open.map((p) => p.name).join(' and ')} ${open.length === 1 ? 'has' : 'have'} not confirmed the exclusion yet. Blocking there begins when the platform confirms it, and paid clicks can still reach the site until then.`
         : `The exclusion is active on every platform this visitor used. ${since === 0 ? 'No paid clicks since.' : `${since} paid clicks since.`}`;
