@@ -1,217 +1,67 @@
-# Rationale
+# ClickGuard Threat Monitoring Rationale
 
-Written from `decisions.md` and `ai-workflow.md`. Sections arrive as the work does; the
-outline follows the build plan.
+ClickGuard blocks invalid traffic across a visitor's full journey. The customer does not see that decision happen, so the interface has to explain it clearly afterward. I designed the prototype around one question: why was this visitor blocked, and was the decision justified?
 
-## Signal placement
+The table helps the customer find a visitor. The detail page shows the journey, the evidence, and the point where ClickGuard made its decision.
 
-The brief's behavioural signals exist at visit level, while the table represents each
-visitor's cumulative journey. I kept identity, location, status, journey size and decision
-timing in the overview and summarised only the most important evidence in each row, as
-concise labels that can be compared across rows. Interaction level, bot probability, VPN,
-email deliverability and conversion stay attached to the visit where they were recorded, so
-the table stays scannable without removing the evidence needed to audit the decision.
+## Table and signal placement
 
-I added network type, click velocity and device consistency because they make cumulative
-patterns easier to read. Network type separates ordinary residential traffic from datacenter
-infrastructure, click velocity gives repeated paid clicks their time context, and device
-inconsistency can reveal automated identity changes. Exclusion sync is shown separately as an
-enforcement state: it says whether the decision reached the advertising platform, not why the
-decision was made.
+Each table row represents one visitor, identified by IP address. This matches the way blocking works. Individual visits sit inside the visitor's journey.
 
-## Table columns
+The columns follow the customer's investigation order. They show the visitor, status, total visits, paid visits, key evidence, decision confidence, and last activity. Visits and Paid remain separate because both values are useful and can be sorted independently.
 
-I ordered the table around the customer's investigation sequence: identify the visitor,
-understand the verdict, assess the size and paid portion of the journey, review the strongest
-evidence, judge confidence and check recency. Visits and paid visits stay separate because
-they are independently useful sorting dimensions. Decision time is attached to the verdict,
-while detailed platform enforcement is deferred to the visitor view unless a sync problem
-needs attention.
+Decision time sits beneath the status because it belongs to the verdict. Last seen remains separate because a visitor may return after the decision. Platform enforcement stays in the detail page unless a sync problem needs attention. In that case, the table shows a short warning beneath the status.
 
-## Progressive disclosure in the visitor detail
+Detailed interaction, bot probability, VPN use, email deliverability, and conversion data remain attached to the visit where they were recorded. The table only shows short evidence labels. This keeps it easy to scan and avoids hiding differences between visits behind one visitor-level value.
 
-I structured the visitor detail around progressive disclosure. The verdict, the primary
-reasons, the tipping event and the confidence explanation stay immediately visible because
-they answer why the visitor was blocked. Supporting signals, repeated visit metadata and raw
-model values stay available for auditability but are collapsed by default. This lets a customer
-understand the decision quickly without losing the evidence needed for a deeper investigation.
+I added network type, click velocity, and device consistency because they make suspicious patterns easier to understand. Network type separates residential traffic from datacenter infrastructure. Click velocity gives repeated paid clicks a clear time frame. Device consistency shows when one IP changes device or browser identity unusually quickly. Exclusion sync is shown separately because it describes enforcement, not the reason for the decision.
 
-## Detail pattern
+## Visitor detail and progressive disclosure
 
-The question the product has to answer is why one visitor was blocked and whether that was
-justified, so the detail view is the product and the table is how you reach it. I gave the
-detail a route of its own rather than a drawer. I had four drawer information orders rendered
-on one canvas with the same visitor in each, and the drawer lost on three counts: a long
-evidence trail gets cramped beside the table, a shareable explanation needs a deep link, and
-below a laptop width a drawer becomes a page anyway. A route gives the journey room, survives
-the browser back button, and behaves the same at every width.
+I used a dedicated detail page instead of a drawer. A long journey needs more room than a drawer provides. A page also has a stable URL, works with the browser back button, and behaves consistently on smaller screens.
 
-The page follows the order of the success criteria. The decision summary comes first because
-it answers four of the six questions without scrolling: the status, when it was decided, the
-one-sentence reason, and how sure the system is. The journey sits directly under it because
-that is where the remaining questions live: which visits contributed, which of them cost
-money, and whether the block took effect. The evidence list sits beside the journey so the
-reader can move in either direction, from a visit to what it added or from a statement to the
-visits it came from.
+The first section shows the verdict, the main reasons, the visit that triggered the decision, and an explanation of confidence. The customer can understand the decision before reading the full journey.
 
-Inside the journey, a visit shows what changed, not everything it knows. I had three
-hierarchies drawn for the visit row and chose the collapsed row from one with the expanded
-body from another. Collapsed, a visit carries its source, one line of engagement and tags only
-for what is new or unusual since the previous visit. Defaults such as "VPN: No" never appear,
-so a run of visits that repeat the same pattern reads as exactly that. The visit the decision
-followed is labelled as the decision visit and opens by default, listing what it added to the
-evidence in the evidence list's own sentences and then the complete record with every field
-present, so absence is never a blank. I rejected showing every field on every visit because
-it put forty facts in front of the reader before they knew which visit mattered, and a
-one-line ledger because it lost the narrative.
+The evidence section separates primary contributors, supporting context, and evidence that weakens the conclusion. This makes moderate and conflicting cases easier to judge. Raw measurements remain available, but they are collapsed by default.
 
-The decision and the exclusion becoming active are two events in the journey with two
-timestamps, never one marker, because the mechanics have a gap between them and a paid click
-can land in it. Golden case 6 exists to show that gap.
+Each collapsed visit shows its number, time, source, and a short engagement summary. It only highlights information that changed or was unusual. Repeated defaults, such as `VPN No` or `Form not submitted`, remain hidden until the visit is expanded. The decision visit opens by default, and a marker directly after it explains what that visit added to the existing pattern.
 
-## Status vocabulary and confidence
+I rejected showing every field for every visit because it made the page difficult to scan. I also rejected a one-line journey because it removed the detail needed to understand the decision. The final structure gives a clear summary first and keeps the full record available.
 
-The status words are Blocked, Monitoring, Not blocked and Not evaluated, with Manually
-allowed as an override mark layered on top. I rejected "Allowed" on its own because it
-conflates the system's finding with a person's decision, and a customer reading it cannot
-tell which happened. "Not blocked" states what the system found without asserting that the
-visitor is good. "Monitoring" says evaluation is still running rather than labelling someone
-suspicious. I rejected "Watching" as too casual for an audit surface and "Suspicious" as a
-verdict without evidence.
+## Status confidence and enforcement
 
-Colour follows the vocabulary and never works alone. Red is Blocked and destructive actions,
-nothing else. Amber is Monitoring. Green is a successful sync or a positive outcome. A
-suspicious-but-unblocked signal is never red, because a customer who sees red assumes a block
-happened. Every status also carries a marker shape and a text label, and there is a greyscale
-story in the system that proves the shapes alone still tell the statuses apart.
+The main status words are Blocked, Monitoring, Not blocked, and Not evaluated. `Manually allowed` is a separate override state rather than a system verdict. I rejected `Allowed` on its own because the customer would not know whether the system made that decision or a person overrode it.
 
-Confidence is three labels, not a number: High confidence, Moderate confidence, Conflicting
-evidence. The mock decision model cannot produce a calibrated probability, and a percentage
-would claim a precision the data does not have. What the reader needs is whether to trust the
-conclusion or look closer, not whether it is 0.87 or 0.91. "Conflicting evidence" makes the
-ambiguous case a first-class state rather than a smaller number, and it is the label golden
-cases 3 and 5 carry: a VPN with real engagement and a valid form, and an organic return that
-converts after a block. Neither is proof the system was wrong, and the label says so without
-pretending the case is clean.
+Every status uses a text label and a marker shape, so colour never carries the meaning alone. Red is reserved for a block, failure, or destructive action. Amber represents Monitoring. Green is used for successful sync or a positive outcome.
 
-A Monitoring visitor always carries either Conflicting evidence or Insufficient evidence, so
-no undecided row is blank, and the column is named Decision confidence because bot
-probability is a different measure that belongs with the visit it was recorded on. Plain
-language comes before any of this: the summary leads with a sentence a person would retell,
-then ranked contributors, then raw signals on expansion. Scores support; they never lead.
+Decision confidence uses plain labels rather than percentages. The mock model does not produce a calibrated decision probability, so a percentage would suggest false precision. Monitoring visitors always show either Conflicting evidence or Insufficient evidence. Bot probability remains a separate visit-level signal.
 
-The Monitoring note follows one template: what the system is watching, named as the signals
-so far, and why it has not blocked, named as the missing or contradicting evidence. I rejected
-a tipping count ("2 more clicks will block this visitor") because it exposes a rule that a
-competitor, who is also an advertiser, could work around, and because it claims a determinism
-the cumulative model does not have.
+The block decision and the advertising platform's exclusion have separate timestamps. A paid click may arrive while the exclusion is pending. The journey shows both events, and the exposure total counts any click that lands during that delay separately.
 
-## Financial exposure
+## Paid exposure and filters
 
-Only paid visits cost the advertiser money, so the page shows paid visits before the block,
-total visits and the paid versus organic mix, and it shows spend only where a cost per click
-exists in the data and the calculation is on the page. The exposure line reads "$38.40 across
-4 paid clicks before the decision", and the footnote under the evidence spells out the sum,
-"$9.60 + $9.60 + $9.60 + $9.60 = $38.40. Nothing is estimated." Where a paid click landed after
-the decision, the line says so and counts it separately. Where a platform did not report a
-cost for every click, the line says the cost is not reported rather than filling the gap.
+Spend appears only when the platform supplies a cost for every relevant click. The page shows the calculation as supporting detail. If cost data is incomplete, it says so instead of filling the gap.
 
-I rejected "protected spend since the block". Prevented traffic is not modelled, so the
-number would be invented, and the brief's third red flag is data that does not reflect the
-mechanics. The same rule governs the copy: nothing on the page says money was saved, and a
-later conversion is never described as proof that an earlier block was wrong.
+I did not use `protected spend` or `prevented ad waste`. The mock data does not record traffic that would have arrived after a block, so those figures would be guesses. A later conversion is treated as conflicting evidence, not proof that an earlier block was wrong.
 
-Spend is also why the table does not sort by it. Spend is derived from mock cost-per-click
-values, so it is the least trustworthy number on the screen, and sorting the whole table by
-it would put an invented figure in charge of what the customer sees first. The default sort is
-recency, because that is how the screen is used ("what changed since I last looked") and it
-depends on nothing assumed. Block time, visit count, paid clicks and confidence are the other
-sorts, each independently useful.
+Search, date range, and status remain visible because they are the most common ways to narrow the table. Platform, paid traffic, location, confidence, email deliverability, and conversion sit inside the Filters menu. Active filters appear as removable chips, and the empty state explains when filters have removed every result.
 
-## Filter design
+A visitor is included in a date range when at least one visit falls inside it. This preserves older journeys that return during the selected period. Filter and sort state is stored in the URL, so the table returns to the same view after the customer opens a visitor.
 
-I kept search, date range and status visible because they are the most common ways to define
-the investigation set. Lower-frequency dimensions, platform, traffic type, location, email
-deliverability and conversion, are progressively disclosed within a Filters menu whose trigger
-carries the count of what is applied. Active filters remain visible as removable chips under
-the toolbar, balancing fast access with a compact interface, and the same arrangement produces
-meaningful filtered-empty states: the empty state names how many filters are active and what
-clearing them would show, and says plainly that an empty list does not mean the account is
-clean.
+## Actions left out
 
-Status is a single-select mode switch with an All option. Without All the customer cannot
-easily return to the complete traffic. I dropped multi-select because it made the mode switch
-harder to read for a benefit no investigation needed. Not evaluated stays as a fifth chip
-because it is part of the vocabulary and golden case 8 is one; folding it into Not blocked
-would have contradicted the vocabulary. There is no Manually allowed filter because the
-override workflow is not modelled and no visitor in the data carries one.
+I did not include manual or bulk overrides in the core prototype. Bulk blocking repeats work ClickGuard already performs, while bulk allowing bypasses the visitor-level review.
 
-The date range is a set of presets ending now, never a calendar, and a visitor is in range
-when any of its visits is. I rejected filtering on last seen because it hides an old journey's
-recent return, and on decision time because undecided visitors would vanish. A journey that
-started before the window and came back inside it is exactly what cumulative blocking is
-about.
+A responsible manual override needs permissions, an audit history, and clear rules for each advertising platform. The prototype does not model those systems. Storybook still includes the `Manually allowed` state to show how a future override could appear without deleting the original verdict or evidence.
 
-Email deliverability and conversion are recorded per visit, so the visitor-level filters read
-"Submitted an invalid email at least once" and "Converted at least once", with those exact
-labels on the control and on the chip. The wording matters: a Converted slice is evidence of a
-purchase and must never read as a list of false positives.
+## Use of AI
 
-Every filter lives in the URL beside the sort and the page, so the table a customer was looking
-at is the table they come back to from a visitor.
+I used an AI coding tool for implementation, data generation, tests, and repetitive component work. I kept the product decisions in a written log and reviewed the output against the customer questions before accepting it.
 
-## What I left out
+An early version used a drawer, generated 220 visitors, and created more stories than the assessment needed. It also made product choices during implementation. I rejected that version and defined the product contract before rebuilding.
 
-I considered manual and bulk overrides and excluded both from the core prototype. The
-brief's primary job is explaining cumulative blocking, and a bulk action works against that
-job: selecting twenty rows and allowing or blocking them bypasses the visitor-level
-investigation the whole surface is built to support. A manual override is different in kind
-but no smaller. Done responsibly it needs permissions, an audit history that keeps the
-original decision and its evidence on record, and defined behaviour for the advertising
-platforms' exclusion lists, which the prototype does not model. A button that did none of
-that would be superficial, and it would claim the product does something it does not.
+The contract set the customer questions, status vocabulary, data model, and evidence hierarchy. Reviewing the early version exposed two missing details: the exact decision time and a clear distinction between strong and borderline decisions.
 
-So nothing in the prototype changes a verdict, and there is one primary action per view. What
-I kept is the room for the answer: the status vocabulary includes Manually allowed as an
-override mark in the info tone, the timeline has an override event, and the decision summary
-can show an override on top of the original decision without erasing it. No visitor in the
-data carries one and the table offers no filter for one, because the workflow behind it is
-not modelled.
+I also changed choices after reviewing the working interface. The original Why column used long sentences, so I replaced them with short evidence labels and moved the full explanation to the detail page. I added confidence labels to Monitoring rows so none were left blank.
 
-## The AI workflow
-
-I used an AI coding agent throughout, and the first thing it taught me was how not to use it.
-Before any product contract existed I let it build a prototype end to end in a separate
-repository. It made a drawer detail, a 220-row generator and 48 stories, and it made product
-decisions as it went, which is the thing the brief says it is buying from me. I rejected that
-build and changed the process: the agent proposes, I decide, nothing is decided silently.
-
-The contract came first. I wrote the six questions a customer must answer within about thirty
-seconds, and auditing the rejected build against them exposed two gaps that became
-requirements: no timestamp on the decision, and no way to tell a borderline block from a
-strong one. Then I answered the agent's open questions in writing, with what I rejected and
-why, and that log became `decisions.md`. The rule for what counts as my decision is simple: I
-can say, unprompted, why I made it and what I rejected. Where the agent proposed options and I
-chose, the log says so. Implementation is the agent's and is recorded as such.
-
-The agent's job was then to make the contract visible. It rendered four drawer orders on one
-canvas so I could reject the drawer with evidence rather than taste. It converted the design
-export to components with one script that proves no raw colour or pixel exists outside the
-token files. It wrote the decision engine, eight hand-authored golden cases and a seeded
-generator, with tests that keep the generated filler consistent with the contract. It built
-the table and the detail, and on my review of the built table I changed things it had
-implemented faithfully to an earlier decision: the "Why" column became four scannable labels
-with the sentence moved to the detail, and Monitoring rows gained a label so none was blank.
-Those changes are amendments in the log, dated, because the built thing taught me something
-the written thing had not.
-
-The agent also flagged its own calls. A time box it exceeded, a contrast failure inherited
-from the export that it fixed by darkening the accent one step, a fixed reference clock so
-relative times are deterministic, a table minimum width that scrolls at mid widths. I accepted
-each in writing, and where one turned out to hide a problem, the action button scrolling off
-screen, it came back as a fix with its own decision.
-
-What I would keep: writing the contract before the code, one phase per branch with a pull
-request I edit before merging, and a running log appended as work lands rather than
-reconstructed at the end. What I would not repeat: letting a capable tool start before I had
-said what the product was for.
+AI helped produce the code, but I chose the information hierarchy, terminology, scope, interaction patterns, ambiguous cases, and the evidence shown at each level. I would use the same approach again: define the product contract first, record decisions as they are made, and review the working interface after each implementation phase.
