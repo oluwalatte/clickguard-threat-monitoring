@@ -68,8 +68,6 @@ AI helped produce the code, but I chose the information hierarchy, terminology, 
 
 ## Limitations and next steps
 
-<!-- Drafted by the agent for the user to rewrite. -->
-
 The prototype explains decisions; it does not make them. The evidence engine is a mock built to
 reproduce eight hand-written cases and generate consistent filler, so its weights and thresholds
 stand in for the production model's explainability contract. Replacing them is the first step:
