@@ -9,6 +9,7 @@ const SURFACES = ['canvas', 'panel', 'subtle', 'inset', 'hover', 'selected'] as 
 const TEXT = ['primary', 'secondary', 'muted', 'link'] as const;
 const SPACES = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 const TYPE_ROLES = ['page-title', 'section', 'card-title', 'body', 'support', 'label', 'data', 'metric'] as const;
+const RADII = ['xs', 'sm', 'md', 'lg', 'xl', 'pill'] as const;
 
 function Swatch({ token, label }: { token: string; label?: string }) {
   return (
@@ -46,6 +47,8 @@ function Foundations() {
           <Swatch key={t} token={`--text-${t}`} />
         ))}
         <Swatch token="--action-primary" />
+        <Swatch token="--action-primary-ink" />
+        <Swatch token="--action-primary-fill" />
         <Swatch token="--focus-ring" />
       </div>
 
@@ -58,6 +61,27 @@ function Foundations() {
           </div>
         ))}
       </div>
+
+      <h2 className={styles.h}>Shape</h2>
+      <p className={styles.p}>Borders before shadows. Elevation exists for overlays only.</p>
+      <div className={styles.row}>
+        {RADII.map((r) => (
+          <div key={r} className={styles.swatch}>
+            <span className={styles.chip} style={{ borderRadius: `var(--radius-${r})`, background: 'var(--surface-panel)' }} />
+            <code className={styles.code}>--radius-{r}</code>
+          </div>
+        ))}
+        <div className={styles.swatch}>
+          <span className={styles.chip} style={{ background: 'var(--surface-panel)', boxShadow: 'var(--shadow-overlay)', border: 0 }} />
+          <code className={styles.code}>--shadow-overlay</code>
+        </div>
+      </div>
+
+      <h2 className={styles.h}>Motion</h2>
+      <p className={styles.p}>
+        Three durations on one easing curve: instant for press, fast for hover and colour, default for disclosure. All
+        collapse under reduced motion. Nothing animates evidence, status or counts.
+      </p>
 
       <h2 className={styles.h}>Type roles</h2>
       {TYPE_ROLES.map((role) => (

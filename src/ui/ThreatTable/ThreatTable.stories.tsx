@@ -1,36 +1,154 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { StatusBadge, type StatusKind } from '../StatusBadge/StatusBadge';
-import { ThreatTable, type ThreatTableColumn } from './ThreatTable';
+import { expect, fn, userEvent, within } from 'storybook/test';
+import { StatusBadge } from '../StatusBadge/StatusBadge';
+import { LONG_ROW, VISITOR_ROWS, type VisitorRow } from '../stories/fixtures';
+import { ThreatTable, type TableSort, type ThreatTableColumn } from './ThreatTable';
 
-interface Row extends Record<string, unknown> {
-  id: string;
-  ip: string;
-  location: string;
-  status: StatusKind;
-  paidVisits: number;
-  reason: string;
-}
+const STATUS_ORDER: Record<VisitorRow['status'], number> = { blocked: 0, monitoring: 1, safe: 2, allowed: 3, neutral: 4 };
 
-const rows: Row[] = [
-  { id: '1', ip: '185.220.101.34', location: 'Frankfurt, Germany', status: 'blocked', paidVisits: 4, reason: 'Four paid visits in 41 minutes, no engagement' },
-  { id: '2', ip: '98.14.202.7', location: 'Brooklyn, United States', status: 'monitoring', paidVisits: 3, reason: 'Three paid visits in 12 minutes, shallow engagement' },
-  { id: '3', ip: '81.2.69.160', location: 'Manchester, United Kingdom', status: 'safe', paidVisits: 1, reason: 'Real engagement and a valid form' },
-];
-
-const columns: ThreatTableColumn<Row>[] = [
-  { key: 'ip', header: 'Visitor', width: '24%', mono: true, render: (r) => <>{r.ip}<span>{r.location}</span></> },
-  { key: 'status', header: 'Status', width: 170, render: (r) => <StatusBadge status={r.status} size="sm" />, sortValue: (r) => r.status },
-  { key: 'paidVisits', header: 'Paid visits', width: 120, align: 'right' },
+const columns: ThreatTableColumn<VisitorRow>[] = [
+  {
+    key: 'ip',
+    header: 'Visitor',
+    width: '22%',
+    mono: true,
+    render: (r) => (
+      <>
+        <span>{r.ip}</span>
+        <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>{r.location}</span>
+      </>
+    ),
+  },
+  { key: 'status', header: 'Status', width: 160, render: (r) => <StatusBadge status={r.status} size="sm" />, sortValue: (r) => STATUS_ORDER[r.status] },
+  { key: 'visits', header: 'Visits', width: 90, align: 'right', render: (r) => `${r.visits}` },
+  { key: 'paidVisits', header: 'Paid visits', width: 110, align: 'right' },
   { key: 'reason', header: 'Why', sortable: false },
+  {
+    key: 'lastSeen',
+    header: 'Last seen',
+    width: 140,
+    render: (r) => (
+      <>
+        <span>{r.lastSeenRelative}</span>
+        <span style={{ color: 'var(--text-muted)' }}>{r.lastSeen}</span>
+      </>
+    ),
+  },
 ];
 
 const meta = {
   title: 'Data/ThreatTable',
   component: ThreatTable,
-  args: { columns, rows, layout: 'table', rowActionLabel: 'View visitor', onRowActivate: () => {} },
-} satisfies Meta<typeof ThreatTable<Row>>;
+  args: {
+    columns,
+    rows: VISITOR_ROWS,
+    layout: 'table',
+    rowActionLabel: 'View visitor',
+    onRowActivate: fn(),
+    getRowId: (r) => r.id,
+    caption: '6 visitors, most recently active first',
+  },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'One row per visitor, never per visit (D1). The table owns sorting, its loading, empty and error bodies, and a stacked layout for narrow containers. Sort state is visible and announced through a live region; every row has a focusable action with the visitor in its accessible name. Stories pin the layout because container measurement is not reliable in Storybook.',
+      },
+    },
+  },
+} satisfies Meta<typeof ThreatTable<VisitorRow>>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Populated: Story = {};
+
+export const Loading: Story = {
+  args: { state: 'loading', skeletonRows: 5, caption: undefined },
+};
+
+export const InitialEmpty: Story = {
+  args: {
+    state: 'empty',
+    rows: [],
+    caption: undefined,
+    emptyState: {
+      variant: 'no-data',
+      title: 'No traffic in this date range',
+      description: 'ClickGuard recorded no visits between 13 Feb and 19 Feb 2026. Widen the range to see visitors.',
+      actionLabel: 'Widen the range',
+      onAction: fn(),
+    },
+  },
+};
+
+export const FilteredEmpty: Story = {
+  args: {
+    state: 'empty',
+    rows: [],
+    caption: undefined,
+    emptyState: {
+      variant: 'no-matches',
+      title: 'No visitors match these filters',
+      description: 'Two filters are active. Clearing the status filter would show 42 visitors in this range.',
+      actionLabel: 'Clear filters',
+      onAction: fn(),
+    },
+  },
+};
+
+export const Error: Story = {
+  args: { state: 'error', rows: [], caption: undefined, errorState: { onAction: fn() } },
+};
+
+export const LongContent: Story = {
+  args: { rows: [LONG_ROW, ...VISITOR_ROWS.slice(0, 2)], caption: '3 visitors' },
+};
+
+export const Stacked: Story = {
+  name: 'Stacked (narrow container)',
+  args: { layout: 'stacked', rows: VISITOR_ROWS.slice(0, 3), caption: undefined },
+  decorators: [(Story) => <div style={{ maxWidth: '48ch' }}><Story /></div>],
+};
+
+export const SortByHeader: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const header = c.getByRole('columnheader', { name: /paid visits/i });
+    await expect(header).toHaveAttribute('aria-sort', 'none');
+    await userEvent.click(within(header).getByRole('button'));
+    await expect(header).toHaveAttribute('aria-sort', 'ascending');
+    await expect(c.getByText('Paid visits, sorted ascending')).toBeInTheDocument();
+    await userEvent.click(within(header).getByRole('button'));
+    await expect(header).toHaveAttribute('aria-sort', 'descending');
+    const firstCells = c.getAllByRole('row').slice(1).map((row) => within(row).getAllByRole('cell')[3].textContent);
+    await expect(firstCells[0]).toBe('7');
+  },
+};
+
+export const RowActionIsKeyboardReachable: Story = {
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const action = c.getByRole('button', { name: 'View visitor: 185.220.101.34, Frankfurt, Germany' });
+    action.focus();
+    await userEvent.keyboard('{Enter}');
+    await expect(args.onRowActivate).toHaveBeenCalledWith(VISITOR_ROWS[0]);
+  },
+};
+
+function ControlledSortExample() {
+  const [sort, setSort] = useState<TableSort | null>({ key: 'lastSeen', direction: 'desc' });
+  return (
+    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+      <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 'var(--text-support-size)' }}>
+        Sort is owned by the page: {sort ? `${sort.key}, ${sort.direction}` : 'none'}
+      </p>
+      <ThreatTable columns={columns} rows={VISITOR_ROWS} layout="table" sort={sort} onSortChange={setSort} getRowId={(r) => r.id} onRowActivate={() => {}} />
+    </div>
+  );
+}
+
+export const ControlledSort: Story = {
+  render: () => <ControlledSortExample />,
+};
