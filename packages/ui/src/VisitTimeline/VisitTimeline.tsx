@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { EvidenceList } from '../EvidenceList/EvidenceList';
-import type { EvidenceItemProps } from '../EvidenceItem/EvidenceItem';
 import { Icon, type IconName } from '../Icon/Icon';
+import { SignalTags, type SignalTagProps } from '../SignalTag/SignalTag';
 import styles from './VisitTimeline.module.css';
 
 /** Visit types use round markers; system events use square ones. */
@@ -20,18 +19,25 @@ export interface VisitTimelineItem {
   /** Anchor target, e.g. "visit-4", so evidence can link back to it. */
   id?: string;
   type: TimelineItemType;
-  /** Complete timestamp. The auditable value. */
+  /** The scanning form, e.g. "10 Sep, 22:47". The complete form belongs in `record`. */
   timestamp: string;
-  /** Relative time for scanning, e.g. "41 minutes later". */
+  /** Relative time for scanning, e.g. "12 hours later". */
   relativeTime?: string;
   /** Overrides the default type label. */
   label?: string;
-  /** Plain-language sentence describing the event. */
+  /** The visit the decision followed: labelled and opened by default. */
+  decisionVisit?: boolean;
+  /** One line: where the visit came from, e.g. "Meta Ads · Prospecting LATAM". */
   description: string;
-  /** Compact key/value pairs: campaign, keyword, time on page, IP. */
-  meta?: Array<{ label: string; value: string }>;
-  /** Signals attached to this visit, revealed by a disclosure button. */
-  evidence?: Array<EvidenceItemProps & { id?: string }>;
+  /** One line of engagement, e.g. ["2 seconds", "5% scroll", "No conversion"]. */
+  summary?: string[];
+  /** Only what changed since the previous visit or is unusual, as signal tags. */
+  changes?: Array<SignalTagProps & { id?: string }>;
+  /** Sentences from the evidence that this visit supports. Opens the disclosure. */
+  contributed?: string[];
+  /** The full record, one row per fact. Behind the disclosure. */
+  record?: Array<{ label: string; value: string }>;
+  defaultExpanded?: boolean;
 }
 
 export interface VisitTimelineProps {
@@ -56,12 +62,19 @@ const TYPE: Record<TimelineItemType, { icon: IconName; label: string; system: bo
 };
 
 function Row({ item, isLast }: { item: VisitTimelineItem; isLast: boolean }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(item.defaultExpanded));
   const tone = TYPE[item.type];
-  const expandable = Boolean(item.evidence && item.evidence.length);
+  const expandable = Boolean((item.contributed && item.contributed.length) || (item.record && item.record.length));
 
   return (
-    <li id={item.id} className={styles.row} data-type={item.type} data-system={tone.system || undefined} data-last={isLast || undefined}>
+    <li
+      id={item.id}
+      className={styles.row}
+      data-type={item.type}
+      data-system={tone.system || undefined}
+      data-last={isLast || undefined}
+      data-decision-visit={item.decisionVisit || undefined}
+    >
       <div className={styles.rail}>
         <span className={styles.marker}>
           <Icon name={tone.icon} size="sm" />
@@ -71,35 +84,63 @@ function Row({ item, isLast }: { item: VisitTimelineItem; isLast: boolean }) {
 
       <div className={styles.body}>
         <div className={styles.head}>
-          <span className={styles.typeLabel}>{item.label || tone.label}</span>
+          <span className={styles.typeLabel}>
+            {item.label || tone.label}
+            {item.decisionVisit ? <span className={styles.decisionTag}>Decision visit</span> : null}
+          </span>
           <span className={styles.time}>
-            {item.timestamp}
-            {item.relativeTime ? `, ${item.relativeTime}` : ''}
+            <span>{item.timestamp}</span>
+            {item.relativeTime ? <span>{item.relativeTime}</span> : null}
           </span>
         </div>
 
         <p className={styles.description}>{item.description}</p>
 
-        {item.meta && item.meta.length ? (
-          <div className={styles.meta}>
-            {item.meta.map((m) => (
-              <span key={m.label} className={styles.metaItem}>
-                <span className={styles.metaLabel}>{m.label}: </span>
-                {m.value}
-              </span>
+        {item.summary && item.summary.length ? (
+          <p className={styles.summary}>
+            {item.summary.map((s) => (
+              <span key={s}>{s}</span>
             ))}
+          </p>
+        ) : null}
+
+        {item.changes && item.changes.length ? (
+          <div className={styles.changes}>
+            <SignalTags signals={item.changes} label="What changed on this visit" />
           </div>
         ) : null}
 
         {expandable ? (
-          <div className={styles.evidence}>
+          <div className={styles.details}>
             <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className={styles.disclosure}>
               <Icon name={open ? 'chevron-up' : 'chevron-down'} size="sm" />
-              {open ? 'Hide visit evidence' : 'Show visit evidence'}
+              {open ? 'Hide details' : 'Details'}
             </button>
-            {open && item.evidence ? (
-              <div className={styles.evidencePanel}>
-                <EvidenceList title="Signals from this visit" items={item.evidence} />
+            {open ? (
+              <div className={styles.panel}>
+                {item.contributed && item.contributed.length ? (
+                  <>
+                    <h4 className={styles.panelTitle}>What this visit added to the evidence</h4>
+                    <ul className={styles.contributed}>
+                      {item.contributed.map((c) => (
+                        <li key={c}>{c}</li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                {item.record && item.record.length ? (
+                  <>
+                    <h4 className={styles.recordTitle}>Record</h4>
+                    <dl className={styles.record}>
+                      {item.record.map((r) => (
+                        <div key={r.label} className={styles.recordRow}>
+                          <dt className={styles.recordLabel}>{r.label}</dt>
+                          <dd className={styles.recordValue}>{r.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </>
+                ) : null}
               </div>
             ) : null}
           </div>

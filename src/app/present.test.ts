@@ -68,10 +68,14 @@ describe('the decision and the sync are separate facts (D11)', () => {
     expect(items[0].relativeTime).toBe('start of journey');
     expect(items[1].relativeTime).toBe('8 minutes later');
     expect(items[0].id).toBe('visit-1');
+    expect(items[0].timestamp).toBe('12 Sep, 08:00');
   });
-  it('attaches each visit its own signals, and links list items back to visits', () => {
+  it('names and opens the decision visit, and attaches what each visit added', () => {
     const items = toTimelineItems(golden(1));
-    expect(items[0].evidence!.length).toBeGreaterThan(0);
+    expect(items[3].decisionVisit).toBe(true);
+    expect(items[3].defaultExpanded).toBe(true);
+    expect(items[0].decisionVisit).toBeUndefined();
+    expect(items[3].contributed).toEqual(expect.arrayContaining(['4 paid clicks in 41 minutes']));
     const list = toEvidenceItems(golden(5), golden(5).decision!.evidence);
     const conversion = list.find((e) => e.statement.startsWith('Completed a purchase'))!;
     expect(conversion.sourceHref).toBe('#visit-7');
@@ -79,17 +83,31 @@ describe('the decision and the sync are separate facts (D11)', () => {
   });
 });
 
-describe('each visit shows the exact signal, never a blank', () => {
-  it('names form, deliverability and conversion explicitly', () => {
-    const [first, , , , , , last] = toTimelineItems(golden(5)).filter((i) => i.type !== 'block' && !i.type.startsWith('sync'));
-    const get = (item: typeof first, label: string) => item.meta!.find((m) => m.label === label)?.value;
-    expect(get(first, 'Form')).toBe('Not submitted');
-    expect(get(first, 'Conversion')).toBe('No');
-    expect(get(last, 'Form')).toBe('Submitted, email deliverability Valid');
-    expect(get(last, 'Conversion')).toBe('Yes');
-    expect(get(first, 'Bot probability')).toBe('36%');
-    expect(get(first, 'VPN or proxy')).toBe('No');
-    expect(get(first, 'Interaction')).toMatch(/^Low/);
+describe('a collapsed visit shows only what a person needs to place it in the story', () => {
+  const items = toTimelineItems(golden(7)).filter((i) => !i.type.startsWith('sync') && i.type !== 'block');
+  const get = (item: (typeof items)[number], label: string) => item.record!.find((m) => m.label === label)?.value;
+  it('has a source line, one engagement line, and only changes as tags', () => {
+    expect(items[0].description).toBe('Meta Ads · Prospecting LATAM');
+    expect(items[0].summary).toEqual(['5 seconds', '5% scroll', 'No conversion']);
+    expect(items[0].changes).toEqual([]);
+    expect(items[1].changes!.map((c) => c.label)).toEqual(['Location changed to Montevideo', 'New device identity']);
+    expect(items[4].changes!.map((c) => c.label)).toEqual(['Email undeliverable', 'Location changed to Montevideo']);
+    expect(items[4].changes![0].kind).toBe('primary');
+  });
+  it('keeps the complete record behind the disclosure, never blank', () => {
+    expect(get(items[0], 'Time')).toBe('9 Sep 2026, 02:14:00 UTC');
+    expect(get(items[0], 'Form')).toBe('Not submitted');
+    expect(get(items[0], 'Conversion')).toBe('No');
+    expect(get(items[0], 'Bot probability')).toBe('44%');
+    expect(get(items[0], 'Network')).toBe('Mobile carrier, no VPN or proxy');
+    expect(get(items[4], 'Form')).toBe('Submitted, email deliverability Invalid');
+    expect(get(items[4], 'Location')).toBe('Montevideo, Uruguay (changed from Santiago)');
+    expect(get(items[4], 'Device')).toBe('Safari 17, iOS 17, first seen on visit 2');
+  });
+  it('uses the mitigating tone for conversions and valid emails', () => {
+    const last = toTimelineItems(golden(5)).filter((i) => i.type === 'organic').pop()!;
+    expect(last.summary).toEqual(['4 minutes 11 seconds', '95% scroll', 'Converted']);
+    expect(last.changes!.map((c) => [c.label, c.kind])).toEqual(expect.arrayContaining([['Converted', 'contradictory'], ['Email: Valid', 'contradictory']]));
   });
 });
 

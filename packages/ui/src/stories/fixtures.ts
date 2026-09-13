@@ -182,82 +182,100 @@ export const EVIDENCE_LONG_COPY: Array<EvidenceItemProps & { id: string }> = [
   },
 ];
 
-const BLOCK_DAY = '19 Feb 2026';
-const t = (hms: string) => `${BLOCK_DAY}, ${hms} UTC`;
+const t = (hms: string) => `19 Feb, ${hms}`;
+const full = (hms: string) => `19 Feb 2026, ${hms} UTC`;
+
+const paidRecord = (time: string, secs: number, scroll: number, bot: number, extra: Array<{ label: string; value: string }> = []) => [
+  { label: 'Time', value: full(time) },
+  { label: 'Platform', value: 'Google Ads, Non-brand Search, keyword "ppc fraud", $9.60' },
+  { label: 'Landing page', value: '/pricing' },
+  { label: 'Time on page', value: `${secs} seconds, scroll ${scroll}%, pointer still` },
+  { label: 'Bot probability', value: `${bot}%` },
+  { label: 'Location', value: 'Frankfurt, Germany' },
+  { label: 'Device', value: 'HeadlessChrome 121, Linux' },
+  { label: 'Network', value: 'Datacenter, no VPN or proxy' },
+  { label: 'Form', value: 'Not submitted' },
+  { label: 'Conversion', value: 'No' },
+  ...extra,
+];
 
 /* Golden case 1: clearly malicious. Visits, the decision, then the sync as its own event. */
 export const JOURNEY_BLOCK_AND_SYNC: VisitTimelineItem[] = [
   {
     id: 'visit-1',
     type: 'paid',
-    timestamp: t('14:12:08'),
+    timestamp: t('14:12'),
     relativeTime: 'start of journey',
-    description: 'Landed on /pricing from Non-brand Search',
-    meta: [{ label: 'Keyword', value: 'ppc fraud' }, { label: 'Time on page', value: '3s' }, { label: 'CPC', value: '$9.60' }],
-    evidence: [
-      { kind: 'supporting', statement: 'No scroll, pointer movement or form interaction recorded' },
-      { kind: 'supporting', statement: 'Headless browser signature in the user agent', rawValue: 'Mozilla/5.0 (X11; Linux x86_64) HeadlessChrome/121.0.0.0' },
-    ],
+    description: 'Google Ads · Non-brand Search',
+    summary: ['3 seconds', '0% scroll', 'No conversion'],
+    changes: [{ label: 'Datacenter' }, { label: 'Bot: 93%' }, { label: 'No fingerprint', kind: 'missing' }],
+    contributed: ['Datacenter network, not a residential or mobile connection', 'Device fingerprint unavailable because JavaScript was blocked on every visit'],
+    record: paidRecord('14:12:08', 3, 0, 93),
   },
   {
     id: 'visit-2',
     type: 'paid',
-    timestamp: t('14:26:31'),
+    timestamp: t('14:26'),
     relativeTime: '14 minutes later',
-    description: 'Second paid visit to /pricing from the same ad',
-    meta: [{ label: 'Time on page', value: '2s' }, { label: 'CPC', value: '$9.60' }],
+    description: 'Google Ads · Non-brand Search',
+    summary: ['2 seconds', '0% scroll', 'No conversion'],
+    record: paidRecord('14:26:31', 2, 0, 95),
   },
   {
     id: 'visit-3',
-    type: 'organic',
-    timestamp: t('14:41:02'),
+    type: 'paid',
+    timestamp: t('14:41'),
     relativeTime: '15 minutes later',
-    description: 'Organic search visit to /pricing',
-    meta: [{ label: 'Time on page', value: '4s' }],
+    description: 'Google Ads · Non-brand Search',
+    summary: ['4 seconds', '0% scroll', 'No conversion'],
+    record: paidRecord('14:41:02', 4, 0, 96),
   },
   {
     id: 'visit-4',
     type: 'paid',
-    timestamp: t('14:53:44'),
+    timestamp: t('14:53'),
     relativeTime: '12 minutes later',
-    description: 'Fourth paid visit to /pricing, the visit the decision followed',
-    meta: [{ label: 'Time on page', value: '2s' }, { label: 'CPC', value: '$9.60' }],
-    evidence: [
-      { kind: 'primary', statement: 'Fourth paid click within 41 minutes', rawValue: 'paid=[14:12:08, 14:26:31, 14:53:44] window=41m' },
-      { kind: 'missing', statement: 'Device fingerprint unavailable because JavaScript was blocked' },
-    ],
+    decisionVisit: true,
+    defaultExpanded: true,
+    description: 'Google Ads · Non-brand Search',
+    summary: ['2 seconds', '0% scroll', 'No conversion'],
+    changes: [{ label: '4 paid clicks / 41 min', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }],
+    contributed: ['4 paid clicks in 41 minutes', 'No scroll and under 6 seconds on the page across 4 of 4 visits', 'No mouse movement on any visit'],
+    record: paidRecord('14:53:20', 2, 0, 94),
   },
-  { type: 'block', timestamp: t('14:53:44'), description: 'Blocked after visit 4. High confidence.' },
+  { type: 'block', timestamp: t('14:53'), relativeTime: 'at the same time', description: 'Blocked after visit 4. High confidence.' },
   {
     type: 'sync-pending',
-    timestamp: t('14:53:46'),
+    timestamp: t('14:53'),
     relativeTime: '2 seconds later',
     description: 'Google Ads exclusion queued. Blocking begins when the platform confirms it.',
   },
-  { type: 'sync-active', timestamp: t('15:02:10'), relativeTime: '8 minutes later', description: 'Google Ads confirmed the exclusion.' },
+  { type: 'sync-active', timestamp: t('15:02'), relativeTime: '8 minutes later', description: 'Google Ads confirmed the exclusion.' },
 ];
 
 /* Golden case 6: a paid click lands between the decision and the exclusion becoming active. */
 export const JOURNEY_SYNC_DELAY: VisitTimelineItem[] = [
   JOURNEY_BLOCK_AND_SYNC[0],
   JOURNEY_BLOCK_AND_SYNC[1],
-  JOURNEY_BLOCK_AND_SYNC[3],
-  { type: 'block', timestamp: t('14:53:44'), description: 'Blocked after visit 3. High confidence.' },
+  { ...JOURNEY_BLOCK_AND_SYNC[3], id: 'visit-3', timestamp: t('14:41'), relativeTime: '15 minutes later', changes: [{ label: '3 paid clicks / 29 min', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }], contributed: ['3 paid clicks in 29 minutes', 'No scroll and under 6 seconds on the page across 3 of 3 visits'] },
+  { type: 'block', timestamp: t('14:41'), relativeTime: 'at the same time', description: 'Blocked after visit 3. High confidence.' },
   {
     type: 'sync-pending',
-    timestamp: t('14:53:46'),
+    timestamp: t('14:41'),
     relativeTime: '2 seconds later',
     description: 'Google Ads exclusion queued. Blocking begins when the platform confirms it.',
   },
   {
-    id: 'visit-5',
+    id: 'visit-4',
     type: 'paid',
-    timestamp: t('14:58:20'),
-    relativeTime: '4 minutes later',
-    description: 'Paid click reached the site while the exclusion was still pending. This click cost money after the decision.',
-    meta: [{ label: 'Time on page', value: '2s' }, { label: 'CPC', value: '$9.60' }],
+    timestamp: t('14:58'),
+    relativeTime: '17 minutes later',
+    description: 'Google Ads · Non-brand Search',
+    summary: ['2 seconds', '0% scroll', 'No conversion'],
+    changes: [{ label: 'Paid click after the decision', kind: 'primary' }],
+    record: paidRecord('14:58:20', 2, 0, 94),
   },
-  { type: 'sync-active', timestamp: t('15:02:10'), relativeTime: '4 minutes later', description: 'Google Ads confirmed the exclusion. No paid clicks since.' },
+  { type: 'sync-active', timestamp: t('15:02'), relativeTime: '4 minutes later', description: 'Google Ads confirmed the exclusion. No paid clicks since.' },
 ];
 
 /* Golden case 5: organic return that converts after the block. Conflicting evidence, not proof. */
@@ -266,10 +284,23 @@ export const JOURNEY_ORGANIC_RETURN: VisitTimelineItem[] = [
   {
     id: 'visit-5',
     type: 'organic',
-    timestamp: '21 Feb 2026, 10:14:33 UTC',
+    timestamp: '21 Feb, 10:14',
     relativeTime: '2 days later',
-    description: 'Returned through organic search, read /features for 3 minutes and submitted a valid form. This conflicts with the earlier evidence; it does not by itself show the block was wrong.',
-    meta: [{ label: 'Time on page', value: '3m 12s' }, { label: 'Form', value: 'valid' }],
+    description: 'Organic search · /features',
+    summary: ['3 minutes 12 seconds', '95% scroll', 'Converted'],
+    changes: [{ label: 'Converted', kind: 'contradictory' }, { label: 'Email: Valid', kind: 'contradictory' }, { label: 'New device identity' }],
+    contributed: ['Completed a purchase on visit 5', 'Submitted a valid form with a deliverable email address on visit 5'],
+    record: [
+      { label: 'Time', value: '21 Feb 2026, 10:14:33 UTC' },
+      { label: 'Landing page', value: '/features' },
+      { label: 'Time on page', value: '192 seconds, scroll 95%, pointer moved' },
+      { label: 'Bot probability', value: '6%' },
+      { label: 'Location', value: 'Frankfurt, Germany' },
+      { label: 'Device', value: 'Chrome 121, macOS 15' },
+      { label: 'Network', value: 'Datacenter, no VPN or proxy' },
+      { label: 'Form', value: 'Submitted, email deliverability Valid' },
+      { label: 'Conversion', value: 'Yes' },
+    ],
   },
 ];
 
@@ -277,7 +308,7 @@ export const JOURNEY_SYNC_FAILED: VisitTimelineItem[] = [
   ...JOURNEY_BLOCK_AND_SYNC.slice(0, 5),
   {
     type: 'sync-failed',
-    timestamp: t('14:53:51'),
+    timestamp: t('14:53'),
     relativeTime: '7 seconds later',
     description: 'Meta Ads rejected the exclusion request twice. This visitor can still reach the site through Meta ads.',
   },
@@ -288,9 +319,18 @@ export const JOURNEY_SINGLE: VisitTimelineItem[] = [
   {
     id: 'visit-1',
     type: 'paid',
-    timestamp: '18 Feb 2026, 23:14:55 UTC',
-    description: 'Landed on / from Brand Search. One visit is not enough history to evaluate.',
-    meta: [{ label: 'Keyword', value: 'clickguard' }, { label: 'Time on page', value: '48s' }, { label: 'CPC', value: '$1.40' }],
+    timestamp: '18 Feb, 23:14',
+    description: 'Google Ads · Brand Search',
+    summary: ['48 seconds', '30% scroll', 'No conversion'],
+    record: [
+      { label: 'Time', value: '18 Feb 2026, 23:14:55 UTC' },
+      { label: 'Platform', value: 'Google Ads, Brand Search, keyword "clickguard", $1.40' },
+      { label: 'Time on page', value: '48 seconds, scroll 30%, pointer moved' },
+      { label: 'Bot probability', value: '12%' },
+      { label: 'Network', value: 'Mobile carrier, no VPN or proxy' },
+      { label: 'Form', value: 'Not submitted' },
+      { label: 'Conversion', value: 'No' },
+    ],
   },
 ];
 

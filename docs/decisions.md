@@ -207,6 +207,24 @@ Rejected: every dimension always visible (the table drowned under two rows of ch
 single Filters menu for everything (search and date range buried; status stops being a fast,
 understandable mode switch).
 
+## D17. A visit in the journey shows what changed; the record is one disclosure away
+Decided 13 Sep 2026, from `docs/explorations/visit-row-options.html`: option 1's collapsed row
+with option 2's expanded body. Collapsed, a visit shows its label and time, where it came
+from, one line of engagement (time on page, scroll, outcome) and tags only for what changed
+since the previous visit or is unusual: a new location, a new device identity, an
+undeliverable or valid email, a conversion, a VPN, a datacenter, an automation signal, a
+missing fingerprint. Defaults such as "VPN: No" and "Form: Not submitted" never appear
+collapsed. Expanded, the visit lists what it added to the evidence, in the evidence list's own
+sentences, then the complete record with every field present so absence is never blank. The
+visit the decision followed is named "Decision visit" and opened by default; the block marker
+after it carries the weight, so the row itself carries no extra rule.
+Tags use the SignalTag tones, never a status colour (rule 2): the decisive one is the strong
+primary style, mitigating ones the info tone.
+Rejected: every field on every visit (forty facts before the reader knows which visit
+mattered), a one-line ledger (loses the narrative line), and colouring change tags amber or
+red (those colours are Monitoring and Blocked).
+The page-level hierarchy around the journey is a separate decision, still open.
+
 ## Out of scope
 Dashboard screen, manual and bulk overrides (D9), a calendar date picker (D16), dark theme,
 loading and error states for data that is local and synchronous.

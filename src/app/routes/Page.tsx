@@ -3,10 +3,10 @@ import styles from './Page.module.css';
 
 /* App-level layout: a page header, a main column, panels and a two-column grid.
    Composition only; spacing comes from tokens and every visual decision from @clickguard/ui. */
-export function PageHeader({ title, description, breadcrumb, toolbar }: { title: string; description?: string; breadcrumb?: ReactNode; toolbar?: ReactNode }) {
+export function PageHeader({ title, description, back, toolbar }: { title: string; description?: string; back?: ReactNode; toolbar?: ReactNode }) {
   return (
     <header className={styles.header}>
-      {breadcrumb ? <nav aria-label="Breadcrumb">{breadcrumb}</nav> : null}
+      {back ? <div className={styles.back}>{back}</div> : null}
       <div className={styles.headerText}>
         <h1 className={styles.title}>{title}</h1>
         {description ? <p className={styles.description}>{description}</p> : null}

@@ -4,8 +4,9 @@ import styles from './Button.module.css';
 
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   children: ReactNode;
-  /** `destructive` is only for actions that remove or block. Never use it for emphasis. */
-  variant?: 'primary' | 'secondary' | 'quiet' | 'destructive';
+  /** `destructive` is only for actions that remove or block. Never use it for emphasis.
+      `link` is a text button in the accent ink with no horizontal padding, for navigation such as "Back". */
+  variant?: 'primary' | 'secondary' | 'quiet' | 'destructive' | 'link';
   size?: 'sm' | 'md';
   /** Icon rendered before the label. */
   icon?: IconName;
