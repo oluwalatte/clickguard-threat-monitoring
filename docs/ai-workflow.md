@@ -178,3 +178,27 @@ column shows the full Monitoring note rather than a truncated preview, because t
 only explanation of why the visitor is not blocked. Loading and error table states exist in
 the system but are not reachable in the prototype: the data is local and synchronous (out of
 scope in `decisions.md`).
+
+### P4 review, 13 Sep 2026
+
+**User found** the Storybook Vercel project serving the prototype. Cause: the CLI's local
+config only steers the CLI; Vercel's remote build reads the repository's own `vercel.json`,
+which belongs to the prototype. **Fix:** Storybook is built locally and shipped as a prebuilt
+deployment through Vercel's Build Output API, so no remote build runs and what renders
+locally is what ships. Verified: the live title is Storybook's and unknown paths return 404.
+
+**User directed** the table changes now recorded as D10a and the D5 and D9 amendments: "Why"
+becomes "Key evidence" with up to four concise labels per row and the sentence moves to the
+detail; "Decision confidence" replaces "Confidence"; Monitoring rows always read "Conflicting
+evidence" or "Insufficient evidence"; "Manually allowed" leaves the data and the filter until
+the override workflow is modelled; conversion joins deliverability as evidence; per-visit
+detail names form, deliverability and conversion explicitly with "Not submitted" where no form
+exists; the page description says "observed" because the table includes Not evaluated.
+
+**Agent produced:** a `label` on every evidence item from the engine, a `keySignals` selector
+that keeps the first mitigating signal visible in an ambiguous row, "No conversion" evidence
+when a form was submitted without a purchase, "No interaction" versus "Low interaction"
+from pointer movement, `SignalTag` in the system (neutral ink, info tone for mitigating,
+dashed for unavailable, never a status colour), the insufficient label in DecisionSummary, and
+the per-visit signal list. The rationale's "Signal placement" section is the user's text,
+lightly shortened, in `docs/rationale.md`.
