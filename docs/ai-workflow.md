@@ -45,8 +45,9 @@ defaults for the rest.
   Routes `/threat-monitoring` and `/threat-monitoring/:visitorId` render placeholder panels.
   `vercel.json` rewrites deep links to the SPA.
 - Two Vercel projects. The root is linked to the prototype; Storybook deploys through
-  `scripts/deploy-storybook.mjs`, which swaps in `vercel.storybook.json` and targets the second
-  project by id. Vercel truncates auto-generated `.vercel.app` names at 35 characters, so the
+  `scripts/deploy-storybook.mjs`, which resolves the second project by name through the CLI
+  and swaps in `vercel.storybook.json`. The first version needed a hand-written id file; the
+  user asked for that to go, so the script now links a throwaway temp directory instead. Vercel truncates auto-generated `.vercel.app` names at 35 characters, so the
   full `clickguard-threat-monitoring-storybook.vercel.app` domain was added to the project by
   hand; the truncated alias also still resolves. Vercel did not detect Vite on the first app
   deploy, so `vercel.json` pins the framework, build command and output directory.
