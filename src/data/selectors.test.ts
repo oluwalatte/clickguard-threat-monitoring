@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { GOLDEN_CASES } from './golden';
 import { generateVisitors } from './factory';
-import { displayStatus, filterRows, journey, paginate, reasonLine, sortRows, toRow, syncByPlatform } from './selectors';
+import { countryOptions, dateRangeStart, displayStatus, filterRows, journey, paginate, reasonLine, sortRows, toRow, syncByPlatform } from './selectors';
+import { NOW } from './builders';
 
 const visitors = generateVisitors();
 const rows = visitors.map(toRow);
@@ -78,16 +79,49 @@ describe('filtering', () => {
     expect(filterRows(rows, { query: 'frankfurt' }).length).toBeGreaterThanOrEqual(1);
     expect(filterRows(rows, { query: 'nowhere' })).toEqual([]);
   });
-  it('filters by status, traffic and platform', () => {
-    expect(filterRows(rows, { statuses: ['blocked'] }).every((r) => r.status === 'blocked')).toBe(true);
-    expect(filterRows(rows, { statuses: ['allowed'] }).length).toBe(0);
+  it('filters by one status at a time, traffic and platform', () => {
+    expect(filterRows(rows, { status: 'blocked' }).every((r) => r.status === 'blocked')).toBe(true);
+    expect(filterRows(rows, { status: 'allowed' }).length).toBe(0);
     expect(filterRows(rows, { traffic: 'unpaid' }).every((r) => r.paidVisits === 0)).toBe(true);
     expect(filterRows(rows, { traffic: 'paid' }).every((r) => r.paidVisits > 0)).toBe(true);
-    expect(filterRows(rows, { platforms: ['meta-ads'] }).every((r) => r.platforms.includes('meta-ads'))).toBe(true);
+    expect(filterRows(rows, { platform: 'meta-ads' }).every((r) => r.platforms.includes('meta-ads'))).toBe(true);
     expect(filterRows(rows, { traffic: 'paid' }).length + filterRows(rows, { traffic: 'unpaid' }).length).toBe(rows.length);
   });
+  it('keeps a visitor in a date range when any visit falls in it (D16)', () => {
+    const start7 = dateRangeStart('7d', NOW)!;
+    const week = filterRows(rows, { range: '7d', now: NOW });
+    expect(week.every((r) => r.visitTimes.some((t) => t >= start7))).toBe(true);
+    expect(rows.filter((r) => r.visitTimes.some((t) => t >= start7)).length).toBe(week.length);
+    /* A journey that started before the window but returned inside it stays listed. */
+    const straddling = rows.find((r) => r.firstSeenAt < start7 && r.lastSeenAt >= start7);
+    expect(straddling).toBeDefined();
+    expect(week.map((r) => r.id)).toContain(straddling!.id);
+    const day = filterRows(rows, { range: '24h', now: NOW });
+    expect(day.length).toBeGreaterThan(0);
+    expect(day.length).toBeLessThan(week.length);
+    expect(filterRows(rows, { range: 'all', now: NOW }).length).toBe(rows.length);
+    expect(dateRangeStart('all', NOW)).toBeUndefined();
+    expect(dateRangeStart('24h', NOW)).toBe('2026-09-12T12:00:00.000Z');
+  });
+  it('filters by country, confidence, deliverability and conversion', () => {
+    const countries = countryOptions(rows);
+    expect(countries.length).toBeGreaterThan(3);
+    expect(countries.map((c) => c.name)).toEqual([...countries.map((c) => c.name)].sort());
+    const us = filterRows(rows, { countryCode: 'US' });
+    expect(us.length).toBeGreaterThan(0);
+    expect(us.every((r) => r.country === 'United States')).toBe(true);
+    expect(filterRows(rows, { confidence: 'high' }).every((r) => r.confidence === 'high' && r.status === 'blocked')).toBe(true);
+    const invalid = filterRows(rows, { invalidEmail: true });
+    expect(invalid.length).toBeGreaterThan(0);
+    expect(invalid.every((r) => r.invalidEmail)).toBe(true);
+    const converted = filterRows(rows, { converted: true });
+    expect(converted.length).toBeGreaterThan(0);
+    expect(converted.every((r) => r.converted)).toBe(true);
+    /* Golden case 5 converted after its block; a Converted slice must keep the block visible, not excuse it. */
+    expect(converted.find((r) => r.id === golden(5).id)?.status).toBe('blocked');
+  });
   it('is empty when nothing matches, so the table can say why', () => {
-    expect(filterRows(rows, { statuses: ['not-evaluated'], traffic: 'unpaid', query: '185.220' })).toEqual([]);
+    expect(filterRows(rows, { status: 'not-evaluated', traffic: 'unpaid', query: '185.220' })).toEqual([]);
   });
 });
 

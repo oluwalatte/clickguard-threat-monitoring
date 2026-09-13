@@ -181,9 +181,35 @@ ordered list. The summary reads "1 to 20 of 48 visitors".
 Rejected: rendering every row (scannable at 48, not how the product behaves) and virtualised
 scrolling (hides the size of the list and breaks find-in-page).
 
+## D16. The toolbar: three filters visible, the rest disclosed
+Decided 13 Sep 2026, before the P4c build. Search, date range and status stay visible because
+they are the most common ways to define the investigation set. Lower-frequency dimensions,
+paid or unpaid traffic, advertising platform, country, decision confidence, email
+deliverability and conversion, are progressively disclosed inside a Filters menu whose
+trigger carries the count of what is applied. Applied secondary filters stay visible as
+removable chips under the toolbar with a Clear all, balancing fast access with a compact
+interface. It also produces meaningful filtered-empty states.
+- Status is a single-select mode switch, and All is a real option. Without All the customer
+  cannot easily return to the complete traffic. Multi-select was dropped because it made the
+  mode switch harder to read for a benefit no investigation needed.
+- Not evaluated stays as a fifth status chip. It is part of the D3 vocabulary and golden case 8
+  is one; folding it into Not blocked would contradict D3.
+- Date range is a set of presets ending now (All time, last 24 hours, 7 days, 30 days), never a
+  calendar. A visitor is in range when any visit falls in it, because a journey that started
+  before the window and returned inside it is exactly what cumulative blocking is about.
+  Rejected: filtering on last seen (hides an old journey's recent return) and on decision time
+  (undecided visitors would vanish).
+- Email deliverability and conversion are per visit, so the visitor-level filters read
+  "Submitted an invalid email at least once" and "Converted at least once", with those exact
+  labels on the control and on the chip, so a Converted slice never reads as proof of a false
+  positive (rule 10).
+Rejected: every dimension always visible (the table drowned under two rows of chips) and a
+single Filters menu for everything (search and date range buried; status stops being a fast,
+understandable mode switch).
+
 ## Out of scope
-Dashboard screen, manual and bulk overrides (D9), URL-persisted filters unless time allows, dark
-theme, loading and error states for data that is local and synchronous.
+Dashboard screen, manual and bulk overrides (D9), a calendar date picker (D16), dark theme,
+loading and error states for data that is local and synchronous.
 
 ## Golden cases (hand-authored before any generated rows)
 1. Clearly malicious: datacenter IP, repeated paid clicks minutes apart, no engagement, high automation likelihood.

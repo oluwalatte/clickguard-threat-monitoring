@@ -64,7 +64,8 @@
   gap: var(--space-4);
 }
 
-.toolbarRow > :first-child {
+/* The search field takes the free width of its row; other rows keep their natural size. */
+.toolbarRow > :first-child:not([role='group']) {
   flex: 1 1 32ch;
   max-width: 48ch;
 }

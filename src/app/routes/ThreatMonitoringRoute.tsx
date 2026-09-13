@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Button, FilterChip, FilterGroup, Pagination, SearchField, SignalTags, StatusBadge, SyncFlag, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
-import { CONFIDENCE_LABEL_MAP, NOW, filterRows, formatRelative, formatShortTimestamp, paginate, sortRows, toRow, type Confidence, type DisplayStatus, type SortKey, type TrafficFilter, type VisitorRow } from '@/data';
+import { ActiveFilterBar, ActiveFilterChip, Checkbox, FilterChip, FilterGroup, FilterMenu, Pagination, SearchField, Select, SignalTags, StatusBadge, SyncFlag, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
+import { CONFIDENCE_LABEL_MAP, DATE_RANGES, NOW, countryOptions, filterRows, formatRelative, formatShortTimestamp, paginate, sortRows, toRow, type AdPlatform, type Confidence, type DateRange, type DisplayStatus, type SortKey, type TrafficFilter, type VisitorRow } from '@/data';
 import { VISITORS } from '../data';
-import { STATUS_FILTERS, syncException, toStatusKind } from '../present';
+import { CONFIDENCE_OPTIONS, CONVERTED_LABEL, DATE_RANGE_OPTIONS, INVALID_EMAIL_LABEL, PLATFORM_OPTIONS, STATUS_FILTERS, TRAFFIC_OPTIONS, activeFilterChips, syncException, toStatusKind, type SecondaryFilters, type SecondaryKey } from '../present';
 import { Page, PageHeader, ToolbarRow } from './Page';
 
 const CONFIDENCE_RANK: Record<Confidence, number> = { high: 4, moderate: 3, conflicting: 2, insufficient: 1 };
@@ -78,14 +78,33 @@ const COLUMNS: ThreatTableColumn<VisitorRow>[] = [
 ];
 
 const ALL_ROWS: VisitorRow[] = VISITORS.map(toRow);
+const COUNTRIES = countryOptions(ALL_ROWS);
+const COUNTRY_OPTIONS = [{ value: '', label: 'Any country' }, ...COUNTRIES.map((c) => ({ value: c.code, label: c.name }))];
+const countryName = (code: string) => COUNTRIES.find((c) => c.code === code)?.name ?? code;
+
+/* URL parameter per secondary filter (D16), so a chip's remove and the menu's controls edit the same state. */
+const SECONDARY_PARAM: Record<SecondaryKey, string> = { traffic: 'traffic', platform: 'platform', country: 'country', confidence: 'confidence', email: 'email', converted: 'converted' };
+const CLEAR_SECONDARY = Object.fromEntries(Object.values(SECONDARY_PARAM).map((k) => [k, undefined])) as Record<string, undefined>;
+
+function oneOf<T extends string>(value: string | null, allowed: readonly T[]): T | undefined {
+  return value && (allowed as readonly string[]).includes(value) ? (value as T) : undefined;
+}
 
 export function ThreatMonitoringRoute() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 
   const query = params.get('q') ?? '';
-  const statuses = (params.get('status')?.split(',').filter(Boolean) ?? []) as DisplayStatus[];
-  const traffic = (params.get('traffic') as TrafficFilter | null) ?? 'any';
+  const status = oneOf(params.get('status'), STATUS_FILTERS.map((f) => f.value));
+  const range: DateRange = oneOf(params.get('range'), DATE_RANGES) ?? 'all';
+  const secondary: SecondaryFilters = {
+    traffic: oneOf(params.get('traffic'), ['paid', 'unpaid'] as const satisfies readonly TrafficFilter[]) ?? 'any',
+    platform: oneOf(params.get('platform'), ['google-ads', 'meta-ads'] as const satisfies readonly AdPlatform[]),
+    countryCode: oneOf(params.get('country'), COUNTRIES.map((c) => c.code)),
+    confidence: oneOf(params.get('confidence'), ['high', 'moderate', 'conflicting', 'insufficient'] as const satisfies readonly Confidence[]),
+    invalidEmail: params.get('email') === 'invalid',
+    converted: params.get('converted') === '1',
+  };
   const sort: TableSort = params.get('sort') ? { key: params.get('sort')!, direction: params.get('dir') === 'asc' ? 'asc' : 'desc' } : DEFAULT_SORT;
 
   const page = Math.max(1, Number(params.get('page')) || 1);
@@ -101,21 +120,22 @@ export function ThreatMonitoringRoute() {
     setParams(next, { replace: true });
   };
 
-  const rows = useMemo(() => filterRows(ALL_ROWS, { query, statuses, traffic }), [query, statuses.join(','), traffic]);
+  const secondaryKey = JSON.stringify(secondary);
+  const rows = useMemo(() => filterRows(ALL_ROWS, { query, status, range, now: NOW, ...secondary }), [query, status, range, secondaryKey]);
   /* Sorting happens here, before the page slice, so a page is a window onto the whole ordered list. */
   const ordered = useMemo(() => sortRows(rows, COLUMN_SORT[sort.key] ?? 'recency', sort.direction), [rows, sort.key, sort.direction]);
   const paged = paginate(ordered, page);
-  const countsByStatus = useMemo(() => {
-    const scoped = filterRows(ALL_ROWS, { query, traffic });
-    return Object.fromEntries(STATUS_FILTERS.map((s) => [s.value, scoped.filter((r) => r.status === s.value).length])) as Record<DisplayStatus, number>;
-  }, [query, traffic]);
+  /* Status counts are scoped by everything except status, so each chip says what choosing it would show. */
+  const statusCounts = useMemo(() => {
+    const scoped = filterRows(ALL_ROWS, { query, range, now: NOW, ...secondary });
+    const counts = Object.fromEntries(STATUS_FILTERS.map((s) => [s.value, scoped.filter((r) => r.status === s.value).length])) as Record<DisplayStatus, number>;
+    return { all: scoped.length, ...counts };
+  }, [query, range, secondaryKey]);
 
-  const activeFilters = (query ? 1 : 0) + (statuses.length ? 1 : 0) + (traffic !== 'any' ? 1 : 0);
-  const clearFilters = () => update({ q: undefined, status: undefined, traffic: undefined });
-  const toggleStatus = (s: DisplayStatus) => {
-    const next = statuses.includes(s) ? statuses.filter((x) => x !== s) : [...statuses, s];
-    update({ status: next.join(',') });
-  };
+  const chips = activeFilterChips(secondary, countryName);
+  const activeFilters = (query ? 1 : 0) + (status ? 1 : 0) + (range !== 'all' ? 1 : 0) + chips.length;
+  const clearFilters = () => update({ q: undefined, status: undefined, range: undefined, ...CLEAR_SECONDARY });
+  const clearSecondary = () => update(CLEAR_SECONDARY);
 
   return (
     <>
@@ -126,29 +146,36 @@ export function ThreatMonitoringRoute() {
           <>
             <ToolbarRow>
               <SearchField label="Search visitors" placeholder="IP address or location" value={query} onChange={(v) => update({ q: v })} />
-              {activeFilters ? (
-                <Button variant="quiet" size="sm" onClick={clearFilters}>
-                  Clear filters
-                </Button>
-              ) : null}
+              <Select label="Date range" showLabel={false} icon="calendar" options={DATE_RANGE_OPTIONS} value={range} onChange={(v) => update({ range: v === 'all' ? undefined : v })} />
+              <FilterMenu activeCount={chips.length} onClear={clearSecondary}>
+                <Select label="Paid traffic" size="sm" options={TRAFFIC_OPTIONS} value={secondary.traffic} onChange={(v) => update({ traffic: v === 'any' ? undefined : v })} />
+                <Select label="Advertising platform" size="sm" options={PLATFORM_OPTIONS} value={secondary.platform ?? ''} onChange={(v) => update({ platform: v })} />
+                <Select label="Country" size="sm" options={COUNTRY_OPTIONS} value={secondary.countryCode ?? ''} onChange={(v) => update({ country: v })} />
+                <Select label="Decision confidence" size="sm" options={CONFIDENCE_OPTIONS} value={secondary.confidence ?? ''} onChange={(v) => update({ confidence: v })} />
+                <Checkbox label={INVALID_EMAIL_LABEL} checked={secondary.invalidEmail} onChange={(on) => update({ email: on ? 'invalid' : undefined })} />
+                <Checkbox label={CONVERTED_LABEL} checked={secondary.converted} onChange={(on) => update({ converted: on ? '1' : undefined })} />
+              </FilterMenu>
             </ToolbarRow>
             <ToolbarRow>
+              {/* One status at a time (D16). All is a real option so the whole list is one click away. */}
               <FilterGroup label="Status">
+                <FilterChip pressed={!status} onToggle={() => update({ status: undefined })} count={statusCounts.all}>
+                  All
+                </FilterChip>
                 {STATUS_FILTERS.map((s) => (
-                  <FilterChip key={s.value} pressed={statuses.includes(s.value)} onToggle={() => toggleStatus(s.value)} count={countsByStatus[s.value]}>
+                  <FilterChip key={s.value} pressed={status === s.value} onToggle={() => update({ status: s.value })} count={statusCounts[s.value]}>
                     {s.label}
                   </FilterChip>
                 ))}
               </FilterGroup>
-              <FilterGroup label="Traffic">
-                <FilterChip pressed={traffic === 'paid'} onToggle={() => update({ traffic: traffic === 'paid' ? undefined : 'paid' })}>
-                  Has paid clicks
-                </FilterChip>
-                <FilterChip pressed={traffic === 'unpaid'} onToggle={() => update({ traffic: traffic === 'unpaid' ? undefined : 'unpaid' })}>
-                  No paid clicks
-                </FilterChip>
-              </FilterGroup>
             </ToolbarRow>
+            {chips.length ? (
+              <ActiveFilterBar onClearAll={clearSecondary}>
+                {chips.map((c) => (
+                  <ActiveFilterChip key={c.key} label={c.label} onRemove={() => update({ [SECONDARY_PARAM[c.key]]: undefined })} />
+                ))}
+              </ActiveFilterBar>
+            ) : null}
           </>
         }
       />
