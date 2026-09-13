@@ -55,11 +55,12 @@ export function toStatusKind(status: DisplayStatus): StatusKind {
   }
 }
 
+/* No "Manually allowed" filter: the override workflow is not modelled (D9), so no visitor
+   carries one. The vocabulary stays in the badge for when it is. */
 export const STATUS_FILTERS: Array<{ value: DisplayStatus; label: string }> = [
   { value: 'blocked', label: 'Blocked' },
   { value: 'monitoring', label: 'Monitoring' },
   { value: 'not-blocked', label: 'Not blocked' },
-  { value: 'allowed', label: 'Manually allowed' },
   { value: 'not-evaluated', label: 'Not evaluated' },
 ];
 
@@ -124,6 +125,7 @@ const CONFIDENCE_NOTE: Record<Confidence, string> = {
   high: 'an automation signal sits behind the pattern.',
   moderate: 'the pattern alone crossed the line, without an automation signal.',
   conflicting: 'the evidence disagrees with itself, so read the journey before trusting the conclusion.',
+  insufficient: 'the signals so far are not enough to decide either way; evaluation continues with every visit.',
 };
 
 /** The footnote under the evidence list: what the confidence label means, then the exposure calculation. */
@@ -189,16 +191,27 @@ function visitDescription(v: Visit): string {
   return `Referral visit to ${where}`;
 }
 
+function interactionLevel(v: Visit): string {
+  const shallow = v.engagement.scrollDepth < 0.1 && v.engagement.durationSec < 6;
+  if (shallow && !v.engagement.pointerMoved) return 'None';
+  if (shallow) return 'Low';
+  if (v.engagement.durationSec >= 45 && v.engagement.scrollDepth >= 0.4) return 'High';
+  return 'Moderate';
+}
+
+/** The brief's signals, per visit, every one of them present so absence is never blank. */
 function visitMeta(v: Visit, home: Visitor): Array<{ label: string; value: string }> {
   const meta: Array<{ label: string; value: string }> = [];
   if (v.keyword) meta.push({ label: 'Keyword', value: v.keyword });
-  if (v.source === 'paid') meta.push({ label: 'CPC', value: v.cpc === undefined ? 'not reported' : formatMoney(v.cpc) });
-  meta.push({ label: 'Time on page', value: v.engagement.durationSec < 60 ? `${v.engagement.durationSec}s` : `${Math.floor(v.engagement.durationSec / 60)}m ${v.engagement.durationSec % 60}s` });
-  meta.push({ label: 'Scroll', value: `${Math.round(v.engagement.scrollDepth * 100)}%` });
-  meta.push({ label: 'Pointer', value: v.engagement.pointerMoved ? 'moved' : 'no movement' });
-  if (v.formResult !== 'not-submitted') meta.push({ label: 'Form', value: v.formResult });
-  if (v.converted) meta.push({ label: 'Outcome', value: 'converted' });
-  if (v.location.city !== home.location.city) meta.push({ label: 'Location', value: `${v.location.city}, ${v.location.country}` });
+  if (v.source === 'paid') meta.push({ label: 'CPC', value: v.cpc === undefined ? 'Not reported' : formatMoney(v.cpc) });
+  meta.push({ label: 'Interaction', value: `${interactionLevel(v)} (${v.engagement.durationSec < 60 ? `${v.engagement.durationSec}s` : `${Math.floor(v.engagement.durationSec / 60)}m ${v.engagement.durationSec % 60}s`}, scroll ${Math.round(v.engagement.scrollDepth * 100)}%, pointer ${v.engagement.pointerMoved ? 'moved' : 'still'})` });
+  meta.push({ label: 'Bot probability', value: `${Math.round(v.botProbability * 100)}%` });
+  meta.push({ label: 'VPN or proxy', value: v.vpnOrProxy ? 'Yes' : 'No' });
+  meta.push({ label: 'Network', value: NETWORK_LABEL[v.networkType].replace(' connection', '').replace(' network', '').replace(' carrier', '') });
+  if (v.formResult === 'not-submitted') meta.push({ label: 'Form', value: 'Not submitted' });
+  else meta.push({ label: 'Form', value: `Submitted, email deliverability ${v.formResult === 'valid' ? 'Valid' : 'Invalid'}` });
+  meta.push({ label: 'Conversion', value: v.converted ? 'Yes' : 'No' });
+  meta.push({ label: 'Location', value: `${v.location.city}, ${v.location.country}${v.location.city !== home.location.city ? ' (changed)' : ''}` });
   meta.push({ label: 'Device', value: `${v.device.browser}, ${v.device.os}` });
   return meta;
 }

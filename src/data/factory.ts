@@ -215,16 +215,8 @@ export function generateVisitors(seed = DEFAULT_SEED, count = DEFAULT_COUNT): Vi
 
   const filler = mix.map((a) => generateOne(r, a, taken));
 
-  /* One override, so the vocabulary in D3 is complete on screen. The data keeps room for it (D9). */
-  const overridden = filler.find((v) => v.status === 'blocked' && v.decision?.confidence === 'moderate' && v.exclusionEvents.every((e) => e.state !== 'failed'));
-  if (overridden) {
-    overridden.manualOverride = {
-      kind: 'allowed',
-      by: 'Ada O.',
-      at: new Date(new Date(overridden.decision!.madeAt).getTime() + 26 * 3600000).toISOString(),
-      note: 'Internal QA traffic from the agency office. Real people, not a competitor.',
-    };
-  }
+  /* No manual override is generated: the override workflow is not modelled (D9), so the
+     vocabulary stays in the types and the badge but not in the data (amended 13 Sep 2026). */
 
   return [...GOLDEN_CASES, ...filler];
 }

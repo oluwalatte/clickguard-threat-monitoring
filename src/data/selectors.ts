@@ -2,7 +2,8 @@
  * Everything the screens read is derived here from `visits`, so totals, exposure and
  * timings cannot contradict the journey (build plan 6.1). Selectors are pure.
  */
-import type { AdPlatform, Confidence, DisplayStatus, ExclusionEvent, Visit, Visitor } from './types';
+import { collectEvidence } from './engine';
+import type { AdPlatform, Confidence, DisplayStatus, Evidence, ExclusionEvent, Visit, Visitor } from './types';
 
 const ms = (iso: string) => new Date(iso).getTime();
 
@@ -70,10 +71,43 @@ export function exposure(v: Visitor): Exposure {
 }
 
 /** D5 wording. */
-export const CONFIDENCE_LABEL_MAP: Record<Confidence, string> = { high: 'High confidence', moderate: 'Moderate confidence', conflicting: 'Conflicting evidence' };
+export const CONFIDENCE_LABEL_MAP: Record<Confidence, string> = {
+  high: 'High confidence',
+  moderate: 'Moderate confidence',
+  conflicting: 'Conflicting evidence',
+  insufficient: 'Insufficient evidence',
+};
 
 export function confidence(v: Visitor): Confidence | undefined {
   return v.decision?.confidence ?? v.monitoring?.confidence;
+}
+
+/** A concise signal for the table: the label and how it relates to the verdict. */
+export interface KeySignal {
+  label: string;
+  kind: Evidence['kind'];
+}
+
+/** The evidence a visitor carries: the decision's or the monitoring state's, or, for a visitor
+    with neither, what the journey shows so far. Never stored; always from the visits. */
+export function evidenceFor(v: Visitor): Evidence[] {
+  if (v.decision) return v.decision.evidence;
+  if (v.monitoring) return v.monitoring.evidence;
+  return collectEvidence(v.visits, v.visits.length - 1, { networkType: v.networkType, vpnOrProxy: v.vpnOrProxy });
+}
+
+const SIGNAL_PRIORITY: Record<Evidence['kind'], number> = { primary: 0, contradictory: 1, supporting: 2, missing: 3 };
+
+/** Up to `limit` scannable signals: the primary contributors, then anything that argues
+    against the verdict, then supporting context. Mitigating signals outrank supporting ones
+    so an ambiguous row reads as ambiguous at a glance. */
+export function keySignals(v: Visitor, limit = 4): KeySignal[] {
+  return evidenceFor(v)
+    .filter((e): e is Evidence & { label: string } => Boolean(e.label))
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => SIGNAL_PRIORITY[a.e.kind] - SIGNAL_PRIORITY[b.e.kind] || a.i - b.i)
+    .slice(0, limit)
+    .map(({ e }) => ({ label: e.label, kind: e.kind }));
 }
 
 /** The one-line "why" for the table. Plain language, never a score. */
@@ -110,7 +144,9 @@ export interface VisitorRow extends Record<string, unknown> {
   firstSeenAt: string;
   lastSeenAt: string;
   decidedAt?: string;
+  /** The full sentence, for the detail view. The table shows `signals`. */
   reason: string;
+  signals: KeySignal[];
   platforms: AdPlatform[];
   sync: Partial<Record<AdPlatform, ExclusionEvent['state']>>;
 }
@@ -133,6 +169,7 @@ export function toRow(v: Visitor): VisitorRow {
     lastSeenAt: lastSeen(v),
     decidedAt: decidedAt(v),
     reason: reasonLine(v),
+    signals: keySignals(v),
     platforms: platforms(v),
     sync,
   };
@@ -142,7 +179,7 @@ export function toRow(v: Visitor): VisitorRow {
 export type SortKey = 'recency' | 'block-time' | 'visits' | 'paid-clicks' | 'confidence';
 export type SortDirection = 'asc' | 'desc';
 
-const CONFIDENCE_RANK: Record<Confidence, number> = { high: 3, moderate: 2, conflicting: 1 };
+const CONFIDENCE_RANK: Record<Confidence, number> = { high: 4, moderate: 3, conflicting: 2, insufficient: 1 };
 
 function sortValue(row: VisitorRow, key: SortKey): number {
   switch (key) {

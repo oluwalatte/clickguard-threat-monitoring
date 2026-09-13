@@ -102,6 +102,7 @@ export const CASE_4_MONITORING_VELOCITY: Visitor = {
   monitoring: {
     since: c4Visits[2].occurredAt,
     note: 'Monitoring: 3 paid visits in 12 minutes with shallow engagement. Not blocked because there is no automation signal and the history is three visits long.',
+    confidence: 'insufficient',
     evidence: collectEvidence(c4Visits, 2, c4ctx),
   },
   exclusionEvents: [],

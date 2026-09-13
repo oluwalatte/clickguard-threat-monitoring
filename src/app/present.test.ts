@@ -11,11 +11,10 @@ describe('the decision summary leads with plain language', () => {
     expect(headline(golden(3))).toBe('Monitoring, not blocked');
     expect(headline(golden(2))).toBe('Not blocked');
     expect(headline(golden(8))).toBe('Not evaluated');
-    const o = visitors.find((v) => v.manualOverride)!;
-    expect(headline(o)).toMatch(/^Blocked after visit \d+ of \d+, then manually allowed$/);
   });
-  it('explains an override without erasing the decision', () => {
-    const o = visitors.find((v) => v.manualOverride)!;
+  it('would explain an override without erasing the decision', () => {
+    const o = { ...golden(1), manualOverride: { kind: 'allowed' as const, by: 'Ada O.', at: '2026-09-12T10:00:00Z', note: 'QA traffic.' } };
+    expect(headline(o)).toBe('Blocked after visit 4 of 5, then manually allowed');
     expect(explanation(o)).toMatch(/Ada O\. allowed this visitor/);
     expect(explanation(o)).toMatch(/remain on record/);
   });
@@ -68,6 +67,20 @@ describe('the decision and the sync are separate facts (D11)', () => {
     const conversion = list.find((e) => e.statement.startsWith('Completed a purchase'))!;
     expect(conversion.sourceHref).toBe('#visit-7');
     expect(conversion.sourceVisit).toBe('From visit 7, 15:20:19');
+  });
+});
+
+describe('each visit shows the exact signal, never a blank', () => {
+  it('names form, deliverability and conversion explicitly', () => {
+    const [first, , , , , , last] = toTimelineItems(golden(5)).filter((i) => i.type !== 'block' && !i.type.startsWith('sync'));
+    const get = (item: typeof first, label: string) => item.meta!.find((m) => m.label === label)?.value;
+    expect(get(first, 'Form')).toBe('Not submitted');
+    expect(get(first, 'Conversion')).toBe('No');
+    expect(get(last, 'Form')).toBe('Submitted, email deliverability Valid');
+    expect(get(last, 'Conversion')).toBe('Yes');
+    expect(get(first, 'Bot probability')).toBe('36%');
+    expect(get(first, 'VPN or proxy')).toBe('No');
+    expect(get(first, 'Interaction')).toMatch(/^Low/);
   });
 });
 

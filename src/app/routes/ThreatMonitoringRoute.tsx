@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Button, FilterChip, FilterGroup, SearchField, StatusBadge, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
+import { Button, FilterChip, FilterGroup, SearchField, SignalTags, StatusBadge, ThreatTable, type TableSort, type ThreatTableColumn } from '@clickguard/ui';
 import { CONFIDENCE_LABEL_MAP, NOW, filterRows, formatRelative, formatTimestamp, toRow, type Confidence, type DisplayStatus, type TrafficFilter, type VisitorRow } from '@/data';
 import { VISITORS } from '../data';
 import { PLATFORM_LABEL, STATUS_FILTERS, toStatusKind } from '../present';
 import { Page, PageHeader, ToolbarRow } from './Page';
 
-const CONFIDENCE_RANK: Record<Confidence, number> = { high: 3, moderate: 2, conflicting: 1 };
+const CONFIDENCE_RANK: Record<Confidence, number> = { high: 4, moderate: 3, conflicting: 2, insufficient: 1 };
 const DEFAULT_SORT: TableSort = { key: 'lastSeenAt', direction: 'desc' };
-const SORT_LABEL: Record<string, string> = { lastSeenAt: 'last seen', decidedAt: 'block time', totalVisits: 'visits', paidVisits: 'paid clicks', confidence: 'confidence' };
+const SORT_LABEL: Record<string, string> = { lastSeenAt: 'last seen', decidedAt: 'block time', totalVisits: 'visits', paidVisits: 'paid clicks', confidence: 'decision confidence' };
 
 function syncLine(row: VisitorRow): string | undefined {
   const entries = Object.entries(row.sync);
@@ -37,6 +37,7 @@ const COLUMNS: ThreatTableColumn<VisitorRow>[] = [
     header: 'Status',
     width: '14%',
     sortValue: (r) => ['blocked', 'monitoring', 'allowed', 'not-blocked', 'not-evaluated'].indexOf(r.status),
+    /* The exclusion state is enforcement information beside the status, never evidence. */
     render: (r) => (
       <>
         <span>
@@ -48,11 +49,12 @@ const COLUMNS: ThreatTableColumn<VisitorRow>[] = [
   },
   { key: 'totalVisits', header: 'Visits', width: '6%', align: 'right', render: (r) => `${r.totalVisits}` },
   { key: 'paidVisits', header: 'Paid', width: '6%', align: 'right', render: (r) => `${r.paidVisits}` },
-  { key: 'reason', header: 'Why', sortable: false },
+  /* Concise signals, comparable across rows. The full sentence lives in the visitor detail. */
+  { key: 'signals', header: 'Key evidence', sortable: false, render: (r) => <SignalTags signals={r.signals} /> },
   {
     key: 'confidence',
-    header: 'Confidence',
-    width: '11%',
+    header: 'Decision confidence',
+    width: '12%',
     sortValue: (r) => (r.confidence ? CONFIDENCE_RANK[r.confidence] : null),
     render: (r) => (r.confidence ? CONFIDENCE_LABEL_MAP[r.confidence] : ''),
   },
@@ -122,7 +124,7 @@ export function ThreatMonitoringRoute() {
     <>
       <PageHeader
         title="Threat monitoring"
-        description="Every visitor ClickGuard has evaluated, with the decision it reached and why. Blocked means a decision was made; the advertising platform confirms the exclusion separately."
+        description="Every visitor ClickGuard has observed, with the decision it reached and the key evidence behind it. Blocked means a decision was made; the advertising platform confirms the exclusion separately."
         toolbar={
           <>
             <ToolbarRow>
