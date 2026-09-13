@@ -37,6 +37,10 @@
   --color-action-primary-surface: var(--action-primary-surface);
   --color-action-primary-border: var(--action-primary-border);
   --color-action-on-primary: var(--action-on-primary);
+  --color-action-primary-ink: var(--action-primary-ink);
+  --color-action-primary-fill: var(--action-primary-fill);
+  --color-action-primary-fill-hover: var(--action-primary-fill-hover);
+  --color-action-primary-fill-active: var(--action-primary-fill-active);
 
   --color-status-blocked: var(--status-blocked);
   --color-status-blocked-surface: var(--status-blocked-surface);

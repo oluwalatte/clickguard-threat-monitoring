@@ -32,23 +32,23 @@
 
 /* Primary: one per view. */
 .button[data-variant='primary'] {
-  background: var(--action-primary);
+  background: var(--action-primary-fill);
   color: var(--action-on-primary);
-  border-color: var(--action-primary);
+  border-color: var(--action-primary-fill);
 }
 .button[data-variant='primary']:hover:enabled {
-  background: var(--action-primary-hover);
-  border-color: var(--action-primary-hover);
+  background: var(--action-primary-fill-hover);
+  border-color: var(--action-primary-fill-hover);
 }
 .button[data-variant='primary']:active:enabled {
-  background: var(--action-primary-active);
-  border-color: var(--action-primary-active);
+  background: var(--action-primary-fill-active);
+  border-color: var(--action-primary-fill-active);
 }
 
 /* Secondary: the default for toolbars and filters. */
 .button[data-variant='secondary'] {
   background: var(--surface-panel);
-  color: var(--action-primary);
+  color: var(--action-primary-ink);
   border-color: var(--action-primary-border);
 }
 .button[data-variant='secondary']:hover:enabled {
