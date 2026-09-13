@@ -16,7 +16,7 @@ consumers import; it is a list of `@import`s.
 | `tailwind-theme.css` | Tailwind v4 `@theme` export. Mapping only; never imported by the app |
 | `tailwind.theme.js` | Tailwind v3 `theme.extend` export with the same contract; never imported |
 
-This directory is the only place in `src/` where a raw hex or pixel value may appear.
+This directory is the only place in the repository's source where a raw hex or pixel value may appear.
 `npm run check:tokens` enforces that.
 
 ## Adding a token

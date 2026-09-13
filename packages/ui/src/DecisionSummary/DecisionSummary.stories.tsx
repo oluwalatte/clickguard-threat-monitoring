@@ -63,10 +63,10 @@ export const MonitoringConflictingEvidence: Story = {
   },
 };
 
-export const MonitoringTooLittleHistory: Story = {
+export const MonitoringInsufficientEvidence: Story = {
   args: {
     status: 'monitoring',
-    confidence: 'none',
+    confidence: 'insufficient',
     headline: 'Monitoring, not blocked',
     explanation:
       'Monitoring: 3 paid visits in 12 minutes with shallow engagement. Not blocked because there is no automation signal and the history is three visits long.',
@@ -91,6 +91,17 @@ export const NotBlocked: Story = {
     syncNote: undefined,
     exposure: '$6.10 across 1 paid click',
     evidenceCount: 2,
+  },
+};
+
+export const TwoPlatforms: Story = {
+  args: {
+    syncState: 'pending',
+    syncNote: 'One platform has not confirmed the exclusion yet. Paid clicks from it can still reach the site.',
+    syncPlatforms: [
+      { name: 'Google Ads', state: 'active', detail: 'since 19 Feb 2026, 15:02:10 UTC' },
+      { name: 'Meta Ads', state: 'pending', detail: 'queued 6 minutes ago' },
+    ],
   },
 };
 

@@ -154,3 +154,49 @@
   font-size: var(--text-support-size);
   font-weight: 600;
 }
+
+.platforms {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+}
+
+.platformRow {
+  display: contents;
+}
+
+.platformName {
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-secondary);
+}
+
+.platformState {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+}
+
+.platformLabel {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.platformRow[data-state='failed'] .platformLabel {
+  color: var(--status-blocked);
+}
+.platformRow[data-state='pending'] .platformLabel,
+.platformRow[data-state='delayed'] .platformLabel {
+  color: var(--status-monitoring);
+}
+.platformRow[data-state='active'] .platformLabel {
+  color: var(--status-safe);
+}
+
+.platformDetail {
+  color: var(--text-secondary);
+}

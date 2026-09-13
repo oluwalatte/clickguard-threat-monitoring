@@ -19,7 +19,7 @@ Implementation is the agent's and is recorded as such; the brief expects that.
 | P1 scaffold | Proposed the branch plan, converted the ten components, wired Storybook and CI, wrote the deploy scripts | Chose TSX plus CSS modules over the export's inline styles so hover and focus live in CSS, style objects are not repeated across components, and one script proves there are no raw values in `src/`. Directed two new Vercel projects rather than reusing the old ones. Rejected the hand-written Vercel project id file; the script now resolves the project by name through the logged-in CLI. Accepted the four calls the agent flagged: one Default story per component in P1 with the matrix in P2, sidebar items beyond Threat monitoring shown but inert until P4, CI on Node 24 to match Vercel, and the exceeded time box (45 minutes planned, about two hours real) |
 | P2 stories | Proposed one story per meaningful state from the prompt files and the DS6 matrix, with story data written from the decisions' own example sentences instead of the kit fixtures. Produced 60 stories, interaction tests, and an a11y run that found two contrast failures inherited from the export | Directed it to proceed on the plan as written; D13 had settled the one open question. Merged with the contrast fix: the export promises 4.5:1 and did not meet it, so a darker ink and fill step for the accent honours the system's own contract rather than changing a decision. Accepted the flagged call that the primary button is now one indigo step darker than the sampled product colour |
 | P3 data | Proposed types that encode the mechanics, eight hand-authored golden cases, a seeded factory to 48 visitors, and reconciliation tests. Produced the decision engine, the golden cases, the factory, selectors and 82 tests | Directed it to merge P2 with a merge commit and move on; no further direction was needed because the data contract was already fixed in `decisions.md` (the golden-case list, D6, D7, D8, D9, D11). Accepted the flagged tuning: a fixed reference "now" so relative times are deterministic, and a monitoring threshold and a VPN rule tuned until the engine reaches the authored status on every golden case, with a test that keeps the filler consistent with the contract |
-| P4 prototype | Not started | Pre-registered from `decisions.md` before the phase: dedicated routes (D2); the decision summary leads the visitor page and the journey sits directly under it (success criteria); recency is the default sort (D7); exposure only as a visible sum (D6); the Monitoring note follows the D8 template; no verdict-changing actions (D9); the block decision and the exclusion sync are separate timeline events (D11); only Threat monitoring is a live destination (D13). Overrides to be recorded when the phase lands |
+| P4 prototype | Reported that the hard requirement (the prototype renders the Storybook library's components) held in substance but not in form, and recommended the workspace-package move. Produced `packages/ui` as `@clickguard/ui`, the table route with URL-held search, filters and header sorts, the visitor route led by the decision summary with the journey and evidence beneath, four system additions the screens needed (SearchField, FilterChip, SignalTag, SyncFlag), an override event and per-platform sync rows, the data-to-props adapters with tests, and the fix that ships Storybook as a prebuilt deployment | Directed the package move as the first P4 commit so the library dependency is visible by name. On review of the built table: "Why" became "Key evidence" as up to four concise labels with the sentence moved to the detail; "Decision confidence" replaces "Confidence" because bot probability is a visit-level measure; Monitoring rows always read Conflicting or Insufficient evidence; conversion is evidence like deliverability; each visit names form, deliverability and conversion with "Not submitted" rather than a blank; "Manually allowed" leaves the data and the filter until the override workflow is modelled; "observed" rather than "evaluated" because Not evaluated rows exist (D10a, D5 and D9 amendments). Set the column order to the investigation sequence with decision time inside Status and enforcement shown in the table only as an exception (D14). Accepted the flagged calls: eight columns with percentage widths and a 1120px table minimum; Status sorts by verdict then most recent decision so the block-time sort survives; loading and error table states unreachable because the data is local
 | P5 rationale | Not started | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Success criteria go into `docs/success-criteria.md` with where each is answered on the page |
 
 ## Agent implementation notes
@@ -106,3 +106,39 @@ in the code. Not decisions.
   counts, timings, decision references, sync chains and the no-paid-after-active rule, each golden
   case's contract, engine agreement with the golden cases, sorts, filters, journey order, and the
   formatters. Paid-visit share in the filler is about 70 percent.
+
+### P4
+
+- `src/ui` moved to `packages/ui` as the npm workspace package `@clickguard/ui`. The prototype
+  depends on it by name and imports `@clickguard/ui/styles.css`; Storybook reads the same source
+  files. TypeScript paths, Vite resolution and the token check point at the package. All gates
+  and the story run passed unchanged after the move.
+- System additions the screens needed, because the app may not style controls itself (rule 9):
+  `SearchField` (native search input, always labelled, clear button), `FilterChip` with
+  `FilterGroup` (aria-pressed toggles under a visible caption), `SignalTag` (neutral ink, info tone
+  for mitigating signals, dashed for unavailable, never a status colour), `SyncFlag` (amber for
+  pending and delayed, red for failed, glyph plus text, shown only on exceptions). The timeline
+  gained an `override` event type; `DecisionSummary` gained the Insufficient evidence label and
+  per-platform sync rows. A table cell's second line is system-styled support text, and table
+  headers wrap at word boundaries. 79 stories pass with a11y as error.
+- Table route: search by IP or location, status chips with counts, a traffic toggle, header sorts
+  for recency (default), status then most recent decision, visits, paid clicks and decision
+  confidence; undecided rows sink in either direction. Search, filters and sort live in the URL,
+  so the breadcrumb restores the table. Columns per D14 with percentage widths and a 1120px table
+  minimum; narrower panels scroll horizontally and below 760px the table stacks. The shell starts
+  collapsed below that breakpoint.
+- Every evidence item carries a scannable `label` from the engine; `keySignals` picks up to four
+  per row, primary first, then mitigating, then supporting, so an ambiguous row reads as
+  ambiguous. "No interaction" versus "Low interaction" comes from pointer movement; "No
+  conversion" appears when a form was submitted without a purchase. Monitoring confidence is
+  always `conflicting` or `insufficient`. No generated visitor carries a manual override.
+- Visitor route: headline names the visit the decision followed; the summary sentence is the
+  data's own; the sync block reports the worst platform state with one row per platform; exposure
+  is a visible sum with the calculation in the evidence footnote (D6). Each visit lists interaction
+  level, bot probability, VPN, network, form with deliverability, conversion, location and device,
+  and carries its own signals; list items link back to their visit. Unknown addresses get an
+  honest not-found state. `present.ts` holds the adapters with 18 unit tests.
+- Storybook on Vercel: the CLI's local config only steers the CLI, and Vercel's remote build reads
+  the repository's own `vercel.json`, which belongs to the prototype, so the Storybook project had
+  been serving the prototype. It is now built locally and shipped through the Build Output API as
+  a prebuilt deployment; no remote build runs. Verified by the live title and a 404 on unknown paths.

@@ -10,6 +10,12 @@
 import { formatDuration } from './format';
 import type { BlockDecision, Confidence, Evidence, MonitoringState, NetworkType, Visit, VisitorStatus } from './types';
 
+/** "41 min", "3 hr", "2 days": the label form of a span. */
+function shortDuration(msValue: number) {
+  const words = formatDuration(msValue);
+  return words.replace(/ minutes?$/, ' min').replace(/ hours?$/, ' hr').replace(/ seconds?$/, ' sec');
+}
+
 export const BLOCK_THRESHOLD = 0.8;
 export const MONITOR_THRESHOLD = 0.3;
 /** Fewer visits than this is insufficient history (D3, golden case 8). */
@@ -66,78 +72,86 @@ export function collectEvidence(all: Visit[], upTo: number, ctx: JourneyContext)
   const paid = window.filter((v) => v.source === 'paid');
   const out: Array<Evidence & { weight: number }> = [];
   let n = 0;
-  const push = (kind: Evidence['kind'], weight: number, statement: string, visitIds: string[], rawValue?: string) => {
+  const push = (kind: Evidence['kind'], weight: number, statement: string, visitIds: string[], rawValue?: string, label?: string) => {
     n += 1;
-    out.push({ id: `e-${n}`, kind, statement, rawValue, visitIds, weight });
+    out.push({ id: `e-${n}`, kind, statement, label, rawValue, visitIds, weight });
   };
 
   if (paid.length >= 3) {
     const span = spanLabel(paid[0], paid[paid.length - 1]);
     const short = ms(paid[paid.length - 1].occurredAt) - ms(paid[0].occurredAt) < 3 * 3600 * 1000;
-    push('primary', short ? 0.35 : 0.2, `${paid.length} paid clicks in ${span}`, paid.map((v) => v.id), `paid=[${paid.map((v) => v.occurredAt.slice(11, 19)).join(', ')}] span=${span}`);
+    const spanMs = ms(paid[paid.length - 1].occurredAt) - ms(paid[0].occurredAt);
+    push('primary', short ? 0.35 : 0.2, `${paid.length} paid clicks in ${span}`, paid.map((v) => v.id), `paid=[${paid.map((v) => v.occurredAt.slice(11, 19)).join(', ')}] span=${span}`, `${paid.length} paid clicks / ${shortDuration(spanMs)}`);
   }
 
   const shallow = window.filter(isShallow);
-  if (shallow.length >= 2 && shallow.length / window.length >= 0.6) {
-    push('primary', 0.25, `No scroll and under 6 seconds on the page across ${shallow.length} of ${window.length} visits`, shallow.map((v) => v.id), `scroll=[${window.map((v) => v.engagement.scrollDepth).join(', ')}] duration_s=[${window.map((v) => v.engagement.durationSec).join(', ')}]`);
-  }
-
+  const shallowMajority = shallow.length >= 2 && shallow.length / window.length >= 0.6;
   const noPointer = window.filter((v) => !v.engagement.pointerMoved);
-  if (noPointer.length >= 2 && noPointer.length === window.length) {
-    push('supporting', 0.15, 'No mouse movement on any visit', noPointer.map((v) => v.id));
+  const noPointerAll = noPointer.length >= 2 && noPointer.length === window.length;
+  if (shallowMajority) {
+    push('primary', 0.25, `No scroll and under 6 seconds on the page across ${shallow.length} of ${window.length} visits`, shallow.map((v) => v.id), `scroll=[${window.map((v) => v.engagement.scrollDepth).join(', ')}] duration_s=[${window.map((v) => v.engagement.durationSec).join(', ')}]`, noPointerAll ? 'No interaction' : 'Low interaction');
+  }
+  if (noPointerAll) {
+    /* Its label is carried by "No interaction" when engagement is already shallow. */
+    push('supporting', 0.15, 'No mouse movement on any visit', noPointer.map((v) => v.id), undefined, shallowMajority ? undefined : 'No pointer movement');
   }
 
   const avgBot = window.reduce((s, v) => s + v.botProbability, 0) / window.length;
   if (avgBot >= 0.6) {
-    push('supporting', 0.2, `Automation likelihood ${Math.round(avgBot * 100)}%`, window.filter((v) => v.botProbability >= 0.6).map((v) => v.id), `bot_probability=[${window.map((v) => v.botProbability).join(', ')}]`);
+    push('supporting', 0.2, `Automation likelihood ${Math.round(avgBot * 100)}%`, window.filter((v) => v.botProbability >= 0.6).map((v) => v.id), `bot_probability=[${window.map((v) => v.botProbability).join(', ')}]`, `Bot: ${Math.round(avgBot * 100)}%`);
   }
 
   if (ctx.networkType === 'datacenter') {
-    push('supporting', 0.15, 'Datacenter network, not a residential or mobile connection', window.map((v) => v.id));
+    push('supporting', 0.15, 'Datacenter network, not a residential or mobile connection', window.map((v) => v.id), undefined, 'Datacenter');
   }
   if (ctx.vpnOrProxy) {
-    push('supporting', 0.08, 'Connection hides its location (VPN or proxy)', window.map((v) => v.id));
+    push('supporting', 0.08, 'Connection hides its location (VPN or proxy)', window.map((v) => v.id), undefined, 'VPN detected');
   }
 
   const keywords = new Set(paid.map((v) => v.keyword));
   if (paid.length >= 3 && keywords.size === 1 && paid[0].keyword) {
-    push('supporting', 0.12, `Every paid click on the same keyword, "${paid[0].keyword}"`, paid.map((v) => v.id));
+    push('supporting', 0.12, `Every paid click on the same keyword, "${paid[0].keyword}"`, paid.map((v) => v.id), undefined, 'Same keyword');
   }
 
   const devices = new Set(window.map((v) => v.device.id));
   if (devices.size >= 3 && window.length >= 3) {
-    push('supporting', 0.14, `${devices.size} device identities from one IP in ${spanLabel(window[0], window[window.length - 1])}`, window.map((v) => v.id), `devices=[${[...devices].join(', ')}]`);
+    push('supporting', 0.14, `${devices.size} device identities from one IP in ${spanLabel(window[0], window[window.length - 1])}`, window.map((v) => v.id), `devices=[${[...devices].join(', ')}]`, `${devices.size} devices`);
   }
 
   const cities = new Set(window.map((v) => v.location.city));
   if (cities.size >= 2) {
-    push('supporting', 0.12, `Reported location changed ${cities.size - 1 === 1 ? 'once' : `${cities.size - 1} times`} in ${spanLabel(window[0], window[window.length - 1])}`, window.map((v) => v.id), `cities=[${[...cities].join(', ')}]`);
+    push('supporting', 0.12, `Reported location changed ${cities.size - 1 === 1 ? 'once' : `${cities.size - 1} times`} in ${spanLabel(window[0], window[window.length - 1])}`, window.map((v) => v.id), `cities=[${[...cities].join(', ')}]`, 'Location changed');
   }
 
   const badForm = window.filter((v) => v.formResult === 'invalid');
   if (badForm.length) {
-    push('supporting', 0.1, `Form submitted with an undeliverable email address on ${listVisits(badForm, all)}`, badForm.map((v) => v.id));
+    push('supporting', 0.1, `Form submitted with an undeliverable email address on ${listVisits(badForm, all)}`, badForm.map((v) => v.id), undefined, 'Email: Invalid');
+  }
+  /* Conversion is evidence in its own right, like deliverability. A form without a purchase is noted. */
+  const submitted = window.filter((v) => v.formResult !== 'not-submitted');
+  if (submitted.length && !window.some((v) => v.converted)) {
+    push('supporting', 0.06, `Submitted a form on ${listVisits(submitted, all)} but did not convert`, submitted.map((v) => v.id), undefined, 'No conversion');
   }
 
   /* Contradictory evidence is shown, never hidden. */
   const converted = window.filter((v) => v.converted);
   if (converted.length) {
-    push('contradictory', 0.5, `Completed a purchase on ${listVisits(converted, all)}`, converted.map((v) => v.id));
+    push('contradictory', 0.5, `Completed a purchase on ${listVisits(converted, all)}`, converted.map((v) => v.id), undefined, 'Converted');
   }
   const validForm = window.filter((v) => v.formResult === 'valid');
   if (validForm.length) {
-    push('contradictory', 0.3, `Submitted a valid form with a deliverable email address on ${listVisits(validForm, all)}`, validForm.map((v) => v.id));
+    push('contradictory', 0.3, `Submitted a valid form with a deliverable email address on ${listVisits(validForm, all)}`, validForm.map((v) => v.id), undefined, 'Email: Valid');
   }
   const engaged = window.filter(isEngaged);
   if (engaged.length && engaged.length === window.length) {
-    push('contradictory', 0.25, 'Real engagement on every visit: scrolled and stayed over 45 seconds each time', engaged.map((v) => v.id));
+    push('contradictory', 0.25, 'Real engagement on every visit: scrolled and stayed over 45 seconds each time', engaged.map((v) => v.id), undefined, 'High interaction');
   } else if (engaged.length) {
-    push('contradictory', 0.15, `Over 45 seconds on the page with real scrolling on ${listVisits(engaged, all)}`, engaged.map((v) => v.id));
+    push('contradictory', 0.15, `Over 45 seconds on the page with real scrolling on ${listVisits(engaged, all)}`, engaged.map((v) => v.id), undefined, `High interaction (${engaged.length} of ${window.length})`);
   }
 
   const noJs = window.filter((v) => !v.engagement.jsEnabled);
   if (noJs.length) {
-    push('missing', 0.05, `Device fingerprint unavailable because JavaScript was blocked on ${noJs.length === window.length ? 'every visit' : listVisits(noJs, all)}`, noJs.map((v) => v.id));
+    push('missing', 0.05, `Device fingerprint unavailable because JavaScript was blocked on ${noJs.length === window.length ? 'every visit' : listVisits(noJs, all)}`, noJs.map((v) => v.id), undefined, 'No fingerprint');
   }
 
   const order: Record<Evidence['kind'], number> = { primary: 0, supporting: 1, contradictory: 2, missing: 3 };
@@ -229,7 +243,7 @@ export function evaluate(all: Visit[], ctx: JourneyContext): Evaluation {
       monitoring: {
         since: all[all.length - 1].occurredAt,
         note: monitoringNote(all, ctx),
-        confidence: evidence.some((e) => e.kind === 'contradictory') ? 'conflicting' : undefined,
+        confidence: evidence.some((e) => e.kind === 'contradictory') ? 'conflicting' : 'insufficient',
         evidence,
       },
     };

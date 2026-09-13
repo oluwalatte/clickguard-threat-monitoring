@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import { SidebarNav, type SidebarNavGroup } from '@/ui';
+import { NARROW_BREAKPOINT_PX, SidebarNav, type SidebarNavGroup } from '@clickguard/ui';
 import styles from './AppShell.module.css';
 
 /* The product's navigation, in product order. Only Threat monitoring is routable
@@ -32,8 +32,22 @@ const GROUPS: SidebarNavGroup[] = [
   },
 ];
 
+/* Below the narrow breakpoint the rail starts collapsed so the content keeps its width.
+   The person can still expand it; the choice is theirs from then on. */
+function useStartsCollapsed() {
+  const query = `(max-width: ${NARROW_BREAKPOINT_PX - 1}px)`;
+  const [collapsed, setCollapsed] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) => setCollapsed(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query]);
+  return [collapsed, setCollapsed] as const;
+}
+
 export function AppShell() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useStartsCollapsed();
   const navigate = useNavigate();
   const location = useLocation();
   const activeId = location.pathname.startsWith('/threat-monitoring') ? 'threat-monitoring' : undefined;

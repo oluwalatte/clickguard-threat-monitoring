@@ -40,3 +40,31 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
+
+.panel[data-padded] {
+  padding: var(--space-5);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 44ch), 1fr));
+  gap: var(--layout-panel-gap);
+  align-items: start;
+}
+
+.toolbar {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.toolbarRow > :first-child {
+  flex: 1 1 32ch;
+  max-width: 48ch;
+}

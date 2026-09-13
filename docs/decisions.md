@@ -72,6 +72,12 @@ one would claim precision the data does not have. Labels are what success criter
 reader has to know whether to trust the conclusion or look closer, not whether it is 0.87 or 0.91.
 "Conflicting evidence" makes the ambiguous case a first-class state instead of a smaller number.
 
+Amended 13 Sep 2026, on review of the built table: a Monitoring visitor always carries one of
+two labels, "Conflicting evidence" when the signals disagree and "Insufficient evidence"
+otherwise, so no Monitoring row is ever blank. The three decision labels are unchanged. The
+column is named "Decision confidence" because bot probability is a different measure and
+belongs with the visit it was recorded on.
+
 ## D6. Financial exposure
 Decided: show paid visits before the block, total visits, and the paid versus organic mix. Show
 spend only where cost-per-click exists in the data and the calculation is visible on the page (sum
@@ -104,6 +110,9 @@ visitor-level investigation, while a responsible manual override requires permis
 history and advertising-platform sync behaviour beyond the scope of this prototype. Without
 modelling those properly, the action would be superficial.
 The data model keeps room for a manual override so the status vocabulary (D3) is complete.
+Amended 13 Sep 2026: no visitor in the prototype's data carries an override, and the table
+offers no "Manually allowed" filter, because the workflow behind it is not modelled. The
+badge and the type remain for when it is.
 
 ## D10. Invented signals
 Added, because each makes a blocking decision easier to understand: network type (residential,
@@ -111,6 +120,17 @@ mobile, corporate, datacenter), click velocity (paid clicks over a stated period
 consistency (whether one IP rapidly changes device or browser identity), and exclusion sync state
 per advertising platform (pending, active, delayed, failed). All four are marked as invented for
 this exercise in the README.
+
+## D10a. Signals in the table are concise labels; the sentence lives in the detail
+Decided 13 Sep 2026, on review of the built table: the overview keeps identity, location,
+status, journey size and decision timing, and shows each visitor's key evidence as up to four
+scannable labels ("4 paid clicks / 41 min", "No interaction", "Datacenter", "Bot: 96%"). The
+full plain-language sentence, the per-visit interaction level, bot probability, VPN state,
+email deliverability and conversion live in the visitor detail, attached to the visit they were
+recorded on. Conversion is evidence in its own right, like deliverability. Exclusion sync
+stays beside the status as enforcement information and is never listed as evidence.
+Rejected: a full sentence per row (informative, but impossible to compare across rows) and
+another full-width column (the table is already dense).
 
 ## D11. The decision event and the sync event are separate
 Decided: the journey shows the block decision after the visit it followed, then the exclusion sync
@@ -137,6 +157,17 @@ invented. It is also a system proof the table cannot give: navigation must use t
 Rejected: a bare page (reads as a demo, not a feature) and a sidebar as page chrome with no
 states (time spent with nothing for the system to show).
 Cost: about 25 minutes, and a hard rule that no other destination gets built.
+
+## D14. Table columns follow the investigation sequence
+Decided 13 Sep 2026, on review of the built table: Visitor, Status, Visits, Paid, Key
+evidence, Decision confidence, Last seen, then the action that opens the journey. The reading
+order is who, what was decided, how much behaviour accumulated, why, how certain, how recent.
+Visits and paid visits stay separate because they are independently useful sorts. Decision
+time sits inside the Status cell under the badge. Platform enforcement stays out of the table
+unless there is an exception (sync pending, delayed or failed), which appears as a flagged line
+under the decision time; the per-platform picture lives in the visitor detail.
+Rejected: a Decided column (timing belongs with the verdict) and listing every platform in the
+Status cell (it would mix the verdict, its time and enforcement in one cell).
 
 ## Out of scope
 Dashboard screen, manual and bulk overrides (D9), URL-persisted filters unless time allows, dark

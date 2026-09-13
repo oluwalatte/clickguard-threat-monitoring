@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { EmptyState } from '@/ui';
+import { EmptyState } from '@clickguard/ui';
 import { Page, PageHeader, Panel } from './Page';
 
 export function NotFoundRoute() {

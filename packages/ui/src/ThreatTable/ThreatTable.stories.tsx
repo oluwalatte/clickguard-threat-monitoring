@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
+import { SignalTags } from '../SignalTag/SignalTag';
 import { StatusBadge } from '../StatusBadge/StatusBadge';
+import { SyncFlag } from '../SyncFlag/SyncFlag';
 import { LONG_ROW, VISITOR_ROWS, type VisitorRow } from '../stories/fixtures';
 import { ThreatTable, type TableSort, type ThreatTableColumn } from './ThreatTable';
 
@@ -16,14 +18,26 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
     render: (r) => (
       <>
         <span>{r.ip}</span>
-        <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>{r.location}</span>
+        <span>{r.location}</span>
       </>
     ),
   },
-  { key: 'status', header: 'Status', width: 160, render: (r) => <StatusBadge status={r.status} size="sm" />, sortValue: (r) => STATUS_ORDER[r.status] },
+  {
+    key: 'status',
+    header: 'Status',
+    width: 160,
+    sortValue: (r) => STATUS_ORDER[r.status],
+    render: (r) => (
+      <>
+        <span><StatusBadge status={r.status} size="sm" /></span>
+        {r.status === 'blocked' ? <span>19 Feb, 14:53</span> : null}
+        {r.status === 'blocked' && r.id === 'v-1036' ? <span><SyncFlag state="failed" /></span> : null}
+      </>
+    ),
+  },
   { key: 'visits', header: 'Visits', width: 90, align: 'right', render: (r) => `${r.visits}` },
-  { key: 'paidVisits', header: 'Paid visits', width: 110, align: 'right' },
-  { key: 'reason', header: 'Why', sortable: false },
+  { key: 'paidVisits', header: 'Paid', width: 80, align: 'right' },
+  { key: 'signals', header: 'Key evidence', sortable: false, render: (r) => <SignalTags signals={r.signals} /> },
   {
     key: 'lastSeen',
     header: 'Last seen',
@@ -31,7 +45,7 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
     render: (r) => (
       <>
         <span>{r.lastSeenRelative}</span>
-        <span style={{ color: 'var(--text-muted)' }}>{r.lastSeen}</span>
+        <span>{r.lastSeen}</span>
       </>
     ),
   },
@@ -115,11 +129,11 @@ export const Stacked: Story = {
 export const SortByHeader: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const header = c.getByRole('columnheader', { name: /paid visits/i });
+    const header = c.getByRole('columnheader', { name: /^paid$/i });
     await expect(header).toHaveAttribute('aria-sort', 'none');
     await userEvent.click(within(header).getByRole('button'));
     await expect(header).toHaveAttribute('aria-sort', 'ascending');
-    await expect(c.getByText('Paid visits, sorted ascending')).toBeInTheDocument();
+    await expect(c.getByText('Paid, sorted ascending')).toBeInTheDocument();
     await userEvent.click(within(header).getByRole('button'));
     await expect(header).toHaveAttribute('aria-sort', 'descending');
     const firstCells = c.getAllByRole('row').slice(1).map((row) => within(row).getAllByRole('cell')[3].textContent);

@@ -28,7 +28,7 @@ Before any commit, all five gates must pass:
 npm run typecheck && npm run check:tokens && npm test && npm run build && npm run build-storybook
 ```
 
-`check:tokens` fails on any raw hex or pixel value in `src/` outside `src/ui/tokens/`.
+`check:tokens` fails on any raw hex or pixel value in `src/` or `packages/ui/src/` outside `packages/ui/src/tokens/`.
 
 ## Deploying
 
@@ -36,16 +36,21 @@ Two Vercel projects are built from this repository. The root directory is linked
 prototype project (`.vercel/`, not committed).
 
 ```bash
-npm run deploy:app        # clickguard-threat-monitoring, uses vercel.json
-npm run deploy:storybook  # clickguard-threat-monitoring-storybook, uses vercel.storybook.json
+npm run deploy:app        # clickguard-threat-monitoring, built by Vercel from vercel.json
+npm run deploy:storybook  # clickguard-threat-monitoring-storybook, built here, shipped as static files
 ```
 
-The Storybook script resolves its project by name through the Vercel CLI, so a logged-in
-CLI is the only requirement. Nothing is written by hand.
+Vercel's remote build always reads the repository's own `vercel.json`, which belongs to the
+prototype, so Storybook is built locally and its `storybook-static` output is deployed as
+files. The script resolves the Storybook project by name through the Vercel CLI; a logged-in
+CLI is the only requirement.
 
 ## Structure
-- `src/ui/tokens/` the token files; `src/ui/styles.css` the single CSS entry.
-- `src/ui/<Name>/` one component per folder: `Name.tsx`, `Name.module.css`, `Name.stories.tsx`.
-- `src/data/` types, golden cases, factory, selectors, tests (P3).
-- `src/app/` routes and composition. Imports from `src/ui` only.
+- `packages/ui/` the design system as the workspace package `@clickguard/ui`. Storybook documents
+  these source files and the prototype imports them by package name, so both render one
+  implementation.
+- `packages/ui/src/tokens/` the token files; `packages/ui/src/styles.css` the single CSS entry.
+- `packages/ui/src/<Name>/` one component per folder: `Name.tsx`, `Name.module.css`, `Name.stories.tsx`.
+- `src/data/` types, golden cases, factory, selectors, tests.
+- `src/app/` routes and composition. Imports components from `@clickguard/ui` only.
 - `docs/` decisions, handoff, the AI workflow log, and explorations.

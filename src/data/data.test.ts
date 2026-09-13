@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { evaluate } from './engine';
 import { GOLDEN_CASES } from './golden';
 import { DEFAULT_COUNT, generateVisitors } from './factory';
-import { counts, exclusionActiveAt, exposure, firstSeen, lastSeen, paidClicksSinceActive, summarizeStatuses } from './selectors';
+import { counts, evidenceFor, exclusionActiveAt, exposure, firstSeen, keySignals, lastSeen, paidClicksSinceActive, summarizeStatuses } from './selectors';
 import type { Visitor } from './types';
 
 const ms = (iso: string) => new Date(iso).getTime();
@@ -29,9 +29,10 @@ describe('the dataset', () => {
     expect(new Set(ips).size).toBe(ips.length);
     for (const v of visitors) expect(v.id).toBe(v.ip);
   });
-  it('covers every status in the vocabulary', () => {
+  it('covers every system status; the override vocabulary stays out of the data until modelled', () => {
     const s = summarizeStatuses(visitors);
-    for (const k of ['blocked', 'monitoring', 'not-blocked', 'not-evaluated', 'allowed'] as const) expect(s[k]).toBeGreaterThan(0);
+    for (const k of ['blocked', 'monitoring', 'not-blocked', 'not-evaluated'] as const) expect(s[k]).toBeGreaterThan(0);
+    expect(s.allowed).toBe(0);
     expect(s.blocked).toBeGreaterThanOrEqual(8);
   });
   it('mixes paid and organic visits and varied journey lengths', () => {
@@ -111,7 +112,7 @@ describe('every visitor reconciles with its own visits', () => {
     if (v.monitoring) {
       expect(v.monitoring.note).toMatch(/^Monitoring: .+\. Not blocked because .+\.$/);
       expect(v.monitoring.note).not.toMatch(/more (paid )?clicks? (would|will)/i);
-      expect(v.monitoring.confidence === 'conflicting').toBe(v.monitoring.evidence.some((e) => e.kind === 'contradictory'));
+      expect(v.monitoring.confidence).toBe(v.monitoring.evidence.some((e) => e.kind === 'contradictory') ? 'conflicting' : 'insufficient');
     }
     /* Exposure is a visible sum, or absent when a cost is missing (D6). */
     const x = exposure(v);
@@ -120,6 +121,32 @@ describe('every visitor reconciles with its own visits', () => {
       const paid = v.visits.filter((y) => y.source === 'paid' && (!v.decision || ms(y.occurredAt) <= ms(v.decision.madeAt)));
       expect(x.spendBefore).toBe(Math.round(paid.reduce((s, y) => s + (y.cpc ?? 0), 0) * 100) / 100);
     }
+  });
+});
+
+describe('key signals read the way the brief describes each visitor type', () => {
+  it('blocked: velocity, interaction, automation, network', () => {
+    expect(keySignals(golden(1)).map((s) => s.label)).toEqual(['4 paid clicks / 41 min', 'No interaction', 'Bot: 95%', 'Datacenter']);
+  });
+  it('ambiguous: mitigating signals stay visible next to the suspicious ones', () => {
+    const labels = keySignals(golden(3)).map((s) => s.label);
+    expect(labels).toContain('VPN detected');
+    expect(labels).toContain('Email: Valid');
+    expect(labels).toContain('High interaction');
+  });
+  it('legitimate: deliverability, conversion and interaction appear as evidence too', () => {
+    const labels = keySignals(golden(2)).map((s) => s.label);
+    expect(labels).toEqual(expect.arrayContaining(['Email: Valid', 'Converted', 'High interaction']));
+  });
+  it('inconsistent identity: devices and locations lead; the form signals wait in the detail', () => {
+    const labels = keySignals(golden(7)).map((s) => s.label);
+    expect(labels).toEqual(expect.arrayContaining(['3 devices', 'Location changed']));
+    const all = evidenceFor(golden(7)).map((e) => e.label);
+    expect(all).toContain('Email: Invalid');
+    expect(all).toContain('No conversion');
+  });
+  it('never exceeds four labels', () => {
+    for (const v of visitors) expect(keySignals(v).length).toBeLessThanOrEqual(4);
   });
 });
 
@@ -151,7 +178,7 @@ describe('the golden cases hold their contract', () => {
   it('4 monitoring: velocity, too little history, no tipping count', () => {
     const v = golden(4);
     expect(v.status).toBe('monitoring');
-    expect(v.monitoring!.confidence).toBeUndefined();
+    expect(v.monitoring!.confidence).toBe('insufficient');
     expect(v.monitoring!.note).toBe('Monitoring: 3 paid visits in 12 minutes with shallow engagement. Not blocked because there is no automation signal and the history is three visits long.');
   });
   it('5 post-block organic return that converts: conflicting, not a false positive', () => {
@@ -200,11 +227,19 @@ describe('the golden cases hold their contract', () => {
 });
 
 describe('the generated filler shows the mechanics', () => {
-  it('includes a failed sync, a delayed sync and a manual override', () => {
+  it('includes a failed sync and a delayed sync, and no manual override', () => {
     const states = visitors.flatMap((v) => v.exclusionEvents.map((e) => e.state));
     expect(states).toContain('failed');
     expect(states).toContain('delayed');
-    expect(visitors.filter((v) => v.manualOverride).length).toBe(1);
+    expect(visitors.filter((v) => v.manualOverride).length).toBe(0);
+  });
+  it('gives every evidence item a plain sentence and most of them a scannable label', () => {
+    for (const v of visitors) {
+      for (const e of v.decision?.evidence ?? v.monitoring?.evidence ?? []) {
+        expect(e.statement.length).toBeGreaterThan(10);
+        if (e.label) expect(e.label.length).toBeLessThanOrEqual(32);
+      }
+    }
   });
   it('never puts a score or a tipping count on any visitor', () => {
     const text = JSON.stringify(visitors.map((v) => [v.decision?.summary, v.monitoring?.note]));

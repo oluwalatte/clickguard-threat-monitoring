@@ -32,8 +32,8 @@
 .th {
   padding: 0;
   text-align: left;
+  vertical-align: bottom;
   border-bottom: var(--border-width) solid var(--border-default);
-  white-space: nowrap;
 }
 .th[data-align='right'] {
   text-align: right;
@@ -45,9 +45,11 @@
 .thLabel,
 .sortButton {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-1);
   width: 100%;
+  text-align: inherit;
+  white-space: normal;
   padding: var(--space-3) var(--table-cell-x);
   font-size: var(--text-label-size);
   letter-spacing: var(--text-label-tracking);
@@ -107,6 +109,14 @@
   display: grid;
   gap: var(--space-0);
   min-width: 0;
+}
+/* A cell's second line is support text: the location under an IP, the timestamp under a relative time. */
+.cellStack > * + * {
+  font-family: var(--font-sans);
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  font-weight: 400;
+  color: var(--text-muted);
 }
 
 .action {
@@ -197,4 +207,9 @@
   text-align: right;
   font-size: var(--text-data-size);
   line-height: var(--text-data-line);
+}
+.stackValue > * + * {
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-muted);
 }

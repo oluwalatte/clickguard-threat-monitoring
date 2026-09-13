@@ -26,8 +26,10 @@ export type FormResult = 'not-submitted' | 'valid' | 'invalid';
 /** The system's own finding. A manual override sits on top of it; see `displayStatus`. */
 export type VisitorStatus = 'blocked' | 'monitoring' | 'not-blocked' | 'not-evaluated';
 
-/** D5. `conflicting` marks the ambiguous case as a first-class state. */
-export type Confidence = 'high' | 'moderate' | 'conflicting';
+/** D5. `conflicting` marks the ambiguous case as a first-class state. A Monitoring visitor
+    carries `conflicting` or `insufficient`, never a decision label (amended 13 Sep 2026). */
+export type Confidence = 'high' | 'moderate' | 'conflicting' | 'insufficient';
+export type MonitoringConfidence = 'conflicting' | 'insufficient';
 
 export type EvidenceKind = 'primary' | 'supporting' | 'contradictory' | 'missing';
 
@@ -88,6 +90,9 @@ export interface Evidence {
   kind: EvidenceKind;
   /** A sentence a person would retell. */
   statement: string;
+  /** The same signal as a scannable label for the table, e.g. "4 paid clicks / 41 min".
+      Absent when another label already covers it. */
+  label?: string;
   /** The measurement behind the statement, for the disclosure. */
   rawValue?: string;
   /** The visits this evidence points at. Empty for journey-wide observations. */
@@ -110,8 +115,8 @@ export interface MonitoringState {
   since: string;
   /** D8 template: "Monitoring: {signals so far}. Not blocked because {missing or conflicts}." */
   note: string;
-  /** Present only when the evidence disagrees with itself. */
-  confidence?: 'conflicting';
+  /** `conflicting` when the evidence disagrees with itself, `insufficient` otherwise. */
+  confidence: MonitoringConfidence;
   evidence: Evidence[];
 }
 

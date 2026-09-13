@@ -18,10 +18,11 @@ describe('rows are derived, never stored', () => {
       expect(r.status).toBe(displayStatus(v));
     }
   });
-  it('shows the override on top of the system finding', () => {
-    const o = visitors.find((v) => v.manualOverride)!;
+  it('would show an override on top of the system finding', () => {
+    const o = { ...golden(1), manualOverride: { kind: 'allowed' as const, by: 'Ada O.', at: '2026-09-12T10:00:00Z', note: 'QA traffic.' } };
     expect(o.status).toBe('blocked');
     expect(displayStatus(o)).toBe('allowed');
+    expect(displayStatus(golden(1))).toBe('blocked');
   });
   it('writes a plain-language reason for every status', () => {
     expect(reasonLine(golden(1))).toMatch(/^Returned through four paid ads/);
@@ -79,7 +80,7 @@ describe('filtering', () => {
   });
   it('filters by status, traffic and platform', () => {
     expect(filterRows(rows, { statuses: ['blocked'] }).every((r) => r.status === 'blocked')).toBe(true);
-    expect(filterRows(rows, { statuses: ['allowed'] }).length).toBe(1);
+    expect(filterRows(rows, { statuses: ['allowed'] }).length).toBe(0);
     expect(filterRows(rows, { traffic: 'unpaid' }).every((r) => r.paidVisits === 0)).toBe(true);
     expect(filterRows(rows, { traffic: 'paid' }).every((r) => r.paidVisits > 0)).toBe(true);
     expect(filterRows(rows, { platforms: ['meta-ads'] }).every((r) => r.platforms.includes('meta-ads'))).toBe(true);
@@ -99,7 +100,7 @@ describe('the journey (D11)', () => {
     expect(j[decisionAt - 1]).toMatchObject({ kind: 'visit', visit: { id: 'c6-v3' } });
   });
   it('places the override at the end of a journey that has one', () => {
-    const o = visitors.find((v) => v.manualOverride)!;
+    const o = { ...golden(1), manualOverride: { kind: 'allowed' as const, by: 'Ada O.', at: '2026-09-12T10:00:00Z', note: 'QA traffic.' } };
     const j = journey(o);
     expect(j.some((e) => e.kind === 'override')).toBe(true);
     for (let i = 1; i < j.length; i++) expect(new Date(j[i].at).getTime()).toBeGreaterThanOrEqual(new Date(j[i - 1].at).getTime());

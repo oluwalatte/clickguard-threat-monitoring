@@ -13,8 +13,12 @@
     "isolatedModules": true,
     "noEmit": true,
     
-    "paths": { "@/*": ["./src/*"] },
+    "paths": {
+      "@/*": ["./src/*"],
+      "@clickguard/ui": ["./packages/ui/src/index.ts"],
+      "@clickguard/ui/*": ["./packages/ui/src/*"]
+    },
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src", "packages/ui/src"]
 }

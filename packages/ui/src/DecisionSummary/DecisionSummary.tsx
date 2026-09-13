@@ -3,13 +3,14 @@ import { Icon, type IconName } from '../Icon/Icon';
 import { StatusBadge, type StatusKind } from '../StatusBadge/StatusBadge';
 import styles from './DecisionSummary.module.css';
 
-export type Confidence = 'high' | 'moderate' | 'conflicting' | 'none';
+export type Confidence = 'high' | 'moderate' | 'conflicting' | 'insufficient' | 'none';
 export type SyncState = 'active' | 'pending' | 'failed';
 
 export interface DecisionSummaryProps {
   status: StatusKind;
   statusLabel?: string;
-  /** Calibrated label shown next to the badge. Use `conflicting` when evidence disagrees. */
+  /** Calibrated label shown next to the badge. Blocked: high, moderate or conflicting.
+      Monitoring: conflicting or insufficient. Not blocked: none. */
   confidence?: Confidence;
   /** One sentence naming what happened, e.g. "Blocked after visit 4". */
   headline: string;
@@ -22,6 +23,8 @@ export interface DecisionSummaryProps {
   /** Distinguishes "decision made" from "exclusion became active" at the platform. */
   syncState?: SyncState;
   syncNote?: string;
+  /** One row per advertising platform, so a mixed picture is never flattened into one word. */
+  syncPlatforms?: Array<{ name: string; state: 'active' | 'pending' | 'delayed' | 'failed'; detail?: string }>;
   /** Paid spend attributable to this visitor, with the assumption stated. */
   exposure?: string;
   evidenceHref?: string;
@@ -34,6 +37,7 @@ export const CONFIDENCE_LABEL: Record<Confidence, string | null> = {
   high: 'High confidence',
   moderate: 'Moderate confidence',
   conflicting: 'Conflicting evidence',
+  insufficient: 'Insufficient evidence',
   none: null,
 };
 
@@ -42,6 +46,8 @@ const SYNC: Record<SyncState, { text: string; icon: IconName }> = {
   pending: { text: 'Exclusion sync pending', icon: 'clock' },
   failed: { text: 'Exclusion sync failed', icon: 'triangle-alert' },
 };
+
+const PLATFORM_STATE: Record<'active' | 'pending' | 'delayed' | 'failed', string> = { active: 'Active', pending: 'Pending', delayed: 'Delayed', failed: 'Failed' };
 
 function Field({ label, value, mono }: { label: string; value?: string; mono?: boolean }) {
   return (
@@ -64,6 +70,7 @@ export function DecisionSummary({
   monitoringNote,
   syncState,
   syncNote,
+  syncPlatforms,
   exposure,
   evidenceHref = '#evidence',
   evidenceCount,
@@ -94,6 +101,19 @@ export function DecisionSummary({
           <div className={styles.syncBody}>
             <span className={styles.syncText}>{sync.text}</span>
             {syncNote ? <span className={styles.syncNote}>{syncNote}</span> : null}
+            {syncPlatforms && syncPlatforms.length ? (
+              <dl className={styles.platforms}>
+                {syncPlatforms.map((p) => (
+                  <div key={p.name} className={styles.platformRow} data-state={p.state}>
+                    <dt className={styles.platformName}>{p.name}</dt>
+                    <dd className={styles.platformState}>
+                      <span className={styles.platformLabel}>{PLATFORM_STATE[p.state]}</span>
+                      {p.detail ? <span className={styles.platformDetail}>{p.detail}</span> : null}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
           </div>
         </div>
       ) : null}

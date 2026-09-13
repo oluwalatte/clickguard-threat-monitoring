@@ -35,6 +35,16 @@ export const SyncFailed: Story = {
   args: { items: JOURNEY_SYNC_FAILED, caption: '6 events, 19 Feb 2026' },
 };
 
+export const ManualOverrideAfterBlock: Story = {
+  args: {
+    items: [
+      ...JOURNEY_BLOCK_AND_SYNC,
+      { type: 'override', timestamp: '20 Feb 2026, 17:02:31 UTC', relativeTime: '1 day later', description: 'Ada O. allowed this visitor: internal QA traffic from the agency office. The decision and its evidence stay on record.' },
+    ],
+    caption: '8 events, 19 Feb to 20 Feb 2026',
+  },
+};
+
 export const SingleVisit: Story = {
   args: { items: JOURNEY_SINGLE, caption: '1 event, 18 Feb 2026' },
 };
