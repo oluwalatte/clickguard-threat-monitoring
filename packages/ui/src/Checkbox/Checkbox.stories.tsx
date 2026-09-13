@@ -25,11 +25,19 @@ export const Unchecked: Story = { render: (args) => <Controlled {...args} /> };
 export const Checked: Story = {
   render: (args) => <Controlled {...args} initial />,
   play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('checkbox', { name: 'Converted at least once' })).toBeChecked();
+  },
+};
+
+/* The label is the click target. Kept apart from Checked so that story still shows a checked box after its test. */
+export const ToggleByLabel: Story = {
+  render: (args) => <Controlled {...args} />,
+  play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const box = c.getByRole('checkbox', { name: 'Converted at least once' });
-    await expect(box).toBeChecked();
-    await userEvent.click(c.getByText('Converted at least once'));
     await expect(box).not.toBeChecked();
+    await userEvent.click(c.getByText('Converted at least once'));
+    await expect(box).toBeChecked();
   },
 };
 

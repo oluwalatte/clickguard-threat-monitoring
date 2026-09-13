@@ -28,8 +28,18 @@ export const WithValue: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole('searchbox', { name: 'Search visitors' })).toHaveValue('185.220');
+    await expect(c.getByRole('button', { name: 'Clear search visitors' })).toBeInTheDocument();
+  },
+};
+
+/* The interaction lives in its own story so WithValue still shows a value after its test runs. */
+export const ClearButton: Story = {
+  render: (args) => <Controlled {...args} initial="185.220" />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
     await userEvent.click(c.getByRole('button', { name: 'Clear search visitors' }));
     await expect(c.getByRole('searchbox', { name: 'Search visitors' })).toHaveValue('');
+    await expect(c.queryByRole('button', { name: 'Clear search visitors' })).not.toBeInTheDocument();
   },
 };
 
@@ -46,4 +56,11 @@ export const Focused: Story = {
   },
 };
 
-export const Disabled: Story = { render: (args) => <Controlled {...args} disabled initial="185.220" /> };
+export const Disabled: Story = {
+  render: (args) => <Controlled {...args} disabled initial="185.220" />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole('searchbox', { name: 'Search visitors' })).toBeDisabled();
+    await expect(c.queryByRole('button', { name: 'Clear search visitors' })).not.toBeInTheDocument();
+  },
+};

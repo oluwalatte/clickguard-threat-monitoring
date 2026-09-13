@@ -29,10 +29,20 @@
   min-height: var(--control-height-sm);
 }
 .field:hover {
-  border-color: var(--text-muted);
+  border-color: var(--border-hover);
 }
 .field:focus-within {
   border-color: var(--action-primary);
+}
+/* Disabled reads as disabled: inset surface, weaker border, muted ink, and no clear button. */
+.root[data-disabled] .field,
+.root[data-disabled] .field:hover {
+  background: var(--action-disabled-surface);
+  border-color: var(--border-default);
+  color: var(--action-disabled-text);
+}
+.root[data-disabled] .glyph {
+  color: var(--action-disabled-text);
 }
 
 .glyph {
@@ -55,6 +65,13 @@
 }
 .input::placeholder {
   color: var(--text-muted);
+}
+.input:disabled {
+  color: var(--action-disabled-text);
+  cursor: not-allowed;
+}
+.input:disabled::placeholder {
+  color: var(--action-disabled-text);
 }
 .input:focus {
   outline: none;

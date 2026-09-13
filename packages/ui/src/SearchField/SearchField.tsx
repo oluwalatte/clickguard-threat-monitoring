@@ -12,11 +12,11 @@ export interface SearchFieldProps extends Omit<InputHTMLAttributes<HTMLInputElem
 }
 
 /** A native text input with a search glyph and a clear button. The label is always present. */
-export function SearchField({ label, showLabel = false, value, onChange, size = 'md', className, id, ...rest }: SearchFieldProps) {
+export function SearchField({ label, showLabel = false, value, onChange, size = 'md', className, id, disabled, ...rest }: SearchFieldProps) {
   const generated = useId();
   const inputId = id ?? generated;
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} data-size={size}>
+    <div className={[styles.root, className].filter(Boolean).join(' ')} data-size={size} data-disabled={disabled || undefined}>
       <label htmlFor={inputId} className={showLabel ? styles.label : 'cg-visually-hidden'}>
         {label}
       </label>
@@ -24,8 +24,8 @@ export function SearchField({ label, showLabel = false, value, onChange, size = 
         <span className={styles.glyph}>
           <Icon name="search" size="sm" />
         </span>
-        <input {...rest} id={inputId} type="search" className={styles.input} value={value} onChange={(e) => onChange(e.target.value)} />
-        {value ? (
+        <input {...rest} id={inputId} type="search" className={styles.input} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} />
+        {value && !disabled ? (
           <button type="button" className={styles.clear} onClick={() => onChange('')} aria-label={`Clear ${label.toLowerCase()}`}>
             <Icon name="x" size="sm" />
           </button>
