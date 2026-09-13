@@ -94,6 +94,10 @@
   vertical-align: middle;
   text-align: left;
   border-bottom: var(--border-width) solid var(--border-default);
+  /* A value with no break opportunity (an IPv6 address, a long keyword) wraps inside its column
+     rather than running under the next one. Nothing is hidden: the identifier stays readable. */
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .cell[data-align='right'] {
   text-align: right;
@@ -108,6 +112,9 @@
 .cellStack {
   display: grid;
   gap: var(--space-0);
+  min-width: 0;
+}
+.cellStack > * {
   min-width: 0;
 }
 /* A cell's second line is support text: the location under an IP, the timestamp under a relative time. */
@@ -204,6 +211,7 @@
   gap: var(--space-0);
   justify-items: end;
   min-width: 0;
+  overflow-wrap: anywhere;
   text-align: right;
   font-size: var(--text-data-size);
   line-height: var(--text-data-line);

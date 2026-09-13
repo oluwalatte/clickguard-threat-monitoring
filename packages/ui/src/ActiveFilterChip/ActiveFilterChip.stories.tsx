@@ -34,6 +34,16 @@ function Bar() {
 export const InABar: Story = {
   render: () => <Bar />,
   play: async ({ canvasElement }) => {
+    const group = within(canvasElement).getByRole('group', { name: 'Active filters' });
+    await expect(within(group).getAllByRole('button', { name: /^Remove filter:/ })).toHaveLength(3);
+    await expect(within(group).getByRole('button', { name: 'Clear all' })).toBeInTheDocument();
+  },
+};
+
+/* Kept apart from InABar so that story still shows its chips after its test runs. */
+export const RemoveAndClearAll: Story = {
+  render: () => <Bar />,
+  play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const group = c.getByRole('group', { name: 'Active filters' });
     await userEvent.click(within(group).getByRole('button', { name: 'Remove filter: Google Ads' }));

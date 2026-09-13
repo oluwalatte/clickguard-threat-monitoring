@@ -21,7 +21,7 @@ const meta = {
   args: { label: 'Date range', options: RANGES, value: 'all', onChange: () => {} },
   decorators: [(Story) => <div style={{ maxWidth: '32ch' }}><Story /></div>],
   parameters: {
-    docs: { description: { component: 'A native select. The option text carries the current value, so a hidden label needs options that read on their own ("All time", not "All"). Presets, never a calendar (D16).' } },
+    docs: { description: { component: 'A native select. The option text carries the current value, so a hidden label needs options that read on their own ("All time", not "All"). Presets, never a calendar (D16). In Chromium 135 and later the option list opens directly under the field and takes the system tokens; other browsers keep their native picker.' } },
   },
 } satisfies Meta<typeof Select>;
 export default meta;

@@ -30,6 +30,7 @@ const clickguardTheme = {
     border: {
       DEFAULT: "var(--border-default)",
       strong: "var(--border-strong)",
+      hover: "var(--border-hover)",
     },
     action: {
       primary: "var(--action-primary)",

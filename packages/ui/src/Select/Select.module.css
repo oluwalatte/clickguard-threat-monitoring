@@ -29,7 +29,7 @@
   min-height: var(--control-height-sm);
 }
 .field:hover {
-  border-color: var(--text-muted);
+  border-color: var(--border-hover);
 }
 .field:focus-within {
   border-color: var(--action-primary);
@@ -82,4 +82,53 @@
   display: inline-flex;
   color: var(--text-muted);
   pointer-events: none;
+}
+
+/* Chromium 135 and later render the option list on the page, directly under the field, so it
+   can take the system's tokens. Other browsers keep their native picker; nothing else changes. */
+@supports (appearance: base-select) {
+  .select,
+  .select::picker(select) {
+    appearance: base-select;
+  }
+  .select::picker-icon {
+    display: none;
+  }
+  .select::picker(select) {
+    margin: var(--space-1) 0 0;
+    min-width: anchor-size(width);
+    padding: var(--space-1);
+    background: var(--surface-overlay);
+    border: var(--border-width) solid var(--border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-overlay);
+  }
+  .select option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--control-height-sm);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: var(--text-support-size);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  .select option:hover,
+  .select option:focus-visible {
+    background: var(--surface-hover);
+    outline: none;
+  }
+  /* The chosen option changes weight and carries a check mark, not colour alone. */
+  .select option:checked {
+    background: var(--action-primary-surface);
+    color: var(--action-primary-ink);
+    font-weight: 600;
+  }
+  .select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--action-primary);
+  }
 }
