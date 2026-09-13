@@ -135,3 +135,46 @@ data contract is fully specified by `decisions.md` and the build plan's section 
 times are deterministic. The monitoring threshold and the VPN rule were tuned so the engine
 reaches the authored status on every golden case; that test is what keeps the filler
 consistent with the contract. Paid-visit share in the filler is about 70 percent.
+
+## P4. Prototype
+
+**User directed:** first, confirm the hard requirement that the prototype imports and renders
+the components from the Storybook library. The agent reported that the substance held (one
+implementation, one entry point, no copies) but the form did not (a path alias, not a named
+package), and recommended the workspace-package move the build plan had anticipated. The user
+chose it as the first P4 commit.
+
+**Agent produced:**
+
+- `packages/ui` as the workspace package `@clickguard/ui`. The prototype depends on it by
+  name and imports `@clickguard/ui/styles.css`; Storybook documents the same source files.
+  TypeScript paths, Vite resolution and the token check point at the package. All gates and
+  the 60-story browser run passed unchanged after the move.
+- Two additions to the system because the app must not style controls itself (rule 9):
+  `SearchField` (native search input, always labelled, clear button) and `FilterChip` with
+  `FilterGroup` (aria-pressed toggles under a visible caption). The timeline gained an
+  `override` event type in the info tone so a manual override reads as a person's action in
+  the journey. Stories and interaction tests for each; 69 stories now pass with a11y as error.
+- A cell's second line in the table is now styled by the system as support text, so the app
+  passes two spans and makes no visual decision.
+- Table route: search by IP or location, status chips with counts, a traffic toggle, and
+  header sorting for recency (default), block time, visits, paid clicks and confidence (D7).
+  Undecided rows sink in either direction. Search, filters and sort live in the URL, so the
+  breadcrumb from a visitor restores the table as it was. The filtered-empty state names how
+  many filters are active and says an empty list is not a clean account.
+- Visitor route: the decision summary leads (criteria 1, 2, 4, 6), the journey sits directly
+  under it beside the evidence (criteria 3, 5, 7). Headline names the visit the decision
+  followed; the summary sentence is the data's own; the sync block reports the worst platform
+  state and whether paid clicks got through since; exposure is a visible sum with its
+  calculation in the evidence footnote (D6). Every visit carries its own signals; list items
+  link back to the visit they came from. Unknown addresses get an honest not-found state.
+- The shell starts collapsed below the narrow breakpoint so phones keep their width for the
+  stacked table.
+- `present.ts` holds the adapters from data to component props, with 10 unit tests.
+
+**Judgement calls flagged:** eight columns with percentage widths and a 1120px table minimum;
+narrower panels scroll the table horizontally, and below 760px it stacks. The table's "Why"
+column shows the full Monitoring note rather than a truncated preview, because the note is the
+only explanation of why the visitor is not blocked. Loading and error table states exist in
+the system but are not reachable in the prototype: the data is local and synchronous (out of
+scope in `decisions.md`).
