@@ -1,4 +1,4 @@
-/* The single public entry point for the design system. src/app imports from here only. */
+/* The single public entry point for @clickguard/ui. The prototype imports from here only. */
 export { Button, type ButtonProps } from './Button/Button';
 export { DecisionSummary, CONFIDENCE_LABEL, type DecisionSummaryProps, type Confidence, type SyncState } from './DecisionSummary/DecisionSummary';
 export { EmptyState, type EmptyStateProps, type EmptyStateVariant } from './EmptyState/EmptyState';

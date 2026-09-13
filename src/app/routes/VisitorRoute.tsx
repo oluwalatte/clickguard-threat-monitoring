@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router';
-import { EmptyState } from '@/ui';
+import { EmptyState } from '@clickguard/ui';
 import { Page, PageHeader, Panel } from './Page';
 
 /* P1 placeholder. P4 composes DecisionSummary, VisitTimeline and EvidenceList here. */

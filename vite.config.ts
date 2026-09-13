@@ -11,7 +11,11 @@ const dirname = import.meta.dirname;
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@clickguard/ui/styles.css': fileURLToPath(new URL('./packages/ui/src/styles.css', import.meta.url)),
+      '@clickguard/ui': fileURLToPath(new URL('./packages/ui/src/index.ts', import.meta.url)),
+    },
   },
   test: {
     /* The unit project is empty until P3 adds reconciliation tests. */

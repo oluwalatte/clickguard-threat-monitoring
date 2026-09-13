@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import { SidebarNav, type SidebarNavGroup } from '@/ui';
+import { SidebarNav, type SidebarNavGroup } from '@clickguard/ui';
 import styles from './AppShell.module.css';
 
 /* The product's navigation, in product order. Only Threat monitoring is routable

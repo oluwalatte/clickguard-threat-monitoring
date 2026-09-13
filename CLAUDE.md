@@ -5,8 +5,8 @@ from, documented in Storybook. The product contract is `docs/decisions.md`; the 
 `docs/handoff.md`. Read both before doing anything.
 
 ## Rules of the system
-1. Components consume tokens only. No raw hex, no raw px in `src/` outside `src/ui/tokens/`.
-   `npm run check:tokens` enforces this.
+1. Components consume tokens only. No raw hex, no raw px in `src/` or `packages/ui/src/` outside
+   `packages/ui/src/tokens/`. `npm run check:tokens` enforces this.
 2. Red is reserved for Blocked and destructive states. Amber is Monitoring. Green is a successful
    sync or a positive outcome. Never colour a suspicious-but-unblocked signal red.
 3. Colour never works alone: every status carries a marker shape and a text label.
@@ -15,14 +15,17 @@ from, documented in Storybook. The product contract is `docs/decisions.md`; the 
 6. Timestamps are complete where auditability matters and relative where scanning matters.
 7. Components are not built from Tailwind utilities. The Tailwind theme files are an export of the
    tokens, never imported with preflight.
-8. Every `src/ui` component ships with a story per meaningful variant and state.
-9. `src/app` imports from `src/ui` only and owns composition and layout, never visual decisions.
+8. Every `@clickguard/ui` component ships with a story per meaningful variant and state.
+9. `src/app` imports components from `@clickguard/ui` only, by package name, and owns composition
+   and layout, never visual decisions.
 10. Do not describe a later conversion as proof that an earlier block was wrong. Do not claim
     money was saved unless the calculation is on the page.
 
 ## Structure
-- `src/ui/tokens/` the token files from the export, `src/ui/styles.css` the single CSS entry.
-- `src/ui/<Name>/` `Name.tsx`, `Name.module.css`, `Name.stories.tsx`; exported from `src/ui/index.ts`.
+- `packages/ui/` the design system as the workspace package `@clickguard/ui`. Storybook documents it;
+  the prototype depends on it by name.
+- `packages/ui/src/tokens/` the token files from the export, `packages/ui/src/styles.css` the single CSS entry.
+- `packages/ui/src/<Name>/` `Name.tsx`, `Name.module.css`, `Name.stories.tsx`; exported from `packages/ui/src/index.ts`.
 - `src/data/` types, golden cases, factory, selectors, tests.
 - `src/app/` routes and composition.
 - `docs/decisions.md` product decisions. `docs/ai-workflow.md` running log. `docs/explorations/` inputs.

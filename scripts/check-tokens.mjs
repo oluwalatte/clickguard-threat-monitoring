@@ -1,11 +1,11 @@
-// Rule 1 enforcement: no raw hex or px anywhere in src/ outside src/ui/tokens/.
+// Rule 1 enforcement: no raw hex or px anywhere in src/ or packages/ui/src outside the tokens folder.
 // Stories and data files are included. A line may carry a reviewed exception by
 // placing `token-ok` on it or on the line above; the count of exceptions is printed.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
-const ROOT = 'src';
-const EXEMPT = join('src', 'ui', 'tokens') + sep;
+const ROOTS = ['src', join('packages', 'ui', 'src')];
+const EXEMPT = join('packages', 'ui', 'src', 'tokens') + sep;
 const HEX = /#[0-9a-fA-F]{3,8}\b/;
 const PX = /(^|[^-\w])\d+(\.\d+)?px\b/;
 
@@ -27,9 +27,9 @@ function walk(dir) {
     });
   }
 }
-walk(ROOT);
+ROOTS.forEach(walk);
 if (offenders.length) {
-  console.error('Raw values outside src/ui/tokens:\n' + offenders.join('\n'));
+  console.error('Raw values outside packages/ui/src/tokens:\n' + offenders.join('\n'));
   process.exit(1);
 }
 console.log(`check:tokens ok (${exceptions} reviewed exception${exceptions === 1 ? '' : 's'})`);

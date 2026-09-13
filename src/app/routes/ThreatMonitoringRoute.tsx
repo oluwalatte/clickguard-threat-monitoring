@@ -1,4 +1,4 @@
-import { EmptyState } from '@/ui';
+import { EmptyState } from '@clickguard/ui';
 import { Page, PageHeader, Panel } from './Page';
 
 /* P1 placeholder. P4 replaces the panel with the visitor table, search, filters and sort. */

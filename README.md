@@ -28,7 +28,7 @@ Before any commit, all five gates must pass:
 npm run typecheck && npm run check:tokens && npm test && npm run build && npm run build-storybook
 ```
 
-`check:tokens` fails on any raw hex or pixel value in `src/` outside `src/ui/tokens/`.
+`check:tokens` fails on any raw hex or pixel value in `src/` or `packages/ui/src/` outside `packages/ui/src/tokens/`.
 
 ## Deploying
 
@@ -44,8 +44,11 @@ The Storybook script resolves its project by name through the Vercel CLI, so a l
 CLI is the only requirement. Nothing is written by hand.
 
 ## Structure
-- `src/ui/tokens/` the token files; `src/ui/styles.css` the single CSS entry.
-- `src/ui/<Name>/` one component per folder: `Name.tsx`, `Name.module.css`, `Name.stories.tsx`.
-- `src/data/` types, golden cases, factory, selectors, tests (P3).
-- `src/app/` routes and composition. Imports from `src/ui` only.
+- `packages/ui/` the design system as the workspace package `@clickguard/ui`. Storybook documents
+  these source files and the prototype imports them by package name, so both render one
+  implementation.
+- `packages/ui/src/tokens/` the token files; `packages/ui/src/styles.css` the single CSS entry.
+- `packages/ui/src/<Name>/` one component per folder: `Name.tsx`, `Name.module.css`, `Name.stories.tsx`.
+- `src/data/` types, golden cases, factory, selectors, tests.
+- `src/app/` routes and composition. Imports components from `@clickguard/ui` only.
 - `docs/` decisions, handoff, the AI workflow log, and explorations.
