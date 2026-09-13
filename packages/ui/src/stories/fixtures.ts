@@ -31,8 +31,8 @@ export const VISITOR_ROWS: VisitorRow[] = [
     status: 'blocked',
     visits: 6,
     paidVisits: 4,
-    lastSeen: '19 Feb 2026, 14:53:44 UTC',
-    lastSeenRelative: '2 hours ago',
+    lastSeen: '12 Sep 2026, 14:53:44 UTC',
+    lastSeenRelative: '21 hours ago',
     reason: 'Returned through four paid ads in 41 minutes and showed no scroll or mouse movement on any visit',
     signals: [{ label: '4 paid clicks / 41 min', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }, { label: 'Bot: 95%' }, { label: 'Datacenter' }],
   },
@@ -44,8 +44,8 @@ export const VISITOR_ROWS: VisitorRow[] = [
     status: 'monitoring',
     visits: 3,
     paidVisits: 3,
-    lastSeen: '19 Feb 2026, 12:08:57 UTC',
-    lastSeenRelative: '5 hours ago',
+    lastSeen: '12 Sep 2026, 12:08:57 UTC',
+    lastSeenRelative: '24 hours ago',
     reason: 'Monitoring: 3 paid visits in 12 minutes with shallow engagement. Not blocked because there is no automation signal and the history is three visits long.',
     signals: [{ label: '3 paid clicks / 12 min', kind: 'primary' }, { label: 'Low interaction', kind: 'primary' }, { label: 'Same keyword' }],
   },
@@ -57,8 +57,8 @@ export const VISITOR_ROWS: VisitorRow[] = [
     status: 'blocked',
     visits: 9,
     paidVisits: 7,
-    lastSeen: '19 Feb 2026, 09:41:02 UTC',
-    lastSeenRelative: '8 hours ago',
+    lastSeen: '12 Sep 2026, 09:41:02 UTC',
+    lastSeenRelative: '26 hours ago',
     reason: 'Seven paid clicks over 3 days from a datacenter network with under 6 seconds on the page each time',
     signals: [{ label: '7 paid clicks / 3 days', kind: 'primary' }, { label: 'No interaction', kind: 'primary' }, { label: 'Bot: 91%' }, { label: 'Datacenter' }],
   },
@@ -70,8 +70,8 @@ export const VISITOR_ROWS: VisitorRow[] = [
     status: 'safe',
     visits: 2,
     paidVisits: 1,
-    lastSeen: '19 Feb 2026, 08:22:19 UTC',
-    lastSeenRelative: '9 hours ago',
+    lastSeen: '12 Sep 2026, 08:22:19 UTC',
+    lastSeenRelative: '28 hours ago',
     reason: 'Real engagement on both visits and a valid form on the second',
     signals: [{ label: 'Email: Valid', kind: 'contradictory' }, { label: 'Converted', kind: 'contradictory' }, { label: 'High interaction', kind: 'contradictory' }],
   },
@@ -83,8 +83,8 @@ export const VISITOR_ROWS: VisitorRow[] = [
     status: 'neutral',
     visits: 1,
     paidVisits: 1,
-    lastSeen: '18 Feb 2026, 23:14:55 UTC',
-    lastSeenRelative: '18 hours ago',
+    lastSeen: '11 Sep 2026, 23:14:55 UTC',
+    lastSeenRelative: '2 days ago',
     reason: 'One visit is not enough history to evaluate',
     signals: [{ label: 'High interaction', kind: 'contradictory' }],
   },
@@ -96,9 +96,9 @@ export const VISITOR_ROWS: VisitorRow[] = [
     status: 'allowed',
     visits: 5,
     paidVisits: 4,
-    lastSeen: '18 Feb 2026, 17:02:31 UTC',
-    lastSeenRelative: 'yesterday',
-    reason: 'Blocked after visit 4, then manually allowed on 18 Feb 2026 as internal QA traffic',
+    lastSeen: '11 Sep 2026, 17:02:31 UTC',
+    lastSeenRelative: '2 days ago',
+    reason: 'Blocked after visit 4, then manually allowed on 11 Sep 2026 as internal QA traffic',
     signals: [{ label: '4 paid clicks / 2 days', kind: 'primary' }, { label: 'Low interaction', kind: 'primary' }, { label: 'Datacenter' }],
   },
 ];
@@ -112,8 +112,8 @@ export const LONG_ROW: VisitorRow = {
   status: 'blocked',
   visits: 14,
   paidVisits: 11,
-  lastSeen: '17 Feb 2026, 03:12:09 UTC',
-  lastSeenRelative: '2 days ago',
+  lastSeen: '10 Sep 2026, 03:12:09 UTC',
+  lastSeenRelative: '3 days ago',
   reason:
     'Eleven paid clicks over 5 days on the same keyword from three different reported locations and four device identities, with no scroll on any visit and two forms submitted with undeliverable email addresses',
   signals: [{ label: '11 paid clicks / 5 days', kind: 'primary' }, { label: 'Low interaction', kind: 'primary' }, { label: '4 devices' }, { label: 'Location changed' }, { label: 'Email: Invalid' }, { label: 'No conversion' }, { label: 'Same keyword' }],
@@ -170,7 +170,7 @@ export const EVIDENCE_LONG_COPY: Array<EvidenceItemProps & { id: string }> = [
       'Eleven paid clicks over five days on the same keyword, "competitor clicking my ads", from three different reported locations (Buenos Aires, Santiago, Montevideo) and four device identities, with no scroll on any visit',
     rawValue:
       'paid=11 span=5d keyword="competitor clicking my ads" locations=[AR-C, CL-RM, UY-MO] devices=[Chrome 121/Windows, Safari 17/iOS, Chrome 120/Android, Firefox 122/Linux] scroll_max=0.0',
-    sourceVisit: 'From visit 14, 17 Feb 2026, 03:12:09 UTC',
+    sourceVisit: 'From visit 14, 10 Sep 2026, 03:12:09 UTC',
     sourceHref: '#visit-14',
   },
   {
@@ -182,8 +182,8 @@ export const EVIDENCE_LONG_COPY: Array<EvidenceItemProps & { id: string }> = [
   },
 ];
 
-const t = (hms: string) => `19 Feb, ${hms}`;
-const full = (hms: string) => `19 Feb 2026, ${hms} UTC`;
+const t = (hms: string) => `12 Sep, ${hms}`;
+const full = (hms: string) => `12 Sep 2026, ${hms} UTC`;
 
 const paidRecord = (time: string, secs: number, scroll: number, bot: number, extra: Array<{ label: string; value: string }> = []) => [
   { label: 'Time', value: full(time) },
@@ -284,14 +284,14 @@ export const JOURNEY_ORGANIC_RETURN: VisitTimelineItem[] = [
   {
     id: 'visit-5',
     type: 'organic',
-    timestamp: '21 Feb, 10:14',
-    relativeTime: '2 days later',
+    timestamp: '13 Sep, 10:14',
+    relativeTime: '19 hours later',
     description: 'Organic search · /features',
     summary: ['3 minutes 12 seconds', '95% scroll', 'Converted'],
     changes: [{ label: 'Converted', kind: 'contradictory' }, { label: 'Email: Valid', kind: 'contradictory' }, { label: 'New device identity' }],
     contributed: ['Completed a purchase on visit 5', 'Submitted a valid form with a deliverable email address on visit 5'],
     record: [
-      { label: 'Time', value: '21 Feb 2026, 10:14:33 UTC' },
+      { label: 'Time', value: '13 Sep 2026, 10:14:33 UTC' },
       { label: 'Landing page', value: '/features' },
       { label: 'Time on page', value: '192 seconds, scroll 95%, pointer moved' },
       { label: 'Bot probability', value: '6%' },
@@ -319,11 +319,11 @@ export const JOURNEY_SINGLE: VisitTimelineItem[] = [
   {
     id: 'visit-1',
     type: 'paid',
-    timestamp: '18 Feb, 23:14',
+    timestamp: '11 Sep, 23:14',
     description: 'Google Ads · Brand Search',
     summary: ['48 seconds', '30% scroll', 'No conversion'],
     record: [
-      { label: 'Time', value: '18 Feb 2026, 23:14:55 UTC' },
+      { label: 'Time', value: '11 Sep 2026, 23:14:55 UTC' },
       { label: 'Platform', value: 'Google Ads, Brand Search, keyword "clickguard", $1.40' },
       { label: 'Time on page', value: '48 seconds, scroll 30%, pointer moved' },
       { label: 'Bot probability', value: '12%' },

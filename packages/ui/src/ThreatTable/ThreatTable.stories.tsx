@@ -30,7 +30,7 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
     render: (r) => (
       <>
         <span><StatusBadge status={r.status} size="sm" /></span>
-        {r.status === 'blocked' ? <span>19 Feb, 14:53</span> : null}
+        {r.status === 'blocked' ? <span>12 Sep, 14:53</span> : null}
         {r.status === 'blocked' && r.id === 'v-1036' ? <span><SyncFlag state="failed" /></span> : null}
       </>
     ),
@@ -90,7 +90,7 @@ export const InitialEmpty: Story = {
     emptyState: {
       variant: 'no-data',
       title: 'No traffic in this date range',
-      description: 'ClickGuard recorded no visits between 13 Feb and 19 Feb 2026. Widen the range to see visitors.',
+      description: 'ClickGuard recorded no visits between 6 Sep and 12 Sep 2026. Widen the range to see visitors.',
       actionLabel: 'Widen the range',
       onAction: fn(),
     },

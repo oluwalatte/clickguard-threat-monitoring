@@ -44,7 +44,7 @@ export interface VisitTimelineProps {
   /** Oldest first. A single-item timeline is a supported state. */
   items: VisitTimelineItem[];
   title?: string;
-  /** Range or count summary, e.g. "5 events, 19 Feb 2026". */
+  /** Range or count summary, e.g. "5 events, 12 Sep 2026". */
   caption?: string;
 }
 
