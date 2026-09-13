@@ -101,8 +101,9 @@ in the code. Not decisions.
   block was wrong (rule 10).
 - `factory.ts`: seeded filler to 48 visitors around the golden cases, judged by the same engine.
   Syncs can be delayed or fail; a failed platform can still deliver paid clicks; no paid click
-  lands on a platform once its exclusion is active. One filler visitor carries a manual override so
-  the D3 vocabulary is complete on screen.
+  lands on a platform once its exclusion is active. P3 generated one filler visitor with a manual
+  override; P4 removed it (24e868f) because the override workflow is not modelled (D9). "Manually
+  allowed" remains a StatusBadge state in Storybook, and no row in the prototype carries it.
 - `selectors.ts`: display status, counts, exposure as a visible sum (absent when any cost is
   missing), the table row, D7 sorts with undecided rows always last, filters by search, status,
   traffic and platform, the merged journey for the timeline. `format.ts`: complete timestamps,
