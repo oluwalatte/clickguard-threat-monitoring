@@ -202,3 +202,15 @@ from pointer movement, `SignalTag` in the system (neutral ink, info tone for mit
 dashed for unavailable, never a status colour), the insufficient label in DecisionSummary, and
 the per-visit signal list. The rationale's "Signal placement" section is the user's text,
 lightly shortened, in `docs/rationale.md`.
+
+### Table column order, 13 Sep 2026
+
+**User directed** the column order now recorded as D14, with decision time inside the Status
+cell and platform state surfaced in the table only as an exception. The column rationale is
+the user's text in `docs/rationale.md`.
+
+**Agent produced:** `SyncFlag` in the system (amber for pending and delayed, red for failed,
+glyph plus text, shown only on exceptions), per-platform rows in `DecisionSummary` so a mixed
+picture such as Google Ads active and Meta Ads pending is never flattened, a short timestamp
+form for scanning ("11 Sep, 14:53"), and the Status column sorting by verdict and then most
+recent decision so the block-time sort from D7 survives the removal of the Decided column.

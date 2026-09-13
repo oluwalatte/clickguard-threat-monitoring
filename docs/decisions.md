@@ -158,6 +158,17 @@ Rejected: a bare page (reads as a demo, not a feature) and a sidebar as page chr
 states (time spent with nothing for the system to show).
 Cost: about 25 minutes, and a hard rule that no other destination gets built.
 
+## D14. Table columns follow the investigation sequence
+Decided 13 Sep 2026, on review of the built table: Visitor, Status, Visits, Paid, Key
+evidence, Decision confidence, Last seen, then the action that opens the journey. The reading
+order is who, what was decided, how much behaviour accumulated, why, how certain, how recent.
+Visits and paid visits stay separate because they are independently useful sorts. Decision
+time sits inside the Status cell under the badge. Platform enforcement stays out of the table
+unless there is an exception (sync pending, delayed or failed), which appears as a flagged line
+under the decision time; the per-platform picture lives in the visitor detail.
+Rejected: a Decided column (timing belongs with the verdict) and listing every platform in the
+Status cell (it would mix the verdict, its time and enforcement in one cell).
+
 ## Out of scope
 Dashboard screen, manual and bulk overrides (D9), URL-persisted filters unless time allows, dark
 theme, loading and error states for data that is local and synchronous.

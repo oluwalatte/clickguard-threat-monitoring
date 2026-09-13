@@ -18,3 +18,12 @@ infrastructure, click velocity gives repeated paid clicks their time context, an
 inconsistency can reveal automated identity changes. Exclusion sync is shown separately as an
 enforcement state: it says whether the decision reached the advertising platform, not why the
 decision was made.
+
+## Table columns
+
+I ordered the table around the customer's investigation sequence: identify the visitor,
+understand the verdict, assess the size and paid portion of the journey, review the strongest
+evidence, judge confidence and check recency. Visits and paid visits stay separate because
+they are independently useful sorting dimensions. Decision time is attached to the verdict,
+while detailed platform enforcement is deferred to the visitor view unless a sync problem
+needs attention.
