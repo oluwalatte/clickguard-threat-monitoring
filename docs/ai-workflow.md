@@ -155,3 +155,8 @@ in the code. Not decisions.
   through the data layer before slicing so headers and pages agree, and a `status` sort key was
   added there to match the Status column's verdict-then-recency order.
 - The page parameter is dropped whenever search, filters or sort change.
+- On review: the sidebar had been as tall as the page and scrolled away with it; the shell now
+  holds it in a sticky, viewport-height rail so it stays in view top to bottom. Hover, focus
+  and active are CSS states; stories now drive each one through a play function (Button,
+  FilterChip, SearchField, SidebarNav items, table rows and row actions, Pagination, the
+  evidence disclosure) so the state is visible and checked rather than trusted. 98 stories.

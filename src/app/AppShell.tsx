@@ -54,17 +54,19 @@ export function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <SidebarNav
-        groups={GROUPS}
-        activeId={activeId}
-        collapsed={collapsed}
-        onToggleCollapse={() => setCollapsed((v) => !v)}
-        onNavigate={(id) => {
-          const item = GROUPS.flatMap((g) => g.items).find((i) => i.id === id);
-          if (item?.href) navigate(item.href);
-        }}
-        footer={<AccountRow name="Latte's workspace" detail="latte@clickguard.com" initials="LW" collapsed={collapsed} />}
-      />
+      <div className={styles.rail}>
+          <SidebarNav
+          groups={GROUPS}
+          activeId={activeId}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((v) => !v)}
+          onNavigate={(id) => {
+            const item = GROUPS.flatMap((g) => g.items).find((i) => i.id === id);
+            if (item?.href) navigate(item.href);
+          }}
+          footer={<AccountRow name="Latte's workspace" detail="latte@clickguard.com" initials="LW" collapsed={collapsed} />}
+        />
+      </div>
       <div className={styles.content}>
         <Outlet />
       </div>
