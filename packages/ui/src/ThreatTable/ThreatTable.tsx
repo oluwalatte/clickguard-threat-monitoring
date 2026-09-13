@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { EmptyState, type EmptyStateVariant } from '../EmptyState/EmptyState';
 import { Icon } from '../Icon/Icon';
 import { TABLE_NARROW_BREAKPOINT_PX } from '../tokens/breakpoints';
@@ -34,7 +34,8 @@ export interface ThreatTableProps<Row extends Record<string, unknown>> {
   /** Controlled sort. Omit to let the table own its sort state. */
   sort?: TableSort | null;
   onSortChange?: (sort: TableSort) => void;
-  /** Adds a focusable per-row action button. Rows are never click-only. */
+  /** Opens a row on click anywhere in it and adds a focusable per-row action button, so the
+   *  keyboard and screen reader route is a real control. Rows are never click-only. */
   onRowActivate?: (row: Row) => void;
   /** Accessible name prefix for the row action, combined with `row.visitorLabel`. */
   rowActionLabel?: string;
@@ -117,8 +118,17 @@ function TableRow<Row extends Record<string, unknown>>({
     (typeof explicit === 'string' && explicit) ||
     columns.map((c) => row[c.key]).find((v): v is string => typeof v === 'string' && v.length > 0) ||
     '';
+  /* A click anywhere in the row opens it, except on the action button (which opens it
+     itself) and while the reader is selecting text to copy an address. */
+  const onRowClick = onActivate
+    ? (e: MouseEvent<HTMLTableRowElement>) => {
+        if ((e.target as HTMLElement).closest('button, a')) return;
+        if (window.getSelection()?.toString()) return;
+        onActivate();
+      }
+    : undefined;
   return (
-    <tr className={styles.row} data-activatable={onActivate ? true : undefined}>
+    <tr className={styles.row} data-activatable={onActivate ? true : undefined} onClick={onRowClick}>
       {columns.map((col, j) => (
         <td key={col.key} className={styles.cell} data-align={col.align || 'left'} data-first={j === 0 || undefined} data-mono={col.mono || undefined}>
           <div className={styles.cellStack}>{cellValue(row, col)}</div>

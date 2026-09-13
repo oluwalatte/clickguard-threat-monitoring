@@ -103,6 +103,9 @@
   background: transparent;
   transition: var(--transition-control);
 }
+.row[data-activatable] {
+  cursor: pointer;
+}
 .row[data-activatable]:hover {
   background: var(--surface-hover);
 }

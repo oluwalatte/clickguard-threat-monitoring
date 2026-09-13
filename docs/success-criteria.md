@@ -18,7 +18,8 @@ evidence list, and answers 3, 5 and 7. Nothing sits between them.
 The table answers a scanning version of the same questions before the page is opened:
 Status with the decision time under the badge, Paid, Key evidence as up to four labels, and
 Decision confidence (D14). The table is for finding the visitor; the detail is for auditing
-the decision.
+the decision. A row opens on click anywhere in it, and the action button at its right edge is
+the keyboard route.
 
 ## 1. Was this visitor blocked?
 
@@ -184,4 +185,3 @@ the table offers no filter for one, because the workflow behind it is not modell
 
 - The page-level hierarchy around the journey (D17's last line) is undecided. It does not
   change where any criterion is answered.
-- Whether the Visitor column should pin on the left of the scrolling table (QA pass).

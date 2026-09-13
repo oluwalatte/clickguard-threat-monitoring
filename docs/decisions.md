@@ -171,6 +171,10 @@ unless there is an exception (sync pending, delayed or failed), which appears as
 under the decision time; the per-platform picture lives in the visitor detail.
 Rejected: a Decided column (timing belongs with the verdict) and listing every platform in the
 Status cell (it would mix the verdict, its time and enforcement in one cell).
+Amended 13 Sep 2026, in the QA pass: a row opens the visitor on click anywhere in it, and the
+action column stays as the keyboard and screen reader route, pinned to the right edge where
+the table scrolls sideways. Rejected: pinning the Visitor column on the left as well (a second
+fixed rail for a problem the clickable row already solves).
 
 ## D15. The table is paginated, twenty rows a page
 Decided 13 Sep 2026: pages of 20, because that fits a laptop screen at the table's row height

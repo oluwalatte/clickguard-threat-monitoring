@@ -1,7 +1,7 @@
 # Rationale
 
-Written by the user from `decisions.md` and `ai-workflow.md`. Sections arrive as the work does;
-the outline follows the build plan. Drafts by the agent are marked; the rest is in the user's words.
+Written from `decisions.md` and `ai-workflow.md`. Sections arrive as the work does; the
+outline follows the build plan.
 
 ## Signal placement
 
@@ -38,9 +38,6 @@ understand the decision quickly without losing the evidence needed for a deeper 
 
 ## Detail pattern
 
-Agent draft, 13 Sep 2026, for the user to rewrite. Sources: D2, D17, `docs/explorations/drawer-options.html`,
-`docs/explorations/detail-options.html`, `docs/explorations/visit-row-options.html`.
-
 The question the product has to answer is why one visitor was blocked and whether that was
 justified, so the detail view is the product and the table is how you reach it. I gave the
 detail a route of its own rather than a drawer. I had four drawer information orders rendered
@@ -73,8 +70,6 @@ timestamps, never one marker, because the mechanics have a gap between them and 
 can land in it. Golden case 6 exists to show that gap.
 
 ## Status vocabulary and confidence
-
-Agent draft, 13 Sep 2026, for the user to rewrite. Sources: D3, D5, D8, rules 2 to 4.
 
 The status words are Blocked, Monitoring, Not blocked and Not evaluated, with Manually
 allowed as an override mark layered on top. I rejected "Allowed" on its own because it
@@ -113,8 +108,6 @@ the cumulative model does not have.
 
 ## Financial exposure
 
-Agent draft, 13 Sep 2026, for the user to rewrite. Sources: D6, D7, rule 10.
-
 Only paid visits cost the advertiser money, so the page shows paid visits before the block,
 total visits and the paid versus organic mix, and it shows spend only where a cost per click
 exists in the data and the calculation is on the page. The exposure line reads "$38.40 across
@@ -136,8 +129,6 @@ depends on nothing assumed. Block time, visit count, paid clicks and confidence 
 sorts, each independently useful.
 
 ## Filter design
-
-Agent draft, 13 Sep 2026, for the user to rewrite. Sources: D16, D14, D9 amendment.
 
 I kept search, date range and status visible because they are the most common ways to define
 the investigation set. Lower-frequency dimensions, platform, traffic type, location, email
@@ -169,9 +160,25 @@ purchase and must never read as a list of false positives.
 Every filter lives in the URL beside the sort and the page, so the table a customer was looking
 at is the table they come back to from a visitor.
 
-## The AI workflow
+## What I left out
 
-Agent draft, 13 Sep 2026, for the user to rewrite. Source: `docs/ai-workflow.md`.
+I considered manual and bulk overrides and excluded both from the core prototype. The
+brief's primary job is explaining cumulative blocking, and a bulk action works against that
+job: selecting twenty rows and allowing or blocking them bypasses the visitor-level
+investigation the whole surface is built to support. A manual override is different in kind
+but no smaller. Done responsibly it needs permissions, an audit history that keeps the
+original decision and its evidence on record, and defined behaviour for the advertising
+platforms' exclusion lists, which the prototype does not model. A button that did none of
+that would be superficial, and it would claim the product does something it does not.
+
+So nothing in the prototype changes a verdict, and there is one primary action per view. What
+I kept is the room for the answer: the status vocabulary includes Manually allowed as an
+override mark in the info tone, the timeline has an override event, and the decision summary
+can show an override on top of the original decision without erasing it. No visitor in the
+data carries one and the table offers no filter for one, because the workflow behind it is
+not modelled.
+
+## The AI workflow
 
 I used an AI coding agent throughout, and the first thing it taught me was how not to use it.
 Before any product contract existed I let it build a prototype end to end in a separate

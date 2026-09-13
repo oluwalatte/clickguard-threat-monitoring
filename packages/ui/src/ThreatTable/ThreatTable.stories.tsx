@@ -151,6 +151,18 @@ export const RowActionIsKeyboardReachable: Story = {
   },
 };
 
+export const RowClickOpensTheVisitor: Story = {
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const firstRow = c.getAllByRole('row')[1];
+    await userEvent.click(within(firstRow).getAllByRole('cell')[2]);
+    await expect(args.onRowActivate).toHaveBeenCalledWith(VISITOR_ROWS[0]);
+    /* The action button opens the row itself; the click must not bubble into a second call. */
+    await userEvent.click(within(firstRow).getByRole('button', { name: /^View visitor/ }));
+    await expect(args.onRowActivate).toHaveBeenCalledTimes(2);
+  },
+};
+
 function ControlledSortExample() {
   const [sort, setSort] = useState<TableSort | null>({ key: 'lastSeen', direction: 'desc' });
   return (
