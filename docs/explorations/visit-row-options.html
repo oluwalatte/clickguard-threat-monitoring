@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threat Monitoring · Visit row · three hierarchies</title>
+<style>
+  /* Exploration canvas. Tokens copied from packages/ui/src/tokens so this file stands alone; it is an input to a decision, never the system. */
+  :root{
+    --navy-900:#111553;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-550:#656b78;--gray-600:#4b5563;
+    --indigo-50:#eeedfe;--indigo-200:#cecbff;--indigo-700:#2d37d1;--red-50:#fdeeec;--red-100:#f7d3cf;--red-500:#d6453d;--red-800:#9e2a22;
+    --amber-50:#fdf8e7;--amber-100:#f7e8b8;--amber-800:#7a5406;--blue-50:#eff4ff;--blue-100:#d6e2ff;--blue-700:#1d4ed8;
+    --sans:"Host Grotesk",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --s0:2px;--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--r-xs:4px;--r-sm:6px;--r-md:8px;--r-lg:12px;--r-xl:16px;--hair:1px;
+  }
+  @import url("https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700&display=swap");
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--gray-100);color:var(--navy-900);font:14px/21px var(--sans);padding:var(--s7) var(--s6);font-variant-numeric:tabular-nums}
+  a{color:var(--indigo-700);text-decoration:none}
+  .kicker{margin:0 0 var(--s2);font:600 12px/16px var(--sans);color:var(--gray-550);text-transform:uppercase;letter-spacing:.04em}
+  h1{margin:0 0 var(--s3);font:600 28px/34px var(--sans);letter-spacing:-.02em}
+  .brief{margin:0 0 var(--s6);max-width:82ch;color:var(--gray-600)}
+  .grid{display:grid;grid-template-columns:repeat(3,620px);gap:var(--s6);align-items:start}
+  .opt{display:flex;flex-direction:column;gap:var(--s3)}
+  .opt-kicker{margin:0;font:500 12px/16px var(--mono);color:var(--gray-550)}
+  .opt-name{margin:0;font:600 20px/28px var(--sans)}
+  .opt-thesis{margin:0;color:var(--gray-600)}
+  .rat{font-size:13px;line-height:19px;display:grid;gap:var(--s2)}
+  .rat b{display:block;font-weight:600;color:var(--gray-550);font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:var(--s0)}
+  .rat ul{margin:0;padding-left:18px}.rat p{margin:0}
+  .mock{background:var(--gray-100);border:var(--hair) dashed var(--gray-300);border-radius:var(--r-xl);padding:var(--s5)}
+  .panel{background:#fff;border:var(--hair) solid var(--gray-200);border-radius:var(--r-xl);padding:var(--s5);font-size:13px;line-height:19px}
+  .lbl{margin:0 0 var(--s3);font:500 11px/16px var(--mono);color:var(--gray-550)}
+  .tl{list-style:none;margin:0;padding:0}
+  .tl>li{display:grid;grid-template-columns:28px 1fr;column-gap:var(--s3)}
+  .tl>li+li{margin-top:var(--s4)}
+  .mk{width:28px;height:28px;border-radius:999px;border:var(--hair) solid var(--indigo-200);background:var(--indigo-50);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--indigo-700)}
+  .direct .mk{border-color:var(--gray-200);background:var(--gray-100);color:var(--gray-600)}
+  .row{display:flex;justify-content:space-between;gap:var(--s3);align-items:baseline}
+  .lab{font:600 11px/16px var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--indigo-700)}
+  .direct .lab{color:var(--gray-600)}
+  .when{color:var(--gray-550);font-size:12px;white-space:nowrap}
+  .src{margin:var(--s0) 0 0;color:var(--navy-900)}
+  .eng{color:var(--gray-550);font-size:12px;margin-top:var(--s0)}
+  .eng span+span::before{content:" · ";color:var(--gray-400)}
+  .chg{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s1)}
+  .tag{display:inline-flex;padding:var(--s0) var(--s2);border-radius:var(--r-sm);border:var(--hair) solid var(--gray-200);background:var(--gray-50);font-size:11px;line-height:16px;font-weight:500}
+  .tag.warn{border-color:var(--amber-100);background:var(--amber-50);color:var(--amber-800)}
+  .tag.bad{border-color:var(--red-100);background:var(--red-50);color:var(--red-800);font-weight:600}
+  .tag.mit{border-color:var(--blue-100);background:var(--blue-50);color:var(--blue-700)}
+  .tag.quiet{border-style:dashed;background:transparent;color:var(--gray-550)}
+  .disc{display:inline-flex;align-items:center;gap:var(--s1);margin-top:var(--s2);color:var(--indigo-700);font-weight:600;font-size:12px}
+  .disc::before{content:"▸";font-size:11px}.disc.open::before{content:"▾"}
+  .body{margin-top:var(--s2);padding:var(--s3);background:var(--gray-50);border:var(--hair) solid var(--gray-200);border-radius:var(--r-md)}
+  .body dl{display:grid;grid-template-columns:auto 1fr;gap:var(--s0) var(--s3);margin:0;font-size:12px}
+  .body dt{color:var(--gray-550)}.body dd{margin:0}
+  .body .gh{grid-column:1/-1;font:600 10px/14px var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--gray-550);margin-top:var(--s2)}
+  .body .gh:first-child{margin-top:0}
+  .decision{border-left:3px solid var(--red-500);padding-left:var(--s3);margin-left:-15px}
+  .marker{margin-top:var(--s3);padding:var(--s2) var(--s3);background:var(--red-50);border:var(--hair) solid var(--red-100);border-left:4px solid var(--red-500);border-radius:var(--r-md)}
+  .marker b{display:block;font:700 11px/16px var(--sans);letter-spacing:.06em;color:var(--red-800)}
+  .marker p{margin:var(--s0) 0 0;font-size:12px}
+  /* option 3: ledger rows */
+  .ledger{list-style:none;margin:0;padding:0;border-top:var(--hair) solid var(--gray-200)}
+  .ledger>li{display:grid;grid-template-columns:20px 84px 1fr 96px 24px;gap:var(--s3);align-items:center;min-height:36px;padding:var(--s1) 0;border-bottom:var(--hair) solid var(--gray-200)}
+  .ledger .n{font:600 11px var(--sans);color:var(--indigo-700)}.ledger .direct .n{color:var(--gray-600)}
+  .ledger .t{font-size:12px;color:var(--gray-550);white-space:nowrap}
+  .ledger .what{min-width:0}.ledger .what b{font-weight:600}
+  .ledger .what .sub{color:var(--gray-550);font-size:12px}
+  .ledger .sig{display:flex;gap:var(--s1);justify-content:flex-end;flex-wrap:wrap}
+  .ledger .chev{color:var(--gray-400);text-align:right}
+  .ledger>li.open{display:block}
+  .ledger>li.open .head{display:grid;grid-template-columns:20px 84px 1fr 96px 24px;gap:var(--s3);align-items:center}
+  .ledger>li.dec{background:var(--red-50)}
+  .choose{margin-top:var(--s7);max-width:90ch}
+  .choose h2{margin:0 0 var(--s3);font:600 20px/28px var(--sans)}
+  .choose p,.choose li{color:var(--gray-600)}
+  .choose ul{padding-left:20px}
+</style>
+</head>
+<body>
+<p class="kicker">Exploration · P4d · input to D17, the visit row</p>
+<h1>Three hierarchies for a visit in the journey</h1>
+<p class="brief">The built row prints every field of every visit: keyword, cost, interaction, bot probability, VPN, network, form, conversion, location, device. Four visits in, the reader has read forty facts and still does not know which visit mattered. Each option below shows the same three visits from golden case 7: a quiet visit (1), a visit where something changed (2), and the decision visit (5), expanded. The rule shared by all three: a collapsed row shows only what a person needs to place the visit in the story; everything else is one disclosure away, never gone.</p>
+
+<div class="grid">
+
+<!-- ================= OPTION 1 ================= -->
+<section class="opt">
+  <p class="opt-kicker">1 · what changed</p>
+  <h2 class="opt-name">Source, one line of engagement, and only what changed</h2>
+  <p class="opt-thesis">Three lines when collapsed: the visit label and time; where it came from; a single engagement line (time on page, scroll, outcome). Below that, only facts that differ from the previous visit or are unusual, as tags: a new location, a new device, an undeliverable email, a conversion. Defaults such as "VPN: No" and "Form: Not submitted" never appear collapsed. The disclosure opens the full record grouped by the brief's four categories.</p>
+  <div class="rat">
+    <div><b>Rationale</b><p>A journey is read as change over time. A field that is the same on every visit carries no information on any of them, so it is shown once (in the header) and only its changes appear on the rows. The engagement line stays because it is the one number the customer compares visit to visit, and the brief's success test asks which visits contributed.</p></div>
+    <div><b>Solves</b><ul><li>Collapsed rows are three lines; a 14-visit journey fits on a screen</li><li>Changed facts stand out because nothing else competes</li><li>Absence is honest: a visit with no tags is a visit where nothing changed, not a visit with missing data</li></ul></div>
+    <div><b>Costs</b><ul><li>"Changed since the previous visit" needs computing per visit (new data work)</li><li>The first visit has no previous, so its tags are "unusual" rather than "changed", a slightly different rule</li><li>The engagement line hides bot probability, which some readers will look for on the row</li></ul></div>
+  </div>
+  <div class="mock"><div class="panel">
+    <p class="lbl">visits 1, 2 and 5 of 5 · decision visit open</p>
+    <ol class="tl">
+      <li><div class="mk">1</div><div><div class="row"><span class="lab">Paid visit 1</span><span class="when">9 Sep, 02:14</span></div><p class="src">Meta Ads · Prospecting LATAM</p><div class="eng"><span>5 seconds</span><span>5% scroll</span><span>No conversion</span></div><a class="disc">Details</a></div></li>
+      <li><div class="mk">2</div><div><div class="row"><span class="lab">Paid visit 2</span><span class="when">9 Sep, 13:50 · 12 hours later</span></div><p class="src">Meta Ads · Prospecting LATAM</p><div class="eng"><span>4 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag warn">Location changed to Montevideo</span><span class="tag warn">New device identity</span></div><a class="disc">Details</a></div></li>
+      <li class="decision"><div class="mk">5</div><div><div class="row"><span class="lab">Paid visit 5 · decision visit</span><span class="when">10 Sep, 22:47 · 12 hours later</span></div><p class="src">Meta Ads · Prospecting LATAM</p><div class="eng"><span>2 seconds</span><span>5% scroll</span><span>No conversion</span></div><div class="chg"><span class="tag bad">Email undeliverable</span><span class="tag warn">Location changed to Montevideo</span></div><a class="disc open">Hide details</a>
+        <div class="body"><dl>
+          <dt class="gh">Acquisition</dt><dt>Platform</dt><dd>Meta Ads, Prospecting LATAM</dd><dt>Cost per click</dt><dd>$1.90</dd><dt>Landing page</dt><dd>Home page</dd>
+          <dt class="gh">Engagement</dt><dt>Time on page</dt><dd>2 seconds</dd><dt>Scroll</dt><dd>5%</dd><dt>Pointer</dt><dd>Moved</dd><dt>Interaction level</dt><dd>Low</dd>
+          <dt class="gh">Identity and network</dt><dt>Location</dt><dd>Montevideo, Uruguay (changed from Santiago)</dd><dt>Device</dt><dd>Safari 17, iOS 17, first seen on visit 2</dd><dt>Network</dt><dd>Mobile carrier</dd><dt>VPN or proxy</dt><dd>No</dd><dt>Bot probability</dt><dd>52%</dd>
+          <dt class="gh">Outcome</dt><dt>Form</dt><dd>Submitted, email undeliverable</dd><dt>Conversion</dt><dd>No</dd>
+        </dl></div>
+        <div class="marker"><b>BLOCK DECISION MADE HERE</b><p>The undeliverable email, repeated short sessions and identity changes crossed the threshold.</p></div>
+      </div></li>
+    </ol>
+  </div></div>
+</section>
+
+<!-- ================= OPTION 2 ================= -->
+<section class="opt">
+  <p class="opt-kicker">2 · signal first</p>
+  <h2 class="opt-name">The visit as its contribution to the verdict</h2>
+  <p class="opt-thesis">The collapsed row leads with the signals this visit contributed to the decision, using the same labels the table and the evidence list use ("Low interaction", "Same keyword", "Email: Invalid"), followed by one muted line of time and source. Nothing numeric is shown collapsed. A visit that contributed nothing says so with a dashed "No signals" tag. The disclosure opens the full record and, above it, the evidence sentences this visit supports, so the row and the evidence list are the same facts from two directions.</p>
+  <div class="rat">
+    <div><b>Rationale</b><p>The customer's question is not "what happened on this visit" but "why did this visit count". Leading with contribution answers that directly and gives the journey the same vocabulary as the table row that opened it and the evidence list beside it, so the three surfaces reinforce one another instead of describing the same visit three ways.</p></div>
+    <div><b>Solves</b><ul><li>Quiet visits read as quiet at a glance; the decision visit is visibly the heaviest row before it is opened</li><li>One vocabulary across table, evidence and journey (D10a)</li><li>The block marker follows naturally: the visit whose signals crossed the line sits directly above it</li></ul></div>
+    <div><b>Costs</b><ul><li>Engagement numbers are hidden collapsed, so comparing visit to visit needs the disclosure</li><li>The engine already attributes evidence to visits; the row needs that attribution exposed per visit, and a "changed" fact still needs computing for the identity tags</li><li>For a Not blocked visitor most rows carry only mitigating tags, which is correct but visually thin</li></ul></div>
+  </div>
+  <div class="mock"><div class="panel">
+    <p class="lbl">visits 1, 2 and 5 of 5 · decision visit open</p>
+    <ol class="tl">
+      <li><div class="mk">1</div><div><div class="row"><span class="lab">Paid visit 1</span><span class="when">9 Sep, 02:14</span></div><div class="chg"><span class="tag">Low interaction</span></div><div class="eng"><span>Meta Ads · Prospecting LATAM</span><span>start of journey</span></div><a class="disc">Details</a></div></li>
+      <li><div class="mk">2</div><div><div class="row"><span class="lab">Paid visit 2</span><span class="when">9 Sep, 13:50</span></div><div class="chg"><span class="tag">Low interaction</span><span class="tag warn">Location changed</span><span class="tag warn">New device</span></div><div class="eng"><span>Meta Ads · Prospecting LATAM</span><span>12 hours later</span></div><a class="disc">Details</a></div></li>
+      <li class="decision"><div class="mk">5</div><div><div class="row"><span class="lab">Paid visit 5 · decision visit</span><span class="when">10 Sep, 22:47</span></div><div class="chg"><span class="tag bad">Email: Invalid</span><span class="tag">Low interaction</span><span class="tag warn">Location changed</span><span class="tag">4 paid clicks / 2 days</span></div><div class="eng"><span>Meta Ads · Prospecting LATAM</span><span>12 hours later</span></div><a class="disc open">Hide details</a>
+        <div class="body">
+          <p style="margin:0 0 var(--s2);font-weight:600">What this visit added to the evidence</p>
+          <ul style="margin:0 0 var(--s3);padding-left:18px;font-size:12px"><li>Form submitted with an undeliverable email address on visit 5</li><li>4 paid clicks in 2 days (fourth paid click)</li><li>No scroll and under 6 seconds on the page across 5 of 5 visits</li><li>Reported location changed 2 times in 2 days</li></ul>
+          <dl>
+            <dt class="gh">Record</dt><dt>Platform</dt><dd>Meta Ads, Prospecting LATAM, $1.90</dd><dt>Time on page</dt><dd>2 seconds, scroll 5%, pointer moved</dd><dt>Bot probability</dt><dd>52%</dd><dt>Location</dt><dd>Montevideo, Uruguay</dd><dt>Device</dt><dd>Safari 17, iOS 17</dd><dt>Network</dt><dd>Mobile carrier, no VPN or proxy</dd><dt>Form</dt><dd>Submitted, email undeliverable</dd><dt>Conversion</dt><dd>No</dd>
+          </dl>
+        </div>
+        <div class="marker"><b>BLOCK DECISION MADE HERE</b><p>The undeliverable email, repeated short sessions and identity changes crossed the threshold.</p></div>
+      </div></li>
+    </ol>
+  </div></div>
+</section>
+
+<!-- ================= OPTION 3 ================= -->
+<section class="opt">
+  <p class="opt-kicker">3 · ledger</p>
+  <h2 class="opt-name">One line per visit, the decision visit opened in place</h2>
+  <p class="opt-thesis">Each visit is a single row: number, time, what happened in a few words with the source beneath, up to two signal tags right-aligned, and a chevron. The decision visit is tinted and opened in place, showing the same grouped record as option 1. The block marker follows it. This is the densest form: a 14-visit journey is 14 lines.</p>
+  <div class="rat">
+    <div><b>Rationale</b><p>The journey's job is sequence. A ledger makes sequence the strongest thing on the page: the eye runs down one column of times and one column of tags and finds the row where the tags turn red. It suits the long journeys in the data (up to 14 visits) and the customer who has read the summary and wants to confirm the pattern, not re-read it.</p></div>
+    <div><b>Solves</b><ul><li>The whole journey is visible without scrolling, so "which visits contributed" is answered by the tag column alone</li><li>Scanning by time is fast: one column, one format</li><li>Density without noise: nothing numeric is shown collapsed</li></ul></div>
+    <div><b>Costs</b><ul><li>Loses the narrative line ("Landed on /pricing from ...") that makes a visit read like an event</li><li>Two tags fit on a line; a visit with four signals truncates to "+2"</li><li>Reads like a second table under the table, which the detail page was meant to escape; on a phone the columns must stack, losing the ledger's point</li></ul></div>
+  </div>
+  <div class="mock"><div class="panel">
+    <p class="lbl">visits 1 to 5 · decision visit open in place</p>
+    <ol class="ledger">
+      <li><span class="n">1</span><span class="t">9 Sep, 02:14</span><span class="what"><b>Paid visit</b><div class="sub">Meta Ads · Prospecting LATAM · 5 s</div></span><span class="sig"><span class="tag quiet">No signals</span></span><span class="chev">▸</span></li>
+      <li><span class="n">2</span><span class="t">9 Sep, 13:50</span><span class="what"><b>Paid visit</b><div class="sub">Meta Ads · Prospecting LATAM · 4 s</div></span><span class="sig"><span class="tag warn">Location</span><span class="tag warn">Device</span></span><span class="chev">▸</span></li>
+      <li class="direct"><span class="n">3</span><span class="t">10 Sep, 00:31</span><span class="what"><b>Direct visit</b><div class="sub">/pricing · 3 s</div></span><span class="sig"><span class="tag warn">Location</span><span class="tag warn">Device</span></span><span class="chev">▸</span></li>
+      <li><span class="n">4</span><span class="t">10 Sep, 11:08</span><span class="what"><b>Paid visit</b><div class="sub">Meta Ads · Prospecting LATAM · 4 s</div></span><span class="sig"><span class="tag warn">Location</span></span><span class="chev">▸</span></li>
+      <li class="open dec"><div class="head"><span class="n">5</span><span class="t">10 Sep, 22:47</span><span class="what"><b>Paid visit · decision visit</b><div class="sub">Meta Ads · Prospecting LATAM · 2 s</div></span><span class="sig"><span class="tag bad">Email</span><span class="tag">+2</span></span><span class="chev">▾</span></div>
+        <div class="body" style="margin:var(--s2) 0 var(--s2) 32px"><dl>
+          <dt class="gh">Acquisition</dt><dt>Platform</dt><dd>Meta Ads, Prospecting LATAM, $1.90</dd>
+          <dt class="gh">Engagement</dt><dt>Time on page</dt><dd>2 seconds, scroll 5%, pointer moved</dd>
+          <dt class="gh">Identity and network</dt><dt>Location</dt><dd>Montevideo, Uruguay (changed)</dd><dt>Device</dt><dd>Safari 17, iOS 17</dd><dt>Network</dt><dd>Mobile carrier, no VPN or proxy, bot probability 52%</dd>
+          <dt class="gh">Outcome</dt><dt>Form</dt><dd>Submitted, email undeliverable</dd><dt>Conversion</dt><dd>No</dd>
+        </dl></div>
+        <div class="marker" style="margin:0 0 var(--s2) 32px"><b>BLOCK DECISION MADE HERE</b><p>The undeliverable email, repeated short sessions and identity changes crossed the threshold.</p></div>
+      </li>
+    </ol>
+  </div></div>
+</section>
+
+</div>
+
+<section class="choose">
+  <h2>How to choose</h2>
+  <ul>
+    <li>Choose <b>1</b> if the journey should read as a story of change: what was different each time. It keeps the narrative line and the one number worth comparing. It is the closest to the recommended detail design.</li>
+    <li>Choose <b>2</b> if the journey should read as an argument: what each visit added to the verdict, in the words the table and the evidence list already use. It is the strongest fit for D10a's one vocabulary, at the price of hiding engagement numbers collapsed.</li>
+    <li>Choose <b>3</b> if long journeys and fast scanning matter more than narrative. It is the densest and the least like an explanation.</li>
+    <li>1 and 2 combine cleanly: option 1's three lines with option 2's signal tags in place of the "changed" tags. That hybrid shows change and contribution on one row, at the cost of a fourth line.</li>
+  </ul>
+  <p><b>Shared build work</b> whichever is chosen: a per-visit "changed since the previous visit" fact for location and device, per-visit evidence attribution exposed from the engine (it already exists inside the evidence items), the four-category grouping of the full record, and the decision visit open by default with the block marker directly after it.</p>
+</section>
+</body>
+</html>
