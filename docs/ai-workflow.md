@@ -91,3 +91,47 @@ main, which settled the one open P1 question.
 **Judgement calls flagged:** the primary button is now one indigo step darker than the
 sampled product colour, for contrast. The Icon registry story is the only "count" story; it
 exists so an unknown icon name is caught by TypeScript, not by eye.
+
+## P3. Data
+
+**Agent proposed** types that encode the mechanics rather than describe them, eight
+hand-authored golden cases, a seeded factory to 48 visitors, and reconciliation tests for the
+claims the interface will make.
+
+**User directed:** merge P2 with a merge commit and move to P3. No further direction; the
+data contract is fully specified by `decisions.md` and the build plan's section 6.
+
+**Agent produced:**
+
+- `types.ts`: visitor by IP; visits with per-visit location and device so a journey can
+  show inconsistency; paid-only platform, campaign and cost; a decision with the visit it
+  followed, one of three confidence labels, a plain-language summary and ranked evidence; a
+  monitoring state with the D8 note; exclusion sync as its own chronological events per
+  platform (pending, delayed, active, failed); room for a manual override (D9). Nothing
+  derived is stored.
+- `engine.ts`: the mock decision model. It walks a journey cumulatively, decides at the
+  first visit over the line, and writes evidence as sentences. The internal score picks the
+  visit; it is never stored or shown. Confidence is high only with an automation signal,
+  conflicting whenever contradictory evidence exists. Monitoring notes follow the D8
+  template. A VPN with repeated paid clicks stays under evaluation until a purchase.
+- `golden.ts`: the eight cases with authored outcomes, summaries and sync events. Their
+  evidence lists come from the shared evidence writer, so they cannot drift from the visits.
+  Case 6 has a delayed sync and a paid click in the gap. Case 5's summary says the later
+  conversion is not by itself proof the block was wrong (rule 10).
+- `factory.ts`: seeded filler around the golden cases, judged by the same engine. Sync
+  events can be delayed or fail; a failed platform can still deliver paid clicks; no paid
+  click lands on a platform once its exclusion is active. One filler visitor carries a
+  manual override so the D3 vocabulary is complete on screen.
+- `selectors.ts`: display status, counts, exposure as a visible sum (null when any cost is
+  missing), the table row, D7 sorts with undecided rows always last, filters by search,
+  status, traffic and platform, and the merged journey for the timeline.
+- `format.ts`: complete timestamps, relative times from a fixed reference, durations.
+- 82 tests: determinism, size, unique IPs, every status present, per-visitor reconciliation
+  of counts, timings, decision references, sync chains and the no-paid-after-active rule,
+  each golden case's contract, engine agreement with the golden cases, sorts, filters,
+  the journey order, and the formatters.
+
+**Judgement calls flagged:** the reference "now" is fixed at 2026-09-13T12:00Z so relative
+times are deterministic. The monitoring threshold and the VPN rule were tuned so the engine
+reaches the authored status on every golden case; that test is what keeps the filler
+consistent with the contract. Paid-visit share in the filler is about 70 percent.
