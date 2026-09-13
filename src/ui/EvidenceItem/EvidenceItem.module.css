@@ -1,0 +1,105 @@
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: var(--border-width) solid var(--border-default);
+  --evidence-accent: var(--status-neutral-marker);
+  --evidence-ink: var(--text-primary);
+}
+
+.item[data-kind='primary'] {
+  --evidence-accent: var(--status-blocked-marker);
+}
+.item[data-kind='contradictory'] {
+  --evidence-accent: var(--status-info-marker);
+}
+.item[data-kind='missing'] {
+  --evidence-accent: var(--border-strong);
+  --evidence-ink: var(--text-muted);
+}
+
+.glyph {
+  display: inline-flex;
+  margin-top: var(--space-0);
+  color: var(--evidence-accent);
+}
+
+.body {
+  min-width: 0;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+}
+
+.statement {
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  color: var(--evidence-ink);
+}
+.item[data-kind='missing'] .statement {
+  font-style: italic;
+}
+
+.note {
+  padding-top: var(--space-0);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-line);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  font-weight: var(--text-label-weight);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  line-height: var(--text-support-line);
+}
+
+.source,
+.sourceText {
+  font-size: var(--text-support-size);
+}
+.sourceText {
+  color: var(--text-secondary);
+}
+
+.disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-link);
+  font: inherit;
+  font-size: var(--text-support-size);
+  cursor: pointer;
+}
+.disclosure:hover {
+  color: var(--action-primary-active);
+  text-decoration: underline;
+}
+
+.raw {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-inset);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}

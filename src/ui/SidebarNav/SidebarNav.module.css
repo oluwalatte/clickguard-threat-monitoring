@@ -1,0 +1,127 @@
+.nav {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--layout-sidebar-width);
+  height: 100%;
+  padding: var(--space-4) var(--space-3);
+  background: var(--surface-panel);
+  border-right: var(--border-width) solid var(--border-default);
+  transition: width var(--duration-default) var(--ease-standard);
+}
+
+.nav[data-collapsed] {
+  width: var(--layout-sidebar-width-collapsed);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-5);
+}
+
+.brand {
+  font-size: var(--text-section-size);
+  line-height: var(--text-section-line);
+  letter-spacing: var(--text-metric-tracking);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--size-icon-button);
+  height: var(--size-icon-button);
+  border-radius: var(--radius-sm);
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.toggle:hover {
+  background: var(--action-quiet-hover);
+  color: var(--text-primary);
+}
+
+.groups {
+  display: grid;
+  gap: var(--space-5);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.group {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.groupLabel {
+  padding: 0 var(--space-2) var(--space-1);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-line);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  font-weight: var(--text-label-weight);
+  color: var(--text-muted);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-body-size);
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition-control);
+}
+.item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+/* Active changes weight as well as surface, so it does not rely on colour alone. */
+.item[data-active],
+.item[data-active]:hover {
+  background: var(--surface-selected);
+  color: var(--action-primary-active);
+  font-weight: 600;
+}
+.item[data-collapsed] {
+  padding: 0;
+  justify-content: center;
+}
+
+.itemLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  margin-left: auto;
+  padding: var(--space-0) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--status-blocked-surface);
+  color: var(--status-blocked);
+  font-size: var(--text-label-size);
+  font-weight: 600;
+  font-variant-numeric: var(--numeric-tabular);
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: var(--space-5);
+}

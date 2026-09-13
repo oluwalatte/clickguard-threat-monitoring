@@ -1,0 +1,59 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-5);
+  background: var(--surface-panel);
+  text-align: center;
+  --well-ink: var(--text-muted);
+  --well-surface: var(--surface-inset);
+}
+
+.root[data-compact] {
+  padding: var(--space-6) var(--space-5);
+}
+
+.root[data-variant='unavailable'] {
+  --well-ink: var(--status-monitoring);
+  --well-surface: var(--status-monitoring-surface);
+}
+
+.root[data-variant='error'] {
+  --well-ink: var(--status-blocked);
+  --well-surface: var(--status-blocked-surface);
+}
+
+.well {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-icon-well);
+  height: var(--size-icon-well);
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--well-surface);
+  color: var(--well-ink);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-card-title-size);
+  line-height: var(--text-card-title-line);
+  font-weight: var(--text-card-title-weight);
+  color: var(--text-primary);
+}
+
+.description {
+  margin: 0;
+  max-width: 48ch;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}

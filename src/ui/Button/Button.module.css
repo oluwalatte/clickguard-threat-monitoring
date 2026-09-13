@@ -1,0 +1,116 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid transparent;
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+
+.button[data-size='sm'] {
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  font-size: var(--text-support-size);
+}
+
+.button[data-full-width] {
+  width: 100%;
+}
+
+.label {
+  white-space: nowrap;
+}
+
+/* Primary: one per view. */
+.button[data-variant='primary'] {
+  background: var(--action-primary);
+  color: var(--action-on-primary);
+  border-color: var(--action-primary);
+}
+.button[data-variant='primary']:hover:enabled {
+  background: var(--action-primary-hover);
+  border-color: var(--action-primary-hover);
+}
+.button[data-variant='primary']:active:enabled {
+  background: var(--action-primary-active);
+  border-color: var(--action-primary-active);
+}
+
+/* Secondary: the default for toolbars and filters. */
+.button[data-variant='secondary'] {
+  background: var(--surface-panel);
+  color: var(--action-primary);
+  border-color: var(--action-primary-border);
+}
+.button[data-variant='secondary']:hover:enabled {
+  background: var(--action-primary-surface);
+  border-color: var(--action-primary);
+}
+.button[data-variant='secondary']:active:enabled {
+  background: var(--action-primary-surface);
+  border-color: var(--action-primary-active);
+}
+
+/* Quiet: tertiary, inside tables and empty states. */
+.button[data-variant='quiet'] {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+.button[data-variant='quiet']:hover:enabled {
+  background: var(--action-quiet-hover);
+  color: var(--text-primary);
+}
+.button[data-variant='quiet']:active:enabled {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+/* Destructive: blocking and removal only. */
+.button[data-variant='destructive'] {
+  background: var(--surface-panel);
+  color: var(--status-blocked);
+  border-color: var(--status-blocked-border);
+}
+.button[data-variant='destructive']:hover:enabled,
+.button[data-variant='destructive']:active:enabled {
+  background: var(--status-blocked-surface);
+  border-color: var(--status-blocked);
+}
+
+.button:disabled {
+  background: var(--action-disabled-surface);
+  color: var(--action-disabled-text);
+  border-color: var(--border-default);
+  cursor: not-allowed;
+}
+.button[data-variant='quiet']:disabled {
+  background: transparent;
+  border-color: transparent;
+}
+
+.spinner {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  flex: none;
+  border-radius: var(--radius-pill);
+  border: var(--border-width-strong) solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.7;
+  animation: cg-spin 700ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2400ms;
+  }
+}
