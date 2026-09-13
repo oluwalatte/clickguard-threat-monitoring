@@ -176,7 +176,9 @@ export function toRow(v: Visitor): VisitorRow {
 }
 
 /** D7: recency by default; block time, visit count, paid clicks and confidence as options. */
-export type SortKey = 'recency' | 'block-time' | 'visits' | 'paid-clicks' | 'confidence';
+export type SortKey = 'recency' | 'block-time' | 'status' | 'visits' | 'paid-clicks' | 'confidence';
+
+const STATUS_RANK: Record<DisplayStatus, number> = { blocked: 0, monitoring: 1, allowed: 2, 'not-blocked': 3, 'not-evaluated': 4 };
 export type SortDirection = 'asc' | 'desc';
 
 const CONFIDENCE_RANK: Record<Confidence, number> = { high: 4, moderate: 3, conflicting: 2, insufficient: 1 };
@@ -187,6 +189,10 @@ function sortValue(row: VisitorRow, key: SortKey): number {
       return ms(row.lastSeenAt);
     case 'block-time':
       return row.decidedAt ? ms(row.decidedAt) : Number.NEGATIVE_INFINITY;
+    case 'status':
+      /* Verdict first; within a verdict, the most recent decision first (D14). Descending
+         means "Blocked first", so the rank is negated. */
+      return -(STATUS_RANK[row.status] * 1e13 - (row.decidedAt ? ms(row.decidedAt) : 0));
     case 'visits':
       return row.totalVisits;
     case 'paid-clicks':
@@ -256,4 +262,26 @@ export function summarizeStatuses(visitors: Visitor[]) {
   const by: Record<DisplayStatus, number> = { blocked: 0, monitoring: 0, 'not-blocked': 0, 'not-evaluated': 0, allowed: 0 };
   for (const v of visitors) by[displayStatus(v)] += 1;
   return by;
+}
+
+/** D15: pages of 20. The slice is derived on read, like everything else. */
+export const PAGE_SIZE = 20;
+
+export interface Page<T> {
+  rows: T[];
+  page: number;
+  pageCount: number;
+  /** 1-based positions of the first and last row on this page; 0 when there are no rows. */
+  from: number;
+  to: number;
+  total: number;
+}
+
+export function paginate<T>(rows: T[], page: number, pageSize = PAGE_SIZE): Page<T> {
+  const total = rows.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const current = Math.min(pageCount, Math.max(1, Math.floor(page) || 1));
+  const start = (current - 1) * pageSize;
+  const slice = rows.slice(start, start + pageSize);
+  return { rows: slice, page: current, pageCount, from: total ? start + 1 : 0, to: total ? start + slice.length : 0, total };
 }

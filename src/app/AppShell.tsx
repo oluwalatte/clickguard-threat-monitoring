@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import { NARROW_BREAKPOINT_PX, SidebarNav, type SidebarNavGroup } from '@clickguard/ui';
+import { AccountRow, NARROW_BREAKPOINT_PX, SidebarNav, type SidebarNavGroup } from '@clickguard/ui';
 import styles from './AppShell.module.css';
 
 /* The product's navigation, in product order. Only Threat monitoring is routable
@@ -63,6 +63,7 @@ export function AppShell() {
           const item = GROUPS.flatMap((g) => g.items).find((i) => i.id === id);
           if (item?.href) navigate(item.href);
         }}
+        footer={<AccountRow name="Latte's workspace" detail="latte@clickguard.com" initials="LW" collapsed={collapsed} />}
       />
       <div className={styles.content}>
         <Outlet />
