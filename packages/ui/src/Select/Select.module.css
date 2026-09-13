@@ -91,6 +91,11 @@
   .select::picker(select) {
     appearance: base-select;
   }
+  /* base-select lays the select out as a flex box with no alignment, which puts the text at
+     the top of a control taller than one line. Centre it on the chevron. */
+  .select {
+    align-items: center;
+  }
   .select::picker-icon {
     display: none;
   }
