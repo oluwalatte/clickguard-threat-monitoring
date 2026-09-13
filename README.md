@@ -36,12 +36,14 @@ Two Vercel projects are built from this repository. The root directory is linked
 prototype project (`.vercel/`, not committed).
 
 ```bash
-npm run deploy:app        # clickguard-threat-monitoring, uses vercel.json
-npm run deploy:storybook  # clickguard-threat-monitoring-storybook, uses vercel.storybook.json
+npm run deploy:app        # clickguard-threat-monitoring, built by Vercel from vercel.json
+npm run deploy:storybook  # clickguard-threat-monitoring-storybook, built here, shipped as static files
 ```
 
-The Storybook script resolves its project by name through the Vercel CLI, so a logged-in
-CLI is the only requirement. Nothing is written by hand.
+Vercel's remote build always reads the repository's own `vercel.json`, which belongs to the
+prototype, so Storybook is built locally and its `storybook-static` output is deployed as
+files. The script resolves the Storybook project by name through the Vercel CLI; a logged-in
+CLI is the only requirement.
 
 ## Structure
 - `packages/ui/` the design system as the workspace package `@clickguard/ui`. Storybook documents
