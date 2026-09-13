@@ -1,0 +1,98 @@
+/* Tailwind v4 export. This file is a MAPPING LAYER and nothing else:
+   every value is a var() pointing at the canonical token in tokens/colors.css
+   et al. It generates utility names for consumers (Storybook docs pages,
+   one-off app layout), it does not restyle a single component, and no
+   component in this system is built from utilities.
+
+   Usage (no preflight):
+     @import "tailwindcss/theme.css" layer(theme);
+     @import "tailwindcss/utilities.css" layer(utilities);
+     @import "@clickguard/threat-ui/styles.css";
+
+   Deliberately NOT imported: "tailwindcss" (which pulls preflight). */
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --color-surface-canvas: var(--surface-canvas);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-inset: var(--surface-inset);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-selected: var(--surface-selected);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-link: var(--text-link);
+
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+
+  --color-action-primary: var(--action-primary);
+  --color-action-primary-hover: var(--action-primary-hover);
+  --color-action-primary-active: var(--action-primary-active);
+  --color-action-primary-surface: var(--action-primary-surface);
+  --color-action-primary-border: var(--action-primary-border);
+  --color-action-on-primary: var(--action-on-primary);
+
+  --color-status-blocked: var(--status-blocked);
+  --color-status-blocked-surface: var(--status-blocked-surface);
+  --color-status-blocked-border: var(--status-blocked-border);
+  --color-status-blocked-fill: var(--status-blocked-fill);
+  --color-status-monitoring: var(--status-monitoring);
+  --color-status-monitoring-surface: var(--status-monitoring-surface);
+  --color-status-monitoring-border: var(--status-monitoring-border);
+  --color-status-monitoring-fill: var(--status-monitoring-fill);
+  --color-status-safe: var(--status-safe);
+  --color-status-safe-surface: var(--status-safe-surface);
+  --color-status-safe-border: var(--status-safe-border);
+  --color-status-safe-fill: var(--status-safe-fill);
+  --color-status-info: var(--status-info);
+  --color-status-info-surface: var(--status-info-surface);
+  --color-status-neutral: var(--status-neutral);
+  --color-status-neutral-surface: var(--status-neutral-surface);
+
+  --color-focus-ring: var(--focus-ring);
+
+  --spacing-0: var(--space-0);
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-7: var(--space-7);
+
+  --radius-marker: var(--radius-marker);
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-overlay: var(--shadow-overlay);
+  --shadow-panel: var(--shadow-panel);
+
+  --text-page-title: var(--text-page-title-size);
+  --text-page-title--line-height: var(--text-page-title-line);
+  --text-section: var(--text-section-size);
+  --text-section--line-height: var(--text-section-line);
+  --text-card-title: var(--text-card-title-size);
+  --text-card-title--line-height: var(--text-card-title-line);
+  --text-body: var(--text-body-size);
+  --text-body--line-height: var(--text-body-line);
+  --text-support: var(--text-support-size);
+  --text-support--line-height: var(--text-support-line);
+  --text-label: var(--text-label-size);
+  --text-label--line-height: var(--text-label-line);
+  --text-data: var(--text-data-size);
+  --text-data--line-height: var(--text-data-line);
+  --text-metric: var(--text-metric-size);
+  --text-metric--line-height: var(--text-metric-line);
+
+  --ease-standard: var(--ease-standard);
+}

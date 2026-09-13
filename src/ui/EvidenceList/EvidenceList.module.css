@@ -1,0 +1,24 @@
+.root {
+  min-width: 0;
+}
+
+.title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-card-title-size);
+  line-height: var(--text-card-title-line);
+  font-weight: var(--text-card-title-weight);
+  color: var(--text-primary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footnote {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-muted);
+}

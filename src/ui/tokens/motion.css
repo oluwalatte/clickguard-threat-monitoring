@@ -1,0 +1,18 @@
+:root {
+  --duration-instant: 80ms;
+  --duration-fast: 120ms;
+  --duration-default: 180ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --transition-control: color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 1ms;
+    --duration-fast: 1ms;
+    --duration-default: 1ms;
+  }
+}

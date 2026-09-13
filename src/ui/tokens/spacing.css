@@ -1,0 +1,37 @@
+/* 4 / 8 / 12 / 16 / 24 / 32 / 48, plus two layout constants
+   that repeat across every screen. */
+:root {
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --layout-sidebar-width: 248px;
+  --layout-page-gutter: var(--space-6);
+  --layout-panel-gap: var(--space-4);
+  --table-row-height: 68px;
+  --table-cell-x: var(--space-4);
+  --control-height: 40px;
+  --control-height-sm: 32px;
+
+  /* Component sizes. Added during the CSS-module conversion so no component
+     carries a raw pixel; each value appears in more than one component. */
+  --icon-sm: 14px;
+  --icon-md: 16px;
+  --icon-nav: 18px;
+  --icon-lg: 20px;
+  --marker-size: 8px;
+  --size-icon-button: 28px;
+  --size-icon-well: 40px;
+  --skeleton-height: 10px;
+  --layout-sidebar-width-collapsed: 72px;
+  --layout-field-min: 150px;
+  --table-min-width: 860px;
+  --table-action-col: 56px;
+  /* Below this container width the table stacks. Mirrored in breakpoints.ts. */
+  --table-narrow-breakpoint: 760px;
+}

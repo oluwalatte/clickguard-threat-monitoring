@@ -1,0 +1,127 @@
+/* Canonical colour tokens. Semantic roles only, components never reach
+   for a raw ramp value, and no component hardcodes a hex.
+   Ramp values below are documentation of where the semantics come from;
+   they are sampled from the live ClickGuard product UI. */
+
+:root {
+  /* ---- Ramps (reference; prefer the semantic roles) ---- */
+  --indigo-50:  #eeedfe;
+  --indigo-100: #e1dfff;
+  --indigo-200: #cecbff;
+  --indigo-300: #a5a0ff;
+  --indigo-400: #918aff;
+  --indigo-500: #7169ff;
+  --indigo-600: #554cfd;
+  --indigo-700: #2d37d1;
+  --navy-900:   #111553;
+  --navy-800:   #21245e;
+  --navy-700:   #2b2e64;
+
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  /* Canvas-safe muted ink: 4.8:1 on surface-canvas, 5.3:1 on a panel.
+     gray-500 only reaches 4.34:1 on the canvas, so muted text uses this step. */
+  --gray-550: #656b78;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+
+  --green-50:  #edfcf3;
+  --green-100: #cef0da;
+  --green-200: #aaf0c7;
+  --green-500: #22c55e;
+  --green-800: #097348;
+
+  --amber-50:  #fdf8e7;
+  --amber-100: #f7e8b8;
+  --amber-200: #f2d98c;
+  --amber-500: #d99b13;
+  --amber-800: #7a5406;
+
+  --red-50:  #fdeeec;
+  --red-100: #f7d3cf;
+  --red-200: #eb837d;
+  --red-500: #d6453d;
+  --red-800: #9e2a22;
+
+  --blue-50:  #eff4ff;
+  --blue-100: #d6e2ff;
+  --blue-700: #1d4ed8;
+
+  /* ---- Surfaces ---- */
+  --surface-canvas: var(--gray-100);
+  --surface-panel: #ffffff;
+  --surface-subtle: var(--gray-50);
+  --surface-inset: var(--gray-100);
+  --surface-overlay: #ffffff;
+  --surface-hover: var(--gray-50);
+  --surface-selected: var(--indigo-50);
+  --scrim: rgb(17 21 83 / 0.32);
+
+  /* ---- Text ---- */
+  --text-primary: var(--navy-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-550);
+  --text-inverse: #ffffff;
+  --text-link: var(--indigo-700);
+
+  /* ---- Borders ---- */
+  --border-default: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --border-inverse: rgb(255 255 255 / 0.24);
+
+  /* ---- Action ---- */
+  --action-primary: var(--indigo-500);
+  --action-primary-hover: var(--indigo-600);
+  --action-primary-active: var(--indigo-700);
+  --action-primary-surface: var(--indigo-50);
+  --action-primary-border: var(--indigo-200);
+  --action-on-primary: #ffffff;
+  --action-quiet-hover: var(--gray-100);
+  --action-disabled-surface: var(--gray-100);
+  --action-disabled-text: var(--gray-400);
+
+  /* ---- Status: blocked (red is reserved for this and destructive only) ---- */
+  --status-blocked: var(--red-800);
+  --status-blocked-surface: var(--red-50);
+  --status-blocked-border: var(--red-100);
+  --status-blocked-fill: var(--red-200);
+  --status-blocked-marker: var(--red-500);
+
+  /* ---- Status: monitoring (delayed or incomplete evaluation) ---- */
+  --status-monitoring: var(--amber-800);
+  --status-monitoring-surface: var(--amber-50);
+  --status-monitoring-border: var(--amber-100);
+  --status-monitoring-fill: var(--amber-200);
+  --status-monitoring-marker: var(--amber-500);
+
+  /* ---- Status: safe / successful ---- */
+  --status-safe: var(--green-800);
+  --status-safe-surface: var(--green-50);
+  --status-safe-border: var(--green-100);
+  --status-safe-fill: var(--green-200);
+  --status-safe-marker: var(--green-500);
+
+  /* ---- Status: info / neutral context ---- */
+  --status-info: var(--blue-700);
+  --status-info-surface: var(--blue-50);
+  --status-info-border: var(--blue-100);
+  --status-info-fill: var(--blue-100);
+  --status-info-marker: var(--blue-700);
+
+  /* ---- Status: neutral (no evaluation, organic traffic, empty) ---- */
+  --status-neutral: var(--gray-600);
+  /* gray-400 is non-text only: borders, markers, disabled controls. */
+  --status-neutral-surface: var(--gray-100);
+  --status-neutral-border: var(--gray-200);
+  --status-neutral-fill: var(--gray-300);
+  --status-neutral-marker: var(--gray-400);
+
+  /* ---- Focus ---- */
+  --focus-ring: var(--indigo-500);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}

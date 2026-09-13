@@ -1,0 +1,72 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--badge-border);
+  border-radius: var(--radius-sm);
+  background: var(--badge-surface);
+  color: var(--badge-ink);
+  font-size: var(--text-support-size);
+  font-weight: 600;
+  line-height: var(--text-support-line);
+  white-space: nowrap;
+}
+
+.badge[data-size='sm'] {
+  gap: var(--space-1);
+  padding: var(--space-0) var(--space-2);
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-line);
+}
+
+.badge[data-status='blocked'] {
+  --badge-ink: var(--status-blocked);
+  --badge-surface: var(--status-blocked-surface);
+  --badge-border: var(--status-blocked-border);
+}
+.badge[data-status='monitoring'] {
+  --badge-ink: var(--status-monitoring);
+  --badge-surface: var(--status-monitoring-surface);
+  --badge-border: var(--status-monitoring-border);
+}
+.badge[data-status='safe'] {
+  --badge-ink: var(--status-safe);
+  --badge-surface: var(--status-safe-surface);
+  --badge-border: var(--status-safe-border);
+}
+.badge[data-status='allowed'] {
+  --badge-ink: var(--status-info);
+  --badge-surface: var(--status-info-surface);
+  --badge-border: var(--status-info-border);
+}
+.badge[data-status='neutral'] {
+  --badge-ink: var(--status-neutral);
+  --badge-surface: var(--status-neutral-surface);
+  --badge-border: var(--status-neutral-border);
+}
+
+.marker {
+  flex: none;
+  width: var(--marker-size);
+  height: var(--marker-size);
+  background: currentColor;
+  border-radius: var(--radius-marker);
+}
+.marker[data-shape='circle'] {
+  border-radius: var(--radius-pill);
+}
+.marker[data-shape='diamond'] {
+  transform: rotate(45deg);
+}
+.marker[data-shape='ring'] {
+  background: transparent;
+  border: var(--border-width-strong) solid currentColor;
+  border-radius: var(--radius-pill);
+}
+
+.detail {
+  font-weight: 400;
+  opacity: 0.85;
+}

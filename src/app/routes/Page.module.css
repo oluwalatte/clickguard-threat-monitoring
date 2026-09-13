@@ -1,0 +1,42 @@
+.header {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--layout-page-gutter) var(--space-4);
+}
+
+.headerText {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-page-title-size);
+  line-height: var(--text-page-title-line);
+  letter-spacing: var(--text-page-title-tracking);
+  font-weight: var(--text-page-title-weight);
+  color: var(--text-primary);
+}
+
+.description {
+  margin: 0;
+  max-width: 78ch;
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-secondary);
+}
+
+.main {
+  display: grid;
+  gap: var(--layout-panel-gap);
+  align-content: start;
+  padding: 0 var(--layout-page-gutter) var(--space-6);
+}
+
+.panel {
+  background: var(--surface-panel);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}

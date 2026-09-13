@@ -1,0 +1,40 @@
+/* Seven roles. Add an eighth only when the hierarchy demands it. */
+:root {
+  --text-page-title-size: 24px;
+  --text-page-title-weight: 600;
+  --text-page-title-line: 32px;
+  --text-page-title-tracking: -0.01em;
+
+  --text-section-size: 18px;
+  --text-section-weight: 600;
+  --text-section-line: 26px;
+  --text-section-tracking: -0.005em;
+
+  --text-card-title-size: 15px;
+  --text-card-title-weight: 600;
+  --text-card-title-line: 22px;
+
+  --text-body-size: 14px;
+  --text-body-weight: 400;
+  --text-body-line: 21px;
+
+  --text-support-size: 13px;
+  --text-support-weight: 400;
+  --text-support-line: 19px;
+
+  --text-label-size: 12px;
+  --text-label-weight: 600;
+  --text-label-line: 16px;
+  --text-label-tracking: 0.04em;
+
+  --text-data-size: 13px;
+  --text-data-weight: 500;
+  --text-data-line: 18px;
+
+  --text-metric-size: 28px;
+  --text-metric-weight: 600;
+  --text-metric-line: 34px;
+  --text-metric-tracking: -0.02em;
+
+  --numeric-tabular: tabular-nums;
+}

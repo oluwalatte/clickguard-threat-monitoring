@@ -1,0 +1,200 @@
+.root {
+  position: relative;
+  background: var(--surface-panel);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: var(--table-min-width);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.caption {
+  caption-side: top;
+  padding: var(--space-3) var(--table-cell-x);
+  text-align: left;
+  font-size: var(--text-support-size);
+  color: var(--text-secondary);
+}
+
+.headRow {
+  background: var(--surface-subtle);
+}
+
+.th {
+  padding: 0;
+  text-align: left;
+  border-bottom: var(--border-width) solid var(--border-default);
+  white-space: nowrap;
+}
+.th[data-align='right'] {
+  text-align: right;
+}
+.th[data-action] {
+  width: var(--table-action-col);
+}
+
+.thLabel,
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-3) var(--table-cell-x);
+  font-size: var(--text-label-size);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  font-weight: var(--text-label-weight);
+  color: var(--text-muted);
+}
+.th[data-align='right'] .sortButton {
+  justify-content: flex-end;
+}
+
+.sortButton {
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.sortButton:hover,
+.sortButton[data-sorted] {
+  color: var(--text-primary);
+}
+
+.sortIdle {
+  color: var(--text-muted);
+}
+
+.row {
+  height: var(--table-row-height);
+  background: transparent;
+  transition: var(--transition-control);
+}
+.row[data-activatable]:hover {
+  background: var(--surface-hover);
+}
+
+.cell {
+  padding: var(--space-3) var(--table-cell-x);
+  font-size: var(--text-data-size);
+  line-height: var(--text-data-line);
+  color: var(--text-primary);
+  vertical-align: middle;
+  text-align: left;
+  border-bottom: var(--border-width) solid var(--border-default);
+}
+.cell[data-align='right'] {
+  text-align: right;
+}
+.cell[data-first] {
+  font-weight: var(--text-data-weight);
+}
+.cell[data-mono] {
+  font-family: var(--font-mono);
+}
+
+.cellStack {
+  display: grid;
+  gap: var(--space-0);
+  min-width: 0;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-icon-button);
+  height: var(--size-icon-button);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: var(--border-width) solid transparent;
+  color: var(--action-primary);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.row:hover .action,
+.action:hover,
+.action:focus-visible {
+  background: var(--action-primary-surface);
+  border-color: var(--action-primary-border);
+}
+
+.skeleton {
+  display: block;
+  width: 45%;
+  height: var(--skeleton-height);
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+}
+.skeleton[data-wide] {
+  width: 70%;
+}
+
+/* Stacked layout for narrow containers: a label/value list per row. */
+.stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stackRow {
+  border-bottom: var(--border-width) solid var(--border-default);
+}
+
+.stackSkeleton {
+  padding: var(--space-4);
+}
+
+.stackButton {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: default;
+}
+.stackButton[data-activatable] {
+  cursor: pointer;
+}
+.stackButton[data-activatable]:hover {
+  background: var(--surface-hover);
+}
+
+.stackField {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stackLabel {
+  font-size: var(--text-label-size);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  font-weight: var(--text-label-weight);
+  color: var(--text-muted);
+}
+
+.stackValue {
+  display: grid;
+  gap: var(--space-0);
+  justify-items: end;
+  min-width: 0;
+  text-align: right;
+  font-size: var(--text-data-size);
+  line-height: var(--text-data-line);
+}
