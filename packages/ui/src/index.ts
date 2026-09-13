@@ -1,4 +1,5 @@
 /* The single public entry point for @clickguard/ui. The prototype imports from here only. */
+export { AccountRow, type AccountRowProps } from './AccountRow/AccountRow';
 export { Button, type ButtonProps } from './Button/Button';
 export { DecisionSummary, CONFIDENCE_LABEL, type DecisionSummaryProps, type Confidence, type SyncState } from './DecisionSummary/DecisionSummary';
 export { EmptyState, type EmptyStateProps, type EmptyStateVariant } from './EmptyState/EmptyState';
@@ -6,6 +7,7 @@ export { FilterChip, FilterGroup, type FilterChipProps, type FilterGroupProps } 
 export { EvidenceItem, type EvidenceItemProps, type EvidenceKind } from './EvidenceItem/EvidenceItem';
 export { EvidenceList, type EvidenceListProps } from './EvidenceList/EvidenceList';
 export { Icon, ICON_NAMES, type IconProps, type IconName, type IconSize } from './Icon/Icon';
+export { Pagination, pageWindow, type PaginationProps } from './Pagination/Pagination';
 export { SearchField, type SearchFieldProps } from './SearchField/SearchField';
 export { SignalTag, SignalTags, type SignalTagProps, type SignalTagsProps, type SignalKind } from './SignalTag/SignalTag';
 export { SidebarNav, type SidebarNavProps, type SidebarNavItem, type SidebarNavGroup } from './SidebarNav/SidebarNav';
