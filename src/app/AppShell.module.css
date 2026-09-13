@@ -1,0 +1,12 @@
+.shell {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--surface-canvas);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
