@@ -24,7 +24,7 @@ export const NoTrafficInRange: Story = {
   args: {
     variant: 'no-data',
     title: 'No traffic in this date range',
-    description: 'ClickGuard recorded no visits between 13 Feb and 19 Feb 2026. Widen the range to see visitors.',
+    description: 'ClickGuard recorded no visits between 6 Sep and 12 Sep 2026. Widen the range to see visitors.',
     actionLabel: 'Widen the range',
   },
 };

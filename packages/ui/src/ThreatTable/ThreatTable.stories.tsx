@@ -30,7 +30,7 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
     render: (r) => (
       <>
         <span><StatusBadge status={r.status} size="sm" /></span>
-        {r.status === 'blocked' ? <span>19 Feb, 14:53</span> : null}
+        {r.status === 'blocked' ? <span>12 Sep, 14:53</span> : null}
         {r.status === 'blocked' && r.id === 'v-1036' ? <span><SyncFlag state="failed" /></span> : null}
       </>
     ),
@@ -90,7 +90,7 @@ export const InitialEmpty: Story = {
     emptyState: {
       variant: 'no-data',
       title: 'No traffic in this date range',
-      description: 'ClickGuard recorded no visits between 13 Feb and 19 Feb 2026. Widen the range to see visitors.',
+      description: 'ClickGuard recorded no visits between 6 Sep and 12 Sep 2026. Widen the range to see visitors.',
       actionLabel: 'Widen the range',
       onAction: fn(),
     },
@@ -148,6 +148,18 @@ export const RowActionIsKeyboardReachable: Story = {
     action.focus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onRowActivate).toHaveBeenCalledWith(VISITOR_ROWS[0]);
+  },
+};
+
+export const RowClickOpensTheVisitor: Story = {
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const firstRow = c.getAllByRole('row')[1];
+    await userEvent.click(within(firstRow).getAllByRole('cell')[2]);
+    await expect(args.onRowActivate).toHaveBeenCalledWith(VISITOR_ROWS[0]);
+    /* The action button opens the row itself; the click must not bubble into a second call. */
+    await userEvent.click(within(firstRow).getByRole('button', { name: /^View visitor/ }));
+    await expect(args.onRowActivate).toHaveBeenCalledTimes(2);
   },
 };
 

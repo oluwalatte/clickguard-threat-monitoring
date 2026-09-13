@@ -49,7 +49,7 @@ export const Sizes: Story = {
 };
 
 export const WithIcons: Story = {
-  args: { icon: 'calendar', iconAfter: 'chevron-down', children: '13 Feb to 19 Feb 2026' },
+  args: { icon: 'calendar', iconAfter: 'chevron-down', children: '6 Sep to 12 Sep 2026' },
 };
 
 export const Loading: Story = {

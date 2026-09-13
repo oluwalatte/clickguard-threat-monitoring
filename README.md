@@ -4,7 +4,8 @@ A working prototype of the Threat Monitoring feature and the design system it is
 
 - Prototype: https://clickguard-threat-monitoring.vercel.app
 - Storybook: https://clickguard-threat-monitoring-storybook.vercel.app
-- Rationale: `docs/rationale.md` (after P5)
+- Success criteria and where each is answered: `docs/success-criteria.md`
+- Rationale: `docs/rationale.md`
 - Product contract: `docs/decisions.md`
 
 ## Mechanics modelled

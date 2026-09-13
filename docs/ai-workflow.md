@@ -25,7 +25,7 @@ Implementation is the agent's and is recorded as such; the brief expects that.
 | P4d system audit | Audited every component and story in Storybook on review. Found and fixed: the disabled search field looked enabled and still offered its clear button; four stories whose interaction test left them in a state that contradicted their name (search field with value, checked checkbox, chips in a bar), so pairs of stories looked identical; the select's option list opened as the platform's own picker rather than under the field; long unbreakable table values (an IPv6 address) ran under the next column; and two fields borrowed a text token for their hover border | Directed the audit and named the first three. Chose wrapping over an ellipsis for long identifiers, on the agent's flag that hiding the end of an IPv6 hides the part that tells visitors apart |
 | P4e sync tuning | On the data audit, reported that pending and delayed sync existed in the golden cases and stories but never at the reference clock in the generated data, because every chain had resolved to active or failed. Tuned the factory so the first two click farms are caught mid-sync: their journeys slide to end minutes before the clock, one inside the confirmation window and one past the 15-minute mark, with anything after the clock dropped. Added a test that pins both states and that nothing is dated after the clock | Directed the tuning so the enforcement gap (D11) is visible in the table without opening a golden case |
 | P4d detail explorations | Built two canvases: the detail page (the recommended design as option A, an alternative as option B covering what A leaves open) and the visit row (three hierarchies with rationale). Added a back button through a new Button link variant. Built the chosen visit row into VisitTimeline and the data mapping | Asked for the recommended design plus one alternative, then three visit-row options with rationale. Chose option 1's collapsed row with option 2's expanded body (D17). Directed the back button styled as a text button in the accent colour with no left padding. The page-level choice is still open |
-| P5 rationale | Not started | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Success criteria go into `docs/success-criteria.md` with where each is answered on the page |
+| P5 docs, QA, deploy | Drafted `docs/success-criteria.md`: for each of the eight questions, where it is answered on the page, what the reader sees on golden case 1 read from the running prototype, the table's scanning version, and the stories and tests that prove it. Criterion 8 is recorded as answered by decision (D9), not by the page. Drafted the five remaining rationale sections (detail pattern, status vocabulary and confidence, financial exposure, filter design, the AI workflow) from `decisions.md` and this log, each marked as a draft, then unmarked on review. Added a section on what was left out (D9). Made every table row open the visitor on click, keeping the action button as the keyboard route. QA: moved every story fixture date from February to September 2026 with relative labels recomputed by the app's own formatter against the fixed clock and nothing dated after it; checked every live URL and every repo-relative doc path with a cookie-free client (all as expected: prototype deep links resolve, Storybook returns 404 on unknown paths) | Directed the drafts to lose their draft markers; asked whether the rationale covered bulk actions, export and drawers. Chose a clickable row over pinning the Visitor column. Directed the QA pass: fixture dates and the link check | The rationale is mine to write, from `decisions.md` and this file. The agent may draft; I rewrite. Rewrote both `docs/success-criteria.md` and `docs/rationale.md` in my own words from the drafts, then merged |
 
 ## Agent implementation notes
 
@@ -211,7 +211,8 @@ in the code. Not decisions.
 - The action column is sticky to the right edge of the table's scroll area, with its own
   background and a left edge, so the only way to open a row stays in view on the widths where
   the table scrolls sideways (between the stacked breakpoint and the table minimum). Pinning
-  the Visitor column on the left is deferred to the QA pass.
+  the Visitor column on the left was considered for the QA pass and rejected there in favour
+  of a clickable row (D14 amendment).
 
 ### P4e
 
@@ -237,3 +238,16 @@ in the code. Not decisions.
   a location's previous value.
 - Change tags were amber and red on the canvas; the build uses SignalTag tones because amber
   and red are Monitoring and Blocked (rule 2).
+
+### P5
+
+- Story fixtures now share the prototype's clock, 13 Sep 2026 12:00 UTC. The fixture day moved
+  from 19 Feb to 12 Sep so the table rows keep distinct ages ("21 hours ago" to "3 days ago",
+  computed with `formatRelative` against `NOW`); the two events that would have landed after the
+  clock (an override and an organic return) moved to the morning of 13 Sep with their gaps
+  recomputed with `formatLater`. Nothing in Storybook is dated after the clock.
+- Link check, cookie-free client standing in for a private window: both roots, the table, a
+  visitor deep link, a filtered and paged URL, an unknown visitor and an unknown path on the
+  prototype all return 200 (the app renders its own not-found state); Storybook's root, a story
+  URL, an iframe story and `index.json` return 200 and an unknown path returns 404. Every
+  repo-relative path referenced from the README and docs exists.

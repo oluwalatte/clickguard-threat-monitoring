@@ -48,7 +48,7 @@ export const WithDetail: Story = {
     <div style={row}>
       <StatusBadge {...args} status="blocked" detail="after visit 4 of 6" />
       <StatusBadge {...args} status="monitoring" detail="3 paid visits in 12 minutes" />
-      <StatusBadge {...args} status="allowed" detail="by Ada O., 18 Feb 2026" />
+      <StatusBadge {...args} status="allowed" detail="by Ada O., 11 Sep 2026" />
     </div>
   ),
 };
