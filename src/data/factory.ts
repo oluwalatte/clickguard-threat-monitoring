@@ -120,7 +120,7 @@ function syncEventsFor(r: Rng, platforms: AdPlatform[], decidedAtMs: number, id:
     }
     const roll = r();
     if (platform === 'meta-ads' && roll < 0.3) {
-      out.push({ id: `${id}-s${k}-f`, platform, state: 'failed', at: new Date(queued + between(r, 2, 6) * 60000).toISOString(), note: `${name} rejected the exclusion request twice. This visitor can still reach the site through ${name}.` });
+      out.push({ id: `${id}-s${k}-f`, platform, state: 'failed', at: new Date(queued + between(r, 2, 6) * 60000).toISOString(), note: `${name} rejected the exclusion request twice. This visitor may still see the advertiser's ads on ${name}.` });
       return;
     }
     let activeAt = queued + between(r, 4, 20) * 60000;

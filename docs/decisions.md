@@ -59,8 +59,9 @@ tone with a hollow-ring marker, never in a status colour.
 Rejected: "Watching" (too casual for an audit surface) and "Suspicious" (a verdict without evidence).
 
 ## D4. Plain-language evidence before scores
-Decided: every verdict leads with a sentence a person would retell ("Returned through four paid ads
-in 41 minutes and showed no scroll or mouse movement on any visit"), then ranked contributors, then
+Decided: every verdict leads with a sentence a person would retell ("The visitor returned through
+four paid ads in 41 minutes, showed no scroll or mouse movement, and connected through a
+datacenter network"), then ranked contributors, then
 raw signals on expansion.
 Rejected: a risk score as the explanation. A number asks for trust; the brief's whole problem is
 that the customer already has to take our word for it.
