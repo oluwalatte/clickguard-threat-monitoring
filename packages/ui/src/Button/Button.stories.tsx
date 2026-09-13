@@ -28,8 +28,14 @@ export const Variants: Story = {
       <Button {...args} variant="secondary" iconAfter="chevron-down">Filters</Button>
       <Button {...args} variant="quiet">Clear filters</Button>
       <Button {...args} variant="destructive" icon="ban">Remove exclusion</Button>
+      <Button {...args} variant="link" icon="arrow-left">Threat monitoring</Button>
     </div>
   ),
+};
+
+export const Link: Story = {
+  name: 'Link (text button)',
+  args: { variant: 'link', icon: 'arrow-left', size: 'sm', children: 'Threat monitoring' },
 };
 
 export const Sizes: Story = {

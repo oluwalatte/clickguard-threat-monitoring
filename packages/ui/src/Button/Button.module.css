@@ -87,13 +87,30 @@
   border-color: var(--status-blocked);
 }
 
+/* Link: a text button for navigation. Accent ink, no horizontal padding, underline on hover. */
+.button[data-variant='link'] {
+  padding: 0;
+  background: transparent;
+  color: var(--action-primary-ink);
+  border-color: transparent;
+  border-radius: var(--radius-xs);
+}
+.button[data-variant='link']:hover:enabled {
+  color: var(--action-primary-active);
+  text-decoration: underline;
+}
+.button[data-variant='link']:active:enabled {
+  color: var(--action-primary-active);
+}
+
 .button:disabled {
   background: var(--action-disabled-surface);
   color: var(--action-disabled-text);
   border-color: var(--border-default);
   cursor: not-allowed;
 }
-.button[data-variant='quiet']:disabled {
+.button[data-variant='quiet']:disabled,
+.button[data-variant='link']:disabled {
   background: transparent;
   border-color: transparent;
 }

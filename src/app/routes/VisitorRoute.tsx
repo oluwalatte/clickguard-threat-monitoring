@@ -1,5 +1,5 @@
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
-import { DecisionSummary, EmptyState, EvidenceList, VisitTimeline } from '@clickguard/ui';
+import { useLocation, useNavigate, useParams } from 'react-router';
+import { Button, DecisionSummary, EmptyState, EvidenceList, VisitTimeline } from '@clickguard/ui';
 import { formatTimestamp } from '@/data';
 import { findVisitor } from '../data';
 import { displayStatus, evidenceFootnote, explanation, exposureLine, headline, journeyCaption, syncSummary, toEvidenceItems, toStatusKind, toTimelineItems, visitorDescription } from '../present';
@@ -12,11 +12,17 @@ export function VisitorRoute() {
   const location = useLocation();
   const backTo = `/threat-monitoring${(location.state as { from?: string } | null)?.from ?? ''}`;
   const visitor = findVisitor(visitorId);
+  /* Back to the table exactly as it was: the search, filters, sort and page travel in the route state. */
+  const backButton = (
+    <Button variant="link" size="sm" icon="arrow-left" onClick={() => navigate(backTo)}>
+      Threat monitoring
+    </Button>
+  );
 
   if (!visitor) {
     return (
       <>
-        <PageHeader title="Visitor not found" breadcrumb={<Link to={backTo}>Threat monitoring</Link>} />
+        <PageHeader title="Visitor not found" back={backButton} />
         <Page>
           <Panel>
             <EmptyState
@@ -40,7 +46,7 @@ export function VisitorRoute() {
 
   return (
     <>
-      <PageHeader title={visitor.ip} description={visitorDescription(visitor)} breadcrumb={<Link to={backTo}>Threat monitoring</Link>} />
+      <PageHeader title={visitor.ip} description={visitorDescription(visitor)} back={backButton} />
       <Page>
         <DecisionSummary
           status={toStatusKind(status)}

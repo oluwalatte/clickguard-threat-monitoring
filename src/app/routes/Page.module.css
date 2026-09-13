@@ -4,6 +4,10 @@
   padding: var(--space-5) var(--layout-page-gutter) var(--space-4);
 }
 
+.back {
+  display: flex;
+}
+
 .headerText {
   display: grid;
   gap: var(--space-1);
