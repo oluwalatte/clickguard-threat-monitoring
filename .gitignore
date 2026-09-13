@@ -1,0 +1,11 @@
+node_modules
+dist
+storybook-static
+.vercel
+.claude/
+*.tsbuildinfo
+.DS_Store
+*.log
+# Raw inputs: the design-system export, the build plan, and infrastructure copied from the previous
+# build. Things move out of here into src/ deliberately; nothing in here is ever committed.
+_import/

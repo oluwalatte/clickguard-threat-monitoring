@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threat Monitoring · Visitor drawer · four information orders</title>
+<style>
+  /* Exploration canvas. Tokens copied from src/ui/tokens.css so this file stands alone; it is an input to a decision, never the system. */
+  :root{
+    --stone-0:#fff;--stone-25:#fbfaf8;--stone-50:#f5f3ef;--stone-100:#ece9e3;--stone-200:#ddd8cf;--stone-300:#c4beb2;--stone-500:#7d766a;--stone-600:#5b554b;--stone-900:#1a1816;
+    --blue-100:#e8f0fb;--blue-500:#2f6fd6;--blue-700:#1c478c;--red-100:#fdeaea;--red-500:#d64545;--red-700:#a12f2f;--amber-100:#fdf2dc;--amber-700:#9a6a12;--green-100:#e6f5ec;--green-700:#1f6f3f;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--r:8px;--rl:12px;--hair:1px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--stone-25);color:var(--stone-900);font:14px/20px var(--sans);padding:var(--s7) var(--s6)}
+  .kicker{margin:0 0 var(--s2);font:500 12px/16px var(--sans);color:var(--stone-600);text-transform:uppercase;letter-spacing:.04em}
+  h1{margin:0 0 var(--s3);font:600 28px/34px var(--sans);letter-spacing:-.01em}
+  .brief{margin:0 0 var(--s6);max-width:78ch;color:var(--stone-600)}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s6)}
+  @media (max-width:1100px){.grid{grid-template-columns:1fr}}
+  .opt{display:flex;flex-direction:column;gap:var(--s3)}
+  .opt-kicker{margin:0;font:500 12px/16px var(--mono);color:var(--stone-500)}
+  .opt-name{margin:0;font:600 20px/28px var(--sans)}
+  .opt-thesis{margin:0;color:var(--stone-600)}
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);font-size:13px;line-height:18px}
+  .pc p{margin:0}.pc b{display:block;font-weight:500;color:var(--stone-500);font-size:12px;margin-bottom:var(--s1)}
+  .mock{background:var(--stone-100);border-radius:var(--rl);padding:var(--s5);display:flex;justify-content:flex-end;min-height:560px}
+  .drawer{width:400px;height:520px;background:var(--stone-0);border:var(--hair) solid var(--stone-100);border-radius:var(--rl);box-shadow:0 8px 24px rgba(26,24,22,.12);display:flex;flex-direction:column;overflow:hidden;font-size:12px;line-height:16px}
+  .drawer.wide{width:640px}
+  .hd{display:flex;justify-content:space-between;align-items:flex-start;padding:var(--s3) var(--s4);border-bottom:var(--hair) solid var(--stone-100)}
+  .ip{font:600 14px/20px var(--mono)}.sub{color:var(--stone-600)}
+  .badge{display:inline-flex;align-items:center;gap:var(--s1);padding:0 var(--s2);border-radius:999px;background:var(--red-100);color:var(--red-700);font-weight:500;font-size:11px;line-height:18px;vertical-align:middle;margin-left:var(--s1)}
+  .badge::before{content:"";width:6px;height:6px;border-radius:999px;background:currentColor}
+  .close{color:var(--stone-600);font-size:11px}
+  .body{flex:1;overflow:auto;padding:var(--s3) var(--s4);display:flex;flex-direction:column;gap:var(--s4)}
+  .ft{display:flex;justify-content:space-between;align-items:center;padding:var(--s2) var(--s4);border-top:var(--hair) solid var(--stone-100);background:var(--stone-0)}
+  .btn{padding:0 var(--s3);height:26px;border-radius:var(--r);background:var(--blue-500);color:#fff;font-weight:500;display:inline-flex;align-items:center;font-size:12px}
+  .chips{display:flex;gap:var(--s1)}.chip{padding:0 6px;border-radius:4px;font-size:10px;line-height:16px;background:var(--stone-50);color:var(--stone-600)}
+  .chip.ok{background:var(--green-100);color:var(--green-700)}.chip.warn{background:var(--amber-100);color:var(--amber-700)}
+  .verdict{margin:0;font:500 14px/20px var(--sans)}
+  .h{margin:0;font:500 10px/14px var(--sans);color:var(--stone-600);text-transform:uppercase;letter-spacing:.04em}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2) var(--s3)}
+  .stat .l{font-size:10px;color:var(--stone-600)}.stat .v{font:600 14px/20px var(--mono)}.stat .v.alarm{color:var(--red-700)}.stat .v.ok{color:var(--green-700)}.stat .s{font-size:10px;color:var(--stone-500)}
+  .why{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s1)}
+  .why li{display:grid;grid-template-columns:14px 1fr auto;gap:var(--s2);align-items:center;padding:var(--s1) var(--s2);border-radius:var(--r)}
+  .why li.active{background:var(--blue-100)}
+  .why .n{font:11px var(--mono);color:var(--stone-500)}.why .bar{height:3px;border-radius:999px;background:var(--stone-100);margin-top:var(--s1)}.why .bar i{display:block;height:100%;background:var(--stone-500);border-radius:999px}.why li.active .bar i{background:var(--blue-500)}
+  .why .c{font:10px var(--mono);color:var(--stone-500)}
+  .tl{list-style:none;margin:0;padding:0}
+  .tl li{display:grid;grid-template-columns:14px 1fr;gap:var(--s2);padding:var(--s2) 0;border-bottom:var(--hair) solid var(--stone-100)}
+  .tl .dot{width:6px;height:6px;border-radius:999px;background:var(--stone-500);margin:5px auto 0}
+  .tl .t{display:flex;gap:var(--s2);align-items:center}.tl .t b{font-weight:500}.tl .t .when{font:10px var(--mono);color:var(--stone-500)}
+  .tl .sig{display:flex;gap:var(--s2);font:10px var(--mono);color:var(--stone-600)}.tl .sig .bad{color:var(--red-700)}.tl .sig .sc{margin-left:auto;color:var(--stone-500)}
+  .tl li.marker{background:var(--red-100);border-radius:var(--r);padding:var(--s2);color:var(--red-700);border:0}.tl li.marker .dot{background:var(--red-500);width:8px;height:8px}
+  .tl li.dim{opacity:.4}
+  .sticky{position:sticky;top:0;background:var(--stone-0);padding-bottom:var(--s2);border-bottom:var(--hair) solid var(--stone-100);z-index:1}
+  .tabs{display:flex;gap:var(--s4);border-bottom:var(--hair) solid var(--stone-100);padding:0 var(--s4)}
+  .tab{padding:var(--s2) 0;color:var(--stone-600)}.tab.on{color:var(--stone-900);box-shadow:inset 0 -2px 0 var(--blue-500)}
+  .cols{display:grid;grid-template-columns:1fr 1.25fr;gap:var(--s4);height:100%}
+  .callout{margin:0;padding:var(--s2);border-radius:var(--r);background:var(--amber-100);color:var(--amber-700);font-size:11px}
+  .choose{margin-top:var(--s6);padding:var(--s5);background:var(--stone-0);border:var(--hair) solid var(--stone-100);border-radius:var(--rl);max-width:80ch}
+  .choose h2{margin:0 0 var(--s3);font:600 16px/24px var(--sans)}.choose p{margin:0 0 var(--s2)}
+</style>
+</head>
+<body>
+<p class="kicker">Threat Monitoring · Visitor drawer · exploration</p>
+<h1>Four information orders for the visitor drawer</h1>
+<p class="brief">Same visitor, same tokens, same content: the verdict, the money, the ranked reasons, the journey with the block marker, the exclusion-list state, and one primary action. Four different orders. Every option keeps the rules: one primary button, the accent only for "you are here", red and amber only as alarms, mono numbers. The question each option answers first is the difference.</p>
+
+<div class="grid">
+
+<!-- A -->
+<section class="opt">
+  <p class="opt-kicker">Option A</p>
+  <h2 class="opt-name">Verdict first, ledger last</h2>
+  <p class="opt-thesis">Answer the question in the first line, then prove it below. The sentence is the a-ha; the money says what it cost; the reasons and the journey are the receipt for anyone who wants to check.</p>
+  <div class="pc"><p><b>Reads best when</b>the advertiser wants to know <i>why</i> in one glance and only sometimes digs.</p><p><b>Weakness</b>a skeptic scrolls a long way to the proof; the block marker is at the bottom of a 6-visit list.</p></div>
+  <div class="mock"><div class="drawer">
+    <div class="hd"><div><div class="ip">138.76.76.77 <span class="badge">Blocked</span></div><div class="sub">Frankfurt, Hesse, DE · mobile</div></div><span class="close">Close</span></div>
+    <div class="body">
+      <p class="verdict">6 paid clicks over 5 days with no engagement. Blocked after visit 6 of 6.</p>
+      <div class="stats">
+        <div class="stat"><div class="l">Wasted spend</div><div class="v alarm">$37.61</div><div class="s">paid clicks before the block</div></div>
+        <div class="stat"><div class="l">Protected since</div><div class="v ok">$62.82</div><div class="s">estimated, 8d</div></div>
+        <div class="stat"><div class="l">Visits</div><div class="v">6 paid · 0 other</div><div class="s">first 2w ago</div></div>
+        <div class="stat"><div class="l">Last seen</div><div class="v">8d ago</div><div class="s">Sep 5, 01:36</div></div>
+      </div>
+      <div><p class="h">Why</p><ol class="why">
+        <li class="active"><span class="n">1</span><span>No scroll and under 6 seconds on the page across 6 of 6 visits<span class="bar"><i style="width:100%"></i></span></span><span class="c">6 visits</span></li>
+        <li><span class="n">2</span><span>6 paid clicks over 5 days<span class="bar"><i style="width:80%"></i></span></span><span class="c">6 visits</span></li>
+        <li><span class="n">3</span><span>Every paid click on the same keyword, "competitor clicking my ads"<span class="bar"><i style="width:48%"></i></span></span><span class="c">6 visits</span></li>
+      </ol></div>
+      <div><p class="h">Journey</p><ol class="tl">
+        <li><span class="dot"></span><div><div class="t"><b>Visit 1</b><span class="when">Aug 31, 00:26</span><span class="chip">Paid · $6.72</span></div><div class="sig"><span class="bad">4s</span><span class="bad">2% scroll</span><span class="bad">no mouse</span><span>bot 39%</span><span class="sc">score 0.16</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 2</b><span class="when">Aug 31, 23:14</span><span class="chip">Paid · $5.80</span></div><div class="sig"><span class="bad">2s</span><span class="bad">3% scroll</span><span>mouse</span><span>bot 36%</span><span class="sc">score 0.28</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 6</b><span class="when">Sep 5, 01:36</span><span class="chip">Paid · $5.61</span></div><div class="sig"><span class="bad">1s</span><span class="bad">7% scroll</span><span>mouse</span><span>bot 27%</span><span class="sc">score 0.90</span></div></div></li>
+        <li class="marker"><span class="dot"></span><div><b>Blocked here.</b> Score reached 0.80. IP added to the exclusion lists, so no more paid clicks from it.</div></li>
+      </ol></div>
+    </div>
+    <div class="ft"><span class="chips"><span class="chip warn">Google Ads · pending</span><span class="chip ok">Meta Ads · excluded</span></span><span class="btn">Allow this visitor</span></div>
+  </div></div>
+</section>
+
+<!-- B -->
+<section class="opt">
+  <p class="opt-kicker">Option B</p>
+  <h2 class="opt-name">Ledger first, verdict as a sticky bar</h2>
+  <p class="opt-thesis">Show what happened and let the verdict arrive. The journey opens the drawer with the block marker in view; the verdict sentence sits in a slim bar that stays put while you scroll. Closest reading of "look at their journey and understand why".</p>
+  <div class="pc"><p><b>Reads best when</b>the advertiser distrusts summaries and wants to see the clicks with their own eyes.</p><p><b>Weakness</b>the reasons and the money come after the journey; a skimmer sees visits, not a decision. Six visits fit; twelve push everything else off screen.</p></div>
+  <div class="mock"><div class="drawer">
+    <div class="hd"><div><div class="ip">138.76.76.77 <span class="badge">Blocked</span></div><div class="sub">Frankfurt, Hesse, DE · mobile</div></div><span class="close">Close</span></div>
+    <div class="body">
+      <div class="sticky"><p class="verdict">6 paid clicks over 5 days with no engagement. Blocked after visit 6 of 6.</p><div class="sub" style="margin-top:4px">$37.61 wasted before the block · $62.82 protected since</div></div>
+      <div><p class="h">Journey</p><ol class="tl">
+        <li><span class="dot"></span><div><div class="t"><b>Visit 1</b><span class="when">Aug 31, 00:26</span><span class="chip">Paid · $6.72</span></div><div class="sig"><span class="bad">4s</span><span class="bad">2% scroll</span><span class="bad">no mouse</span><span>bot 39%</span><span class="sc">score 0.16</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 2</b><span class="when">Aug 31, 23:14</span><span class="chip">Paid · $5.80</span></div><div class="sig"><span class="bad">2s</span><span class="bad">3% scroll</span><span>mouse</span><span>bot 36%</span><span class="sc">score 0.28</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 3</b><span class="when">Sep 2, 01:31</span><span class="chip">Paid · $6.51</span></div><div class="sig"><span class="bad">2s</span><span class="bad">2% scroll</span><span>mouse</span><span>bot 37%</span><span class="sc">score 0.44</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 6</b><span class="when">Sep 5, 01:36</span><span class="chip">Paid · $5.61</span></div><div class="sig"><span class="bad">1s</span><span class="bad">7% scroll</span><span>mouse</span><span>bot 27%</span><span class="sc">score 0.90</span></div></div></li>
+        <li class="marker"><span class="dot"></span><div><b>Blocked here.</b> Score reached 0.80. IP added to the exclusion lists.</div></li>
+      </ol></div>
+      <div><p class="h">Why</p><ol class="why">
+        <li><span class="n">1</span><span>No scroll and under 6 seconds across 6 of 6 visits<span class="bar"><i style="width:100%"></i></span></span><span class="c">6 visits</span></li>
+        <li><span class="n">2</span><span>6 paid clicks over 5 days<span class="bar"><i style="width:80%"></i></span></span><span class="c">6 visits</span></li>
+      </ol></div>
+    </div>
+    <div class="ft"><span class="chips"><span class="chip warn">Google Ads · pending</span><span class="chip ok">Meta Ads · excluded</span></span><span class="btn">Allow this visitor</span></div>
+  </div></div>
+</section>
+
+<!-- C -->
+<section class="opt">
+  <p class="opt-kicker">Option C</p>
+  <h2 class="opt-name">Tabs: Why, Journey, Actions</h2>
+  <p class="opt-thesis">Separate the jobs into short panes so nothing scrolls. Why is the default; Journey is one tab over; the decision lives on its own tab with the sync state and the override history.</p>
+  <div class="pc"><p><b>Reads best when</b>journeys are long (20+ visits) and the drawer would otherwise become a wall.</p><p><b>Weakness</b>the proof is one click away from the claim, which is the trust problem restated. Hover-linking a reason to its visits stops working across a tab boundary.</p></div>
+  <div class="mock"><div class="drawer">
+    <div class="hd"><div><div class="ip">138.76.76.77 <span class="badge">Blocked</span></div><div class="sub">Frankfurt, Hesse, DE · mobile</div></div><span class="close">Close</span></div>
+    <div class="tabs"><span class="tab on">Why</span><span class="tab">Journey</span><span class="tab">Actions</span></div>
+    <div class="body">
+      <p class="verdict">6 paid clicks over 5 days with no engagement. Blocked after visit 6 of 6.</p>
+      <div class="stats">
+        <div class="stat"><div class="l">Wasted spend</div><div class="v alarm">$37.61</div><div class="s">paid clicks before the block</div></div>
+        <div class="stat"><div class="l">Protected since</div><div class="v ok">$62.82</div><div class="s">estimated, 8d</div></div>
+      </div>
+      <ol class="why">
+        <li class="active"><span class="n">1</span><span>No scroll and under 6 seconds on the page across 6 of 6 visits<span class="bar"><i style="width:100%"></i></span></span><span class="c">6 visits</span></li>
+        <li><span class="n">2</span><span>6 paid clicks over 5 days<span class="bar"><i style="width:80%"></i></span></span><span class="c">6 visits</span></li>
+        <li><span class="n">3</span><span>Every paid click on the same keyword, "competitor clicking my ads"<span class="bar"><i style="width:48%"></i></span></span><span class="c">6 visits</span></li>
+      </ol>
+      <p class="sub">See the 6 visits these point at in the Journey tab.</p>
+    </div>
+    <div class="ft"><span class="sub">Decision and sync state on the Actions tab</span><span class="btn">Allow this visitor</span></div>
+  </div></div>
+</section>
+
+<!-- D -->
+<section class="opt">
+  <p class="opt-kicker">Option D</p>
+  <h2 class="opt-name">Two panes: reasons beside the journey</h2>
+  <p class="opt-thesis">Claim and evidence visible at once. The reasons and the money sit on the left; the journey runs down the right; hovering a reason lights its visits without anything scrolling out of view. The drawer widens to make room.</p>
+  <div class="pc"><p><b>Reads best when</b>the user is auditing, comparing what the system said against what the visits show.</p><p><b>Weakness</b>needs a 640px drawer, which leaves a 13-inch laptop with a sliver of table, undoing the reason the drawer exists. Cramped below 1280px.</p></div>
+  <div class="mock"><div class="drawer wide">
+    <div class="hd"><div><div class="ip">138.76.76.77 <span class="badge">Blocked</span></div><div class="sub">Frankfurt, Hesse, DE · mobile · 6 paid clicks over 5 days with no engagement. Blocked after visit 6 of 6.</div></div><span class="close">Close</span></div>
+    <div class="body"><div class="cols">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="stats">
+          <div class="stat"><div class="l">Wasted spend</div><div class="v alarm">$37.61</div><div class="s">before the block</div></div>
+          <div class="stat"><div class="l">Protected since</div><div class="v ok">$62.82</div><div class="s">estimated, 8d</div></div>
+        </div>
+        <div><p class="h">Why</p><ol class="why">
+          <li class="active"><span class="n">1</span><span>No scroll and under 6 seconds across 6 of 6 visits<span class="bar"><i style="width:100%"></i></span></span><span class="c">6</span></li>
+          <li><span class="n">2</span><span>6 paid clicks over 5 days<span class="bar"><i style="width:80%"></i></span></span><span class="c">6</span></li>
+          <li><span class="n">3</span><span>Same keyword every time<span class="bar"><i style="width:48%"></i></span></span><span class="c">6</span></li>
+        </ol></div>
+      </div>
+      <div><p class="h">Journey</p><ol class="tl">
+        <li><span class="dot"></span><div><div class="t"><b>Visit 1</b><span class="when">Aug 31, 00:26</span><span class="chip">Paid · $6.72</span></div><div class="sig"><span class="bad">4s</span><span class="bad">2% scroll</span><span class="bad">no mouse</span><span class="sc">0.16</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 2</b><span class="when">Aug 31, 23:14</span><span class="chip">Paid · $5.80</span></div><div class="sig"><span class="bad">2s</span><span class="bad">3% scroll</span><span>mouse</span><span class="sc">0.28</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 3</b><span class="when">Sep 2, 01:31</span><span class="chip">Paid · $6.51</span></div><div class="sig"><span class="bad">2s</span><span class="bad">2% scroll</span><span>mouse</span><span class="sc">0.44</span></div></div></li>
+        <li><span class="dot"></span><div><div class="t"><b>Visit 6</b><span class="when">Sep 5, 01:36</span><span class="chip">Paid · $5.61</span></div><div class="sig"><span class="bad">1s</span><span class="bad">7% scroll</span><span>mouse</span><span class="sc">0.90</span></div></div></li>
+        <li class="marker"><span class="dot"></span><div><b>Blocked here.</b> Score reached 0.80.</div></li>
+      </ol></div>
+    </div></div>
+    <div class="ft"><span class="chips"><span class="chip warn">Google Ads · pending</span><span class="chip ok">Meta Ads · excluded</span></span><span class="btn">Allow this visitor</span></div>
+  </div></div>
+</section>
+
+</div>
+
+<div class="choose">
+  <h2>How to choose</h2>
+  <p><b>A</b> optimises for the first line. <b>B</b> optimises for seeing the clicks. <b>C</b> optimises for short panes at the cost of the claim-to-proof link. <b>D</b> optimises for auditing at the cost of the table.</p>
+  <p>The brief's test is one sentence: a customer opens one blocked visitor, looks at their journey, and understands why. A and B both pass it; they disagree about which of "why" and "journey" a person needs first. C and D each trade away one of the two things the drawer is for.</p>
+  <p>Mixes worth considering: A with B's sticky verdict bar (the sentence stays visible while scrolling the ledger), or B with the money folded into the sticky bar.</p>
+</div>
+</body>
+</html>
