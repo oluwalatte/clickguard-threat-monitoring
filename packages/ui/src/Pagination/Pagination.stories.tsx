@@ -51,3 +51,12 @@ export const ManyPages: Story = {
 export const SinglePage: Story = {
   args: { pageCount: 1, summary: '1 to 12 of 12 visitors' },
 };
+
+export const Focus: Story = {
+  render: () => <Controlled pageCount={3} total={48} pageSize={20} initial={2} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    c.getByRole('button', { name: 'Page 2' }).focus();
+    await expect(c.getByRole('button', { name: 'Page 2' })).toHaveFocus();
+  },
+};

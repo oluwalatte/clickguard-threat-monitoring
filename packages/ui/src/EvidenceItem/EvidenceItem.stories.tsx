@@ -69,3 +69,11 @@ export const ExpandedByDefault: Story = {
     defaultExpanded: true,
   },
 };
+
+export const DisclosureFocus: Story = {
+  args: { kind: 'supporting', statement: 'Headless browser signature in the user agent', rawValue: 'HeadlessChrome/121.0.0.0' },
+  play: async ({ canvasElement }) => {
+    await userEvent.tab();
+    await expect(within(canvasElement).getByRole('button', { name: 'Show raw value' })).toHaveFocus();
+  },
+};

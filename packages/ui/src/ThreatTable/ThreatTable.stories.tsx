@@ -166,3 +166,19 @@ function ControlledSortExample() {
 export const ControlledSort: Story = {
   render: () => <ControlledSortExample />,
 };
+
+export const RowHover: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.hover(c.getAllByRole('row')[1]);
+  },
+};
+
+export const RowActionFocus: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const action = c.getByRole('button', { name: 'View visitor: 72.14.201.88, Atlanta, United States' });
+    action.focus();
+    await expect(action).toHaveFocus();
+  },
+};

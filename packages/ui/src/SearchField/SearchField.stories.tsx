@@ -36,3 +36,14 @@ export const WithValue: Story = {
 export const VisibleLabel: Story = { render: (args) => <Controlled {...args} showLabel /> };
 
 export const Small: Story = { render: (args) => <Controlled {...args} size="sm" /> };
+
+export const Focused: Story = {
+  render: (args) => <Controlled {...args} />,
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole('searchbox');
+    await userEvent.click(input);
+    await expect(input).toHaveFocus();
+  },
+};
+
+export const Disabled: Story = { render: (args) => <Controlled {...args} disabled initial="185.220" /> };

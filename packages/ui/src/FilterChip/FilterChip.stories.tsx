@@ -50,3 +50,17 @@ export const Group: Story = {
     await expect(monitoring).toHaveAttribute('aria-pressed', 'true');
   },
 };
+
+export const Hover: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.hover(within(canvasElement).getByRole('button'));
+  },
+};
+
+export const Focus: Story = {
+  args: { pressed: true },
+  play: async ({ canvasElement }) => {
+    await userEvent.tab();
+    await expect(within(canvasElement).getByRole('button')).toHaveFocus();
+  },
+};

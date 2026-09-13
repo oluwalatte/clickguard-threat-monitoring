@@ -72,3 +72,29 @@ export const FullWidth: Story = {
   args: { fullWidth: true, variant: 'primary' },
   decorators: [(Story) => <div style={{ width: '40ch' }}><Story /></div>],
 };
+
+/* Hover and focus live in CSS. These stories put the control into each state so it can be
+   seen and checked, rather than trusting the stylesheet. */
+export const Hover: Story = {
+  args: { variant: 'primary' },
+  play: async ({ canvasElement }) => {
+    await userEvent.hover(within(canvasElement).getByRole('button'));
+  },
+};
+
+export const Focus: Story = {
+  args: { variant: 'secondary' },
+  play: async ({ canvasElement }) => {
+    await userEvent.tab();
+    await expect(within(canvasElement).getByRole('button')).toHaveFocus();
+  },
+};
+
+export const Active: Story = {
+  name: 'Active (pressed)',
+  args: { variant: 'primary' },
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole('button');
+    await userEvent.pointer({ keys: '[MouseLeft>]', target: button });
+  },
+};
