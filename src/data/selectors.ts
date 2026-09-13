@@ -69,6 +69,9 @@ export function exposure(v: Visitor): Exposure {
   return { paidBefore: before.length, spendBefore: before.length ? sum(before) : 0, paidAfter: after.length, spendAfter: after.length ? sum(after) : 0, total: c.total, paid: c.paid, organic: c.organic };
 }
 
+/** D5 wording. */
+export const CONFIDENCE_LABEL_MAP: Record<Confidence, string> = { high: 'High confidence', moderate: 'Moderate confidence', conflicting: 'Conflicting evidence' };
+
 export function confidence(v: Visitor): Confidence | undefined {
   return v.decision?.confidence ?? v.monitoring?.confidence;
 }
