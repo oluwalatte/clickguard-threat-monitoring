@@ -30,7 +30,7 @@
   --skeleton-height: 10px;
   --layout-sidebar-width-collapsed: 72px;
   --layout-field-min: 150px;
-  --table-min-width: 860px;
+  --table-min-width: 1120px;
   --table-action-col: 56px;
   /* Below this container width the table stacks. Mirrored in breakpoints.ts. */
   --table-narrow-breakpoint: 760px;

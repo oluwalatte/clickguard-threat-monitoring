@@ -13,7 +13,8 @@ export type TimelineItemType =
   | 'block'
   | 'sync-pending'
   | 'sync-active'
-  | 'sync-failed';
+  | 'sync-failed'
+  | 'override';
 
 export interface VisitTimelineItem {
   /** Anchor target, e.g. "visit-4", so evidence can link back to it. */
@@ -50,6 +51,8 @@ const TYPE: Record<TimelineItemType, { icon: IconName; label: string; system: bo
   'sync-pending': { icon: 'clock', label: 'Exclusion sync pending', system: true },
   'sync-active': { icon: 'circle-check', label: 'Exclusion active', system: true },
   'sync-failed': { icon: 'triangle-alert', label: 'Exclusion sync failed', system: true },
+  /* A person's action, in the info tone (D3). Square, like every non-visit event. */
+  override: { icon: 'circle-check', label: 'Manually allowed', system: true },
 };
 
 function Row({ item, isLast }: { item: VisitTimelineItem; isLast: boolean }) {

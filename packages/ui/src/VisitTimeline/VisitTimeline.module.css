@@ -56,6 +56,11 @@
   --event-surface: var(--status-monitoring-surface);
   --event-border: var(--status-monitoring-border);
 }
+.row[data-type='override'] {
+  --event-ink: var(--status-info);
+  --event-surface: var(--status-info-surface);
+  --event-border: var(--status-info-border);
+}
 .row[data-type='sync-active'] {
   --event-ink: var(--status-safe);
   --event-surface: var(--status-safe-surface);

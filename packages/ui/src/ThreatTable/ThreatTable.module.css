@@ -108,6 +108,14 @@
   gap: var(--space-0);
   min-width: 0;
 }
+/* A cell's second line is support text: the location under an IP, the timestamp under a relative time. */
+.cellStack > * + * {
+  font-family: var(--font-sans);
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  font-weight: 400;
+  color: var(--text-muted);
+}
 
 .action {
   display: inline-flex;
@@ -197,4 +205,9 @@
   text-align: right;
   font-size: var(--text-data-size);
   line-height: var(--text-data-line);
+}
+.stackValue > * + * {
+  font-size: var(--text-support-size);
+  line-height: var(--text-support-line);
+  color: var(--text-muted);
 }

@@ -16,7 +16,7 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
     render: (r) => (
       <>
         <span>{r.ip}</span>
-        <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>{r.location}</span>
+        <span>{r.location}</span>
       </>
     ),
   },
@@ -31,7 +31,7 @@ const columns: ThreatTableColumn<VisitorRow>[] = [
     render: (r) => (
       <>
         <span>{r.lastSeenRelative}</span>
-        <span style={{ color: 'var(--text-muted)' }}>{r.lastSeen}</span>
+        <span>{r.lastSeen}</span>
       </>
     ),
   },
