@@ -52,6 +52,10 @@ CLI is the only requirement.
   implementation.
 - `packages/ui/src/tokens/` the token files; `packages/ui/src/styles.css` the single CSS entry.
 - `packages/ui/src/<Name>/` one component per folder: `Name.tsx`, `Name.module.css`, `Name.stories.tsx`.
+  Twenty components: the table, the decision summary, the journey, the evidence list, the status
+  badge, the signal tag and sync flag, the filters (search, chips, menu, select, checkbox), the
+  sidebar and account row, pagination, empty states, buttons and icons.
 - `src/data/` types, golden cases, factory, selectors, tests.
 - `src/app/` routes and composition. Imports components from `@clickguard/ui` only.
-- `docs/` decisions, handoff, the AI workflow log, and explorations.
+- `docs/` the product contract (`decisions.md`), the handoff, the success criteria, the rationale,
+  the AI workflow log, the final QA record (`qa.md`), and the explorations that fed decisions.
